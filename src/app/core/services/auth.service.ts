@@ -8,7 +8,7 @@ import { tap } from 'rxjs/operators';
 export class AuthService {
   private http = inject(HttpClient);
   
-  private apiUrl = 'http://localhost:5189/api/auth';
+  private apiUrl = 'http://localhost:5189/api/Auth';
 
   // Signal quản lý trạng thái đăng nhập. Vừa vào app là check ngay xem trong localStorage có token chưa
   currentUser = signal<boolean>(

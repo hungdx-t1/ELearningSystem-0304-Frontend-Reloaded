@@ -4,6 +4,7 @@ import { MainLayoutComponent } from './layouts/main-layout-component/main-layout
 import { DashboardComponent } from './features/dashboard-component/dashboard-component';
 import { authGuard } from './core/guards/auth.guard';
 import { NotFoundComponent } from './features/not-found-component/not-found-component';
+import { CourseDetail } from './features/courses/course-detail-component/course-detail-component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -15,6 +16,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent }, 
+      { path: 'courses/:id', component: CourseDetail },
     ]
   },
 

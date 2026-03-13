@@ -33,7 +33,7 @@ export class Login {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/']); // Chuyển hướng về Trang chủ
+        this.router.navigate(['/dashboard']); // <-- Trỏ thẳng đích danh vào đây
       },
       error: (err) => {
         this.isLoading.set(false);

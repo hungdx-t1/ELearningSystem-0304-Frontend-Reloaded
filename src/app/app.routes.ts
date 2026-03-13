@@ -7,6 +7,7 @@ import { NotFoundComponent } from './features/not-found-component/not-found-comp
 import { CourseDetail } from './features/courses/course-detail-component/course-detail-component';
 import { ClassListComponent } from './features/classes/class-list-component/class-list-component';
 import { AiChatComponent } from './features/chat/ai-chat-component/ai-chat-component';
+import { LessonPlayerComponent } from './features/courses/lesson-player-component/lesson-player-component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -22,6 +23,7 @@ export const routes: Routes = [
       { path: 'courses/:id', component: CourseDetail },
       { path: 'classes', component: ClassListComponent },
       { path: 'chat', component: AiChatComponent },
+      { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent },
     ]
   },
 

@@ -1,0 +1,44 @@
+<p>main-layout-component works!</p>
+<div class="flex h-screen bg-gray-100 font-sans text-gray-900">
+  
+  <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm">
+    <div class="h-16 flex items-center px-6 border-b border-gray-200">
+      <span class="text-2xl font-bold text-blue-600">LMS<span class="text-gray-800">Pro</span></span>
+    </div>
+
+    <nav class="flex-1 overflow-y-auto py-4">
+      <ul class="space-y-1 px-3">
+        @for (item of menuItems; track item.path) {
+          <li>
+            <a [routerLink]="item.path" routerLinkActive="bg-blue-50 text-blue-700 font-medium"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+              <span class="text-xl">{{ item.icon }}</span>
+              <span>{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    
+    <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shadow-sm">
+      <h2 class="text-xl font-semibold text-gray-800">Hệ thống quản lý học tập</h2>
+      
+      <div class="flex items-center gap-4">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+          U </div>
+        <button (click)="logout()" 
+                class="px-4 py-2 text-sm text-red-600 font-medium bg-red-50 rounded-lg hover:bg-red-100 transition">
+          Đăng xuất
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+</div>

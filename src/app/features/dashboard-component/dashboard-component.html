@@ -1,1 +1,55 @@
-<p>dashboard-component works!</p>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">Khám phá Khóa học</h1>
+    <button class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition">
+      + Thêm khóa học
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="bg-white rounded-xl h-72 border border-gray-100 p-4 animate-pulse">
+          <div class="h-40 bg-gray-200 rounded-lg mb-4"></div>
+          <div class="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded w-full"></div>
+        </div>
+      }
+    </div>
+  } @else if (errorMessage()) {
+    <div class="p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+      {{ errorMessage() }}
+    </div>
+  } @else if (courses().length === 0) {
+    <div class="text-center py-12 bg-white rounded-xl border border-gray-200">
+      <p class="text-gray-500 text-lg">Hệ thống hiện chưa có khóa học nào.</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (course of courses(); track course.id) {
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col">
+          
+          <img [src]="course.thumbnailUrl || 'https://placehold.co/600x300?text=No+Thumbnail'" 
+               alt="{{ course.title }}" 
+               class="w-full h-44 object-cover">
+          
+          <div class="p-5 flex-1 flex flex-col">
+            <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-1" [title]="course.title">
+              {{ course.title }}
+            </h3>
+            
+            <p class="text-sm text-gray-600 line-clamp-2 mb-4 flex-1">
+              {{ course.description || 'Chưa có mô tả cho khóa học này.' }}
+            </p>
+            
+            <a [routerLink]="['/courses', course.id]" 
+               class="w-full text-center px-4 py-2 bg-blue-50 text-blue-700 font-semibold rounded-lg hover:bg-blue-100 transition-colors">
+              Vào học ngay
+            </a>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,44 @@
+<div class="flex flex-col h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+  
+  <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
+    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl shadow-sm">🤖</div>
+    <div>
+      <h2 class="font-bold text-gray-800">Trợ lý học tập AI</h2>
+      <p class="text-xs text-green-600 flex items-center gap-1 font-medium">
+        <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Đang trực tuyến
+      </p>
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50">
+    @for (msg of messages(); track $index) {
+      <div class="flex" [class.justify-end]="msg.role === 'user'">
+        <div class="max-w-[75%] rounded-2xl px-5 py-3 shadow-sm"
+             [class.bg-blue-600]="msg.role === 'user'" 
+             [class.text-white]="msg.role === 'user'"
+             [class.rounded-tr-sm]="msg.role === 'user'"
+             [class.bg-white]="msg.role === 'ai'" 
+             [class.text-gray-800]="msg.role === 'ai'" 
+             [class.border]="msg.role === 'ai'" 
+             [class.rounded-tl-sm]="msg.role === 'ai'">
+          {{ msg.content }}
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="p-4 bg-white border-t border-gray-200">
+    <div class="flex items-center gap-2">
+      <input type="text" [(ngModel)]="chatInput" (keyup.enter)="sendMessage()"
+             placeholder="Hỏi AI về bài học, lịch thi, tài liệu..." 
+             class="flex-1 appearance-none rounded-full px-5 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50">
+      
+      <button (click)="sendMessage()" 
+              class="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition shadow-sm">
+        <svg class="w-5 h-5 ml-1 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>

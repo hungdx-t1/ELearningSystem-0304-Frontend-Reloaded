@@ -5,6 +5,8 @@ import { DashboardComponent } from './features/dashboard-component/dashboard-com
 import { authGuard } from './core/guards/auth.guard';
 import { NotFoundComponent } from './features/not-found-component/not-found-component';
 import { CourseDetail } from './features/courses/course-detail-component/course-detail-component';
+import { ClassListComponent } from './features/classes/class-list-component/class-list-component';
+import { AiChatComponent } from './features/chat/ai-chat-component/ai-chat-component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -16,7 +18,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent }, 
+      { path: 'courses', redirectTo: 'dashboard' }, // Nếu bấm vào Khóa Học thì đá về trang chủ tạm thời
       { path: 'courses/:id', component: CourseDetail },
+      { path: 'classes', component: ClassListComponent },
+      { path: 'chat', component: AiChatComponent },
     ]
   },
 

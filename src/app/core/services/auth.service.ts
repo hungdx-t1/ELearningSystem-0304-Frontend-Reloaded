@@ -11,7 +11,9 @@ export class AuthService {
   private apiUrl = 'http://localhost:5189/api/auth';
 
   // Signal quản lý trạng thái đăng nhập. Vừa vào app là check ngay xem trong localStorage có token chưa
-  currentUser = signal<boolean>(!!localStorage.getItem('token'));
+  currentUser = signal<boolean>(
+    typeof window !== 'undefined' ? !!localStorage.getItem('token') : false
+  );
 
   login(credentials: any) {
     return this.http.post<{ token: string }>(`${this.apiUrl}/login`, credentials).pipe(

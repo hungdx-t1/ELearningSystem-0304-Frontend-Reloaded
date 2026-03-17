@@ -16,11 +16,6 @@ export class ChatService {
 
   // Hàm gửi tin nhắn (Tạm thời dùng RxJS 'of' và 'delay' để giả lập AI đang suy nghĩ mất 1.5s)
   sendMessage(message: string) {
-    // TODO: Tương lai sẽ mở comment dòng dưới này ra để gọi API thật
-    // return this.http.post<{ reply: string }>(this.apiUrl, { prompt: message });
-    
-    // Logic giả lập:
-    const mockReply = `AI đã nhận được câu hỏi: "${message}". Tính năng gọi API thật sẽ sớm được kết nối!`;
-    return of({ reply: mockReply }).pipe(delay(1500)); 
+    return this.http.post<{ reply: string }>(this.apiUrl, { prompt: message });
   }
 }

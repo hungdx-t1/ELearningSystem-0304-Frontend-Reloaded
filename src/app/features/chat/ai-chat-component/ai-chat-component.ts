@@ -8,7 +8,7 @@ import { ChatService, ChatMessage } from '../../../core/services/chat.service';
   imports: [FormsModule],
   templateUrl: './ai-chat-component.html'
 })
-export class AiChat implements AfterViewChecked {
+export class AiChatComponent implements AfterViewChecked {
   private chatService = inject(ChatService);
   
   // Lấy cái khung cuộn màn hình từ HTML

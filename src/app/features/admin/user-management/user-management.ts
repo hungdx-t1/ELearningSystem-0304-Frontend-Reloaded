@@ -10,6 +10,7 @@ export class UserManagement {
   private http = inject(HttpClient);
   
   isUploading = signal<boolean>(false);
+  isExporting = signal<boolean>(false);
 
   // Hàm này chạy ngay khi người dùng chọn file xong
   onFileSelected(event: any) {
@@ -37,5 +38,37 @@ export class UserManagement {
       // Xóa giá trị của thẻ input file để lần sau chọn lại file đó nó vẫn nhận
       event.target.value = ''; 
     }
+  }
+
+  exportExcel() {
+    this.isExporting.set(true);
+    
+    // QUAN TRỌNG: Phải set responseType là 'blob' để trình duyệt hiểu đây là file (dữ liệu nhị phân)
+    this.http.get('http://localhost:5189/api/admin/users/export', { responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        // Tạo một đường link ảo
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        // Đặt tên file tải về
+        a.download = `DanhSachNguoiDung_${new Date().getTime()}.xlsx`; 
+        
+        // Gắn link vào body, tự động click để tải, rồi xóa nó đi
+        document.body.appendChild(a);
+        a.click();
+        
+        // Dọn dẹp bộ nhớ
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        this.isExporting.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Có lỗi xảy ra khi tải file Excel!');
+        this.isExporting.set(false);
+      }
+    });
   }
 }

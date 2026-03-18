@@ -1,6 +1,8 @@
 import { Component, ElementRef, ViewChild, inject, signal, AfterViewChecked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ChatService, ChatMessage } from '../../../core/services/chat.service';
+import { marked } from 'marked';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-ai-chat',
@@ -10,6 +12,7 @@ import { ChatService, ChatMessage } from '../../../core/services/chat.service';
 })
 export class AiChatComponent implements AfterViewChecked {
   private chatService = inject(ChatService);
+  private sanitizer = inject(DomSanitizer);
   
   // Lấy cái khung cuộn màn hình từ HTML
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
@@ -55,5 +58,13 @@ export class AiChatComponent implements AfterViewChecked {
         this.messages.update(msgs => [...msgs, { role: 'ai', content: 'Xin lỗi, kết nối đến não bộ AI đang bị gián đoạn.' }]);
       }
     });
+  }
+
+  formatMessage(content: string) {
+    // Dùng marked để biến text có dấu ** thành thẻ <b>, \n thành <br>
+    const html = marked.parse(content) as string;
+    
+    // Báo cho Angular biết đoạn HTML này an toàn, cứ in ra
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 }

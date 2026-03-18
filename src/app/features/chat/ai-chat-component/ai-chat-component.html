@@ -20,8 +20,8 @@
              [class.bg-white]="msg.role === 'ai'" 
              [class.text-gray-800]="msg.role === 'ai'" 
              [class.border]="msg.role === 'ai'" 
-             [class.rounded-tl-sm]="msg.role === 'ai'">
-          {{ msg.content }}
+             [class.rounded-tl-sm]="msg.role === 'ai'"
+             [innerHTML]="formatMessage(msg.content)">
         </div>
       </div>
     }

@@ -2,12 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-course-create',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, NgIf],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './course-create.html'
 })
 export class CourseCreate {

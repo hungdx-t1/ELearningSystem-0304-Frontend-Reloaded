@@ -14,9 +14,11 @@
 
   <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 sm:p-8">
     
-    <div *ngIf="errorMessage()" class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 font-medium">
-      {{ errorMessage() }}
-    </div>
+    @if (errorMessage()) {
+      <div class="mb-6 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200 font-medium">
+        {{ errorMessage() }}
+      </div>
+    }
 
     <form [formGroup]="courseForm" (ngSubmit)="onSubmit()" class="space-y-6">
       
@@ -27,8 +29,12 @@
                [class.border-red-500]="courseForm.get('title')?.invalid && courseForm.get('title')?.touched"
                [class.border-gray-300]="!(courseForm.get('title')?.invalid && courseForm.get('title')?.touched)">
         
-        <p *ngIf="courseForm.get('title')?.hasError('required') && courseForm.get('title')?.touched" class="text-red-500 text-xs mt-1">Tên khóa học không được để trống.</p>
-        <p *ngIf="courseForm.get('title')?.hasError('minlength') && courseForm.get('title')?.touched" class="text-red-500 text-xs mt-1">Tên khóa học phải có ít nhất 5 ký tự.</p>
+        @if (courseForm.get('title')?.hasError('required') && courseForm.get('title')?.touched) {
+          <p class="text-red-500 text-xs mt-1">Tên khóa học không được để trống.</p>
+        }
+        @if (courseForm.get('title')?.hasError('minlength') && courseForm.get('title')?.touched) {
+          <p class="text-red-500 text-xs mt-1">Tên khóa học phải có ít nhất 5 ký tự.</p>
+        }
       </div>
 
       <div>
@@ -38,7 +44,9 @@
                   [class.border-red-500]="courseForm.get('description')?.invalid && courseForm.get('description')?.touched"
                   [class.border-gray-300]="!(courseForm.get('description')?.invalid && courseForm.get('description')?.touched)"></textarea>
         
-        <p *ngIf="courseForm.get('description')?.invalid && courseForm.get('description')?.touched" class="text-red-500 text-xs mt-1">Vui lòng nhập mô tả chi tiết (ít nhất 10 ký tự).</p>
+        @if (courseForm.get('description')?.invalid && courseForm.get('description')?.touched) {
+          <p class="text-red-500 text-xs mt-1">Vui lòng nhập mô tả chi tiết (ít nhất 10 ký tự).</p>
+        }
       </div>
 
       <div>

@@ -1,12 +1,20 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter } from '../../../core/services/course.service';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-course-detail-component',
   imports: [RouterLink],
   templateUrl: './course-detail-component.html',
   styleUrl: './course-detail-component.scss',
+  animations: [
+    trigger('slideInOut', [
+      state('collapsed', style({ height: '0px', minHeight: '0', opacity: 0, overflow: 'hidden' })), // Trạng thái đóng: h=0
+      state('expanded', style({ height: '*', opacity: 1 })), // Trạng thái mở: h tự động tính
+      transition('expanded <=> collapsed', animate('300ms ease-in-out')) // Thời gian trượt 300ms
+    ])
+  ]
 })
 export class CourseDetail implements OnInit {
   private route = inject(ActivatedRoute);

@@ -14,7 +14,6 @@ export class ChatService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:5189/api/ai/chat';
 
-  // Hàm gửi tin nhắn (Tạm thời dùng RxJS 'of' và 'delay' để giả lập AI đang suy nghĩ mất 1.5s)
   sendMessage(message: string) {
     return this.http.post<{ reply: string }>(this.apiUrl, { prompt: message });
   }

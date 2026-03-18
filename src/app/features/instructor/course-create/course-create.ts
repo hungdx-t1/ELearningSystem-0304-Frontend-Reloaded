@@ -14,7 +14,6 @@ export class CourseCreate {
   private courseService = inject(CourseService);
   private router = inject(Router);
 
-  // Khởi tạo Form với các điều kiện Validation khắt khe
   courseForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(10)]],

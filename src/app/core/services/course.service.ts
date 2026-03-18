@@ -57,4 +57,14 @@ export class CourseService {
   createCourse(courseData: { title: string; description: string; thumbnailUrl: string }) {
     return this.http.post<Course>(`${this.apiUrl}/courses`, courseData);
   }
+
+  // Gửi lệnh tạo Chương mới
+  createChapter(chapterData: { courseId: string; title: string; sortOrder: number }) {
+    return this.http.post<Chapter>(`${this.apiUrl}/chapters`, chapterData);
+  }
+
+  // Gửi lệnh tạo Bài học mới
+  createLesson(lessonData: { chapterId: string; title: string; type: number; videoUrl?: string; sortOrder: number }) {
+    return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
+  }
 }

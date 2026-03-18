@@ -1,0 +1,72 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  
+  <div class="flex items-center gap-4 border-b pb-4">
+    <a routerLink="/instructor/courses" class="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition">
+      <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Khung chương trình</h1>
+      <p class="text-sm text-gray-500 font-medium text-blue-600">{{ course()?.title }}</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div></div>
+  } @else {
+    
+    <div class="space-y-4">
+      @for (chapter of chapters(); track chapter.id) {
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          
+          <div class="flex items-center justify-between p-4 bg-gray-50 border-b border-gray-100">
+            <div class="flex items-center gap-3 cursor-pointer" (click)="toggleChapter(chapter)">
+              <span class="text-gray-400 transform transition-transform" [class.rotate-90]="chapter.isExpanded">▶</span>
+              <span class="font-bold text-gray-800">Chương {{ chapter.sortOrder }}: {{ chapter.title }}</span>
+            </div>
+            
+            <button (click)="addLesson(chapter.id, chapter.lessons?.length || 0)" 
+                    class="text-sm px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-100 font-medium text-gray-700 flex items-center gap-1 transition-colors">
+              <span class="text-blue-600 font-bold">+</span> Thêm Bài học
+            </button>
+          </div>
+
+          @if (chapter.isExpanded) {
+            <div class="divide-y divide-gray-100 bg-white">
+              @if (chapter.lessons?.length === 0) {
+                <p class="p-4 text-sm text-gray-400 italic text-center">Chưa có nội dung. Hãy thêm bài học đầu tiên!</p>
+              }
+              
+              @for (lesson of chapter.lessons; track lesson.id) {
+                <div class="flex items-center justify-between p-3 pl-10 hover:bg-gray-50 group">
+                  <div class="flex items-center gap-3">
+                    <span class="text-gray-400 cursor-move" title="Kéo thả để sắp xếp">☰</span>
+                    <span class="text-lg">{{ lesson.type === 0 ? '▶️' : '📄' }}</span>
+                    <span class="text-sm font-medium text-gray-700">Bài {{ lesson.sortOrder }}: {{ lesson.title }}</span>
+                  </div>
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                     <button class="text-xs text-gray-500 hover:text-blue-600">Sửa</button>
+                     <button class="text-xs text-gray-500 hover:text-red-600">Xóa</button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="mt-8 bg-blue-50 border border-blue-100 rounded-xl p-5 flex items-end gap-3 shadow-sm">
+      <div class="flex-1">
+        <label class="block text-sm font-bold text-blue-800 mb-1">Tạo Chương mới</label>
+        <input type="text" [(ngModel)]="newChapterTitle" (keyup.enter)="addChapter()"
+               placeholder="VD: Chương 1: Giới thiệu tổng quan..." 
+               class="w-full px-4 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+      </div>
+      <button (click)="addChapter()" [disabled]="!newChapterTitle().trim()"
+              class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:bg-blue-300 transition-colors">
+        Lưu Chương
+      </button>
+    </div>
+
+  }
+</div>

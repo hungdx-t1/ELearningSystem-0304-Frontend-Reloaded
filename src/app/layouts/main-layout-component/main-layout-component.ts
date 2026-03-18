@@ -19,7 +19,8 @@ export class MainLayoutComponent {
     { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
     { path: '/courses', icon: '📚', label: 'Khóa học' },
     { path: '/classes', icon: '🏫', label: 'Lớp học' },
-    { path: '/chat', icon: '🤖', label: 'Trợ lý AI' } // Hợp gu làm AI ChatLog của bạn nè
+    { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }, 
+    { path: '/instructor/courses', icon: '👨‍🏫', label: 'Quản lý khóa học' }, // tạm thời
   ];
 
   logout() {

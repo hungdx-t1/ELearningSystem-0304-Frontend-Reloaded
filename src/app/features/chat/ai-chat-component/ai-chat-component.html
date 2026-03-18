@@ -1,11 +1,17 @@
-<div class="flex flex-col h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-  
+<div
+  class="flex flex-col h-[calc(100vh-8rem)] bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+>
   <div class="p-4 border-b border-gray-200 bg-gray-50 flex items-center gap-3">
-    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl shadow-sm">🤖</div>
+    <div
+      class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl shadow-sm"
+    >
+      🤖
+    </div>
     <div>
       <h2 class="font-bold text-gray-800">Trợ lý học tập AI</h2>
       <p class="text-xs text-green-600 flex items-center gap-1 font-medium">
-        <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Đang trực tuyến
+        <span class="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span> Đang trực
+        tuyến
       </p>
     </div>
   </div>
@@ -13,25 +19,37 @@
   <div #chatContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scroll-smooth">
     @for (msg of messages(); track $index) {
       <div class="flex" [class.justify-end]="msg.role === 'user'">
-        <div class="max-w-[75%] rounded-2xl px-5 py-3 shadow-sm"
-             [class.bg-blue-600]="msg.role === 'user'" 
-             [class.text-white]="msg.role === 'user'"
-             [class.rounded-tr-sm]="msg.role === 'user'"
-             [class.bg-white]="msg.role === 'ai'" 
-             [class.text-gray-800]="msg.role === 'ai'" 
-             [class.border]="msg.role === 'ai'" 
-             [class.rounded-tl-sm]="msg.role === 'ai'"
-             [innerHTML]="formatMessage(msg.content)">
-        </div>
+        <!-- prose sẽ phục hồi toàn bộ vẻ đẹp của đoạn văn (căn lề, bullet point, in đậm, khoảng cách đoạn) -->
+        <div
+          class="max-w-[75%] rounded-2xl px-5 py-3 shadow-sm whitespace-pre-wrap"
+          [class.bg-blue-600]="msg.role === 'user'"
+          [class.text-white]="msg.role === 'user'"
+          [class.rounded-tr-sm]="msg.role === 'user'"
+          [class.bg-white]="msg.role === 'ai'"
+          [class.text-gray-800]="msg.role === 'ai'"
+          [class.border]="msg.role === 'ai'"
+          [class.rounded-tl-sm]="msg.role === 'ai'"
+          [class.prose]="msg.role === 'ai'" 
+          [class.max-w-none]="msg.role === 'ai'"
+          [innerHTML]="formatMessage(msg.content)"
+        ></div>
       </div>
     }
 
     @if (isTyping()) {
       <div class="flex justify-start">
-        <div class="bg-white border text-gray-800 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-1">
+        <div
+          class="bg-white border text-gray-800 rounded-2xl rounded-tl-sm px-5 py-4 shadow-sm flex items-center gap-1"
+        >
           <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-          <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-          <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+          <div
+            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+            style="animation-delay: 0.2s"
+          ></div>
+          <div
+            class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+            style="animation-delay: 0.4s"
+          ></div>
         </div>
       </div>
     }
@@ -39,14 +57,32 @@
 
   <div class="p-4 bg-white border-t border-gray-200">
     <div class="flex items-center gap-2">
-      <input type="text" [(ngModel)]="chatInput" (keyup.enter)="sendMessage()" [disabled]="isTyping()"
-             placeholder="Hỏi AI về bài học, tài liệu..." 
-             class="flex-1 appearance-none rounded-full px-5 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors">
-      
-      <button (click)="sendMessage()" [disabled]="isTyping() || !chatInput().trim()"
-              class="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-blue-300 transition shadow-sm">
-        <svg class="w-5 h-5 ml-1 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+      <input
+        type="text"
+        [(ngModel)]="chatInput"
+        (keyup.enter)="sendMessage()"
+        [disabled]="isTyping()"
+        placeholder="Hỏi AI về bài học, tài liệu..."
+        class="flex-1 appearance-none rounded-full px-5 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
+      />
+
+      <button
+        (click)="sendMessage()"
+        [disabled]="isTyping() || !chatInput().trim()"
+        class="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-blue-300 transition shadow-sm"
+      >
+        <svg
+          class="w-5 h-5 ml-1 transform rotate-90"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+          ></path>
         </svg>
       </button>
     </div>

@@ -47,6 +47,6 @@ export const routes: Routes = [
     ]
   },
 
-  // gõ link bậy bạ -> Đá về login
+  // gõ link bậy bạ 
   { path: '**', component: NotFoundComponent }
 ];

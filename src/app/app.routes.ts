@@ -11,6 +11,9 @@ import { LessonPlayerComponent } from './features/courses/lesson-player-componen
 import { CourseManagement } from './features/instructor/course-management/course-management';
 import { CourseCreate } from './features/instructor/course-create/course-create';
 import { CourseEditor } from './features/instructor/course-editor/course-editor';
+import { TrainingManagement } from './features/admin/training-management/training-management';
+import { UserManagement } from './features/admin/user-management/user-management';
+import { AdminLayout } from './layouts/admin-layout/admin-layout';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -31,6 +34,16 @@ export const routes: Routes = [
       { path: 'instructor/courses', component: CourseManagement },
       { path: 'instructor/courses/create', component: CourseCreate },
       { path: 'instructor/courses/:id/manage', component: CourseEditor },
+    ]
+  },
+
+  {
+    path: 'admin',
+    component: AdminLayout,
+    children: [
+      { path: '', redirectTo: 'users', pathMatch: 'full' },
+      { path: 'users', component: UserManagement },
+      { path: 'training', component: TrainingManagement },
     ]
   },
 

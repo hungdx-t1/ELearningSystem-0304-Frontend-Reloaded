@@ -52,4 +52,9 @@ export class CourseService {
   getLessonsByChapterId(chapterId: string) {
     return firstValueFrom(this.http.get<Lesson[]>(`${this.apiUrl}/lessons/chapter/${chapterId}`));
   }
+
+  //gửi dữ liệu tạo khóa học mới xuống BE
+  createCourse(courseData: { title: string; description: string; thumbnailUrl: string }) {
+    return this.http.post<Course>(`${this.apiUrl}/courses`, courseData);
+  }
 }

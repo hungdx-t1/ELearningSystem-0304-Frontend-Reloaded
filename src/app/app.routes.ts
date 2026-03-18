@@ -9,6 +9,7 @@ import { ClassListComponent } from './features/classes/class-list-component/clas
 import { AiChatComponent } from './features/chat/ai-chat-component/ai-chat-component';
 import { LessonPlayerComponent } from './features/courses/lesson-player-component/lesson-player-component';
 import { CourseManagement } from './features/instructor/course-management/course-management';
+import { CourseCreate } from './features/instructor/course-create/course-create';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -25,7 +26,9 @@ export const routes: Routes = [
       { path: 'classes', component: ClassListComponent },
       { path: 'chat', component: AiChatComponent },
       { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent },
+      
       { path: 'instructor/courses', component: CourseManagement },
+      { path: 'instructor/courses/create', component: CourseCreate },
     ]
   },
 

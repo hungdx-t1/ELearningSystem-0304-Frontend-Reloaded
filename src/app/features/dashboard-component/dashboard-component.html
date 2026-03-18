@@ -25,9 +25,9 @@
       <p class="text-gray-500 text-lg">Hệ thống hiện chưa có khóa học nào.</p>
     </div>
   } @else {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [@listAnimation]="courses().length">
       @for (course of courses(); track course.id) {
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300 flex flex-col hover:-translate-y-1 transition-transform">
           
           <img [src]="course.thumbnailUrl || 'https://placehold.co/600x300?text=No+Thumbnail'" 
                alt="{{ course.title }}" 

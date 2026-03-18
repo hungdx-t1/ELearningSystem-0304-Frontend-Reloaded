@@ -18,7 +18,7 @@
 
   <div #chatContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scroll-smooth">
     @for (msg of messages(); track $index) {
-      <div class="flex" [class.justify-end]="msg.role === 'user'">
+      <div class="flex animate-slide-up" [class.justify-end]="msg.role === 'user'">
         <!-- prose sẽ phục hồi toàn bộ vẻ đẹp của đoạn văn (căn lề, bullet point, in đậm, khoảng cách đoạn) -->
         <div
           class="max-w-[75%] rounded-2xl px-5 py-3 shadow-sm whitespace-pre-wrap"

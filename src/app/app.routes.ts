@@ -17,6 +17,7 @@ import { TrainingManagement } from './features/admin/training-management/trainin
 import { UserManagement } from './features/admin/user-management/user-management';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
+import { ClassManagement } from './features/instructor/class-management/class-management';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -50,6 +51,11 @@ export const routes: Routes = [
       { 
         path: 'instructor/courses/:id/manage', 
         component: CourseEditor,
+        canActivate: [roleGuard],
+        data: { roles: ['Instructor', 'Admin'] }
+      },{ 
+        path: 'instructor/classes', 
+        component: ClassManagement,
         canActivate: [roleGuard],
         data: { roles: ['Instructor', 'Admin'] }
       },

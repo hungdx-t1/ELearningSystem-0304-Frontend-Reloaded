@@ -3,49 +3,28 @@
   <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-gray-200 pb-5">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Quản lý Tài khoản</h1>
-      <p class="text-sm text-gray-500 mt-1">Hệ thống hiện có 1,204 người dùng.</p>
+      <p class="text-sm text-gray-500 mt-1">Hệ thống hiện có {{ users().length }} người dùng.</p>
     </div>
     
     <div class="flex flex-wrap items-center gap-3">
-      <button (click)="exportExcel()" [disabled]="isExporting()"
-              class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 font-medium transition text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-        
-        @if (isExporting()) {
-          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-green-700" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Đang xuất file...
-        } @else {
-          <span class="mr-2">📊</span> Xuất Excel
-        }
+      <button (click)="exportExcel()" [disabled]="isExporting()" class="inline-flex items-center px-4 py-2 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 font-medium transition text-sm disabled:opacity-50">
+        @if (isExporting()) { <span class="mr-2">⌛</span> Đang xuất... } @else { <span class="mr-2">📊</span> Xuất Excel }
       </button>
       
-      <label class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition cursor-pointer text-sm shadow-sm"
-             [class.opacity-50]="isUploading()" [class.pointer-events-none]="isUploading()">
-        
-        @if (isUploading()) {
-          <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Đang xử lý...
-        } @else {
-          <span class="mr-2">📁</span> Nhập danh sách
-        }
-        
+      <label class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 font-medium transition cursor-pointer text-sm shadow-sm" [class.opacity-50]="isUploading()">
+        @if (isUploading()) { <span class="mr-2">⌛</span> Đang xử lý... } @else { <span class="mr-2">📁</span> Nhập danh sách }
         <input type="file" class="hidden" accept=".xlsx, .xls" (change)="onFileSelected($event)">
       </label>
 
-      <button class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition shadow-sm text-sm">
+      <button (click)="openAddModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition shadow-sm text-sm">
         + Thêm User
       </button>
     </div>
   </div>
 
   <div class="flex gap-4 mb-4">
-    <input type="text" placeholder="Tìm kiếm tên, email, mã số..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-    <select class="px-4 py-2 border border-gray-300 rounded-lg bg-white outline-none">
+    <input type="text" [(ngModel)]="searchQuery" placeholder="Tìm kiếm tên, email..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+    <select [(ngModel)]="roleFilter" class="px-4 py-2 border border-gray-300 rounded-lg bg-white outline-none">
       <option value="">Tất cả Vai trò</option>
       <option value="Admin">Quản trị viên</option>
       <option value="Instructor">Giảng viên</option>
@@ -64,35 +43,97 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 bg-white">
-        @for (i of [1,2,3]; track i) {
-          <tr class="hover:bg-gray-50">
+        
+        @for (user of filteredUsers(); track user.id) {
+          <tr class="hover:bg-gray-50 transition-colors" [class.opacity-60]="user.status === 'Khóa'">
             <td class="px-6 py-4">
               <div class="flex items-center">
-                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">NV</div>
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
+                  {{ (user.fullName | slice:0:1) || 'U' }}
+                </div>
                 <div class="ml-4">
-                  <div class="text-sm font-bold text-gray-900">Nguyễn Văn A</div>
-                  <div class="text-sm text-gray-500">nguyenvana@gmail.com</div>
+                  <div class="text-sm font-bold text-gray-900">{{ user.fullName }}</div>
+                  <div class="text-sm text-gray-500">{{ user.email }}</div>
                 </div>
               </div>
             </td>
             <td class="px-6 py-4">
-              <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
-                Học viên
+              <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full"
+                    [class.bg-purple-100]="user.role === 'Student'" [class.text-purple-800]="user.role === 'Student'"
+                    [class.bg-blue-100]="user.role === 'Instructor'" [class.text-blue-800]="user.role === 'Instructor'"
+                    [class.bg-gray-800]="user.role === 'Admin'" [class.text-white]="user.role === 'Admin'">
+                {{ user.role === 'Student' ? 'Học viên' : (user.role === 'Instructor' ? 'Giảng viên' : 'Admin') }}
               </span>
             </td>
             <td class="px-6 py-4">
-               <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                Hoạt động
+               <span class="px-3 py-1 inline-flex text-xs font-semibold rounded-full"
+                     [class.bg-green-100]="user.status === 'Hoạt động'" [class.text-green-800]="user.status === 'Hoạt động'"
+                     [class.bg-red-100]="user.status === 'Khóa'" [class.text-red-800]="user.status === 'Khóa'">
+                {{ user.status }}
               </span>
             </td>
-            <td class="px-6 py-4 text-right text-sm font-medium">
-              <button class="text-blue-600 hover:text-blue-900 mr-3">Sửa</button>
-              <button class="text-red-600 hover:text-red-900">Khóa</button>
+            <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
+              <button (click)="openEditModal(user)" class="text-blue-600 hover:text-blue-900 font-semibold">Sửa</button>
+              <button (click)="toggleLock(user)" class="text-orange-600 hover:text-orange-900 font-semibold">{{ user.status === 'Hoạt động' ? 'Khóa' : 'Mở' }}</button>
+              <button (click)="deleteUser(user)" class="text-red-600 hover:text-red-900 font-semibold">Xóa</button>
             </td>
+          </tr>
+        }
+
+        @if (filteredUsers().length === 0) {
+          <tr>
+            <td colspan="4" class="px-6 py-8 text-center text-gray-500">Không tìm thấy tài khoản nào phù hợp.</td>
           </tr>
         }
       </tbody>
     </table>
   </div>
-
 </div>
+
+@if (isModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 z-40 transition-opacity"></div>
+  
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md animate-slide-up overflow-hidden">
+      
+      <div class="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50">
+        <h3 class="font-bold text-lg text-gray-900">{{ modalMode() === 'add' ? 'Thêm Tài Khoản Mới' : 'Sửa Tài Khoản' }}</h3>
+        <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+      </div>
+
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()" class="p-6 space-y-4">
+        
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Họ và Tên</label>
+          <input type="text" formControlName="fullName" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" [class.border-red-500]="userForm.get('fullName')?.invalid && userForm.get('fullName')?.touched">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <input type="email" formControlName="email" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" [class.border-red-500]="userForm.get('email')?.invalid && userForm.get('email')?.touched">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu {{ modalMode() === 'edit' ? '(Bỏ trống nếu không đổi)' : '' }}</label>
+          <input type="password" formControlName="password" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" [class.border-red-500]="userForm.get('password')?.invalid && userForm.get('password')?.touched">
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">Vai trò</label>
+          <select formControlName="role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+            <option value="Student">Học viên</option>
+            <option value="Instructor">Giảng viên</option>
+            <option value="Admin">Quản trị viên (Admin)</option>
+          </select>
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3">
+          <button type="button" (click)="closeModal()" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition">Hủy</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium shadow-sm transition">
+            {{ modalMode() === 'add' ? 'Tạo tài khoản' : 'Lưu thay đổi' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

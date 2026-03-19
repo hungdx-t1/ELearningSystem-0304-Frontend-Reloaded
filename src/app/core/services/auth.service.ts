@@ -58,10 +58,26 @@ export class AuthService {
       const decodedJson = atob(payloadBase64);
       const payload = JSON.parse(decodedJson);
 
-      // Backend .NET thường giấu Role ở 1 trong 2 cái key này:
-      const role = payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      console.log('📦 Dữ liệu bên trong Token của bạn:', payload);
+      let rawRole = payload['role'] || 
+                    payload['Role'] || 
+                    payload['roles'] || 
+                    payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
+      if (Array.isArray(rawRole)) {
+        rawRole = rawRole[0];
+      }
+
+      if (rawRole === 0 || rawRole === '0') return 'Admin';
+      if (rawRole === 1 || rawRole === '1') return 'Instructor';
+      if (rawRole === 2 || rawRole === '2') return 'Student';
+
+      return rawRole || 'Student';
+
+      // // Backend .NET thường giấu Role ở 1 trong 2 cái key này:
+      // const role = payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
       
-      return role || 'Student'; // Trả về Role, nếu lỗi thì ép về Student cho an toàn
+      // return role || 'Student'; // Trả về Role, nếu lỗi thì ép về Student cho an toàn
     } catch (error) {
       console.error('Lỗi giải mã token:', error);
       return 'Student'; 

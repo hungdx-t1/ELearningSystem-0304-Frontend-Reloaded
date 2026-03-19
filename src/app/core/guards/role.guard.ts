@@ -1,19 +1,18 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 export const roleGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
+  const authService = inject(AuthService); 
 
-  // 1. Lấy danh sách các quyền ĐƯỢC PHÉP VÀO từ cấu hình route (app.routes.ts)
   const expectedRoles = route.data['roles'] as Array<string>;
+  
+  // Hỏi AuthService xem Token này là của ai?
+  const currentRole = authService.getUserRole();
 
-  // Lấy Role của user hiện tại đang đăng nhập
-  // (LƯU Ý: Chỗ này tùy thuộc vào cách bạn lưu Role lúc Login. Mình đang giả sử lưu ở localStorage)
-  const currentRole = localStorage.getItem('role') || 'Student'; // tránh null
-
-  // Kiểm tra xem Role hiện tại có nằm trong danh sách cho phép không?
   if (expectedRoles && expectedRoles.includes(currentRole)) {
-    return true;
+    return true; 
   } else {
     router.navigate(['/no-permission']);
     return false;

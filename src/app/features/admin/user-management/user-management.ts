@@ -115,37 +115,70 @@ export class UserManagement implements OnInit {
 
     const formVal = this.userForm.value;
 
+    // PHIÊN DỊCH ROLE: Chuyển từ Chữ (Angular) sang Số (.NET Enum)
+    let roleEnumNumber = 2; // Mặc định 2 là Student
+    if (formVal.role === 'Admin') roleEnumNumber = 0;
+    else if (formVal.role === 'Instructor') roleEnumNumber = 1;
+
     if (this.modalMode() === 'add') {
+      // 1. CHUẨN BỊ GÓI HÀNG CHO CREATE (Theo CreateUserRequestDto)
+      
+      // Chế tự động một mã UserCode (VD: STU-8492) vì DTO bắt buộc phải có
+      const rolePrefix = formVal.role?.substring(0, 3).toUpperCase() || 'USR';
+      const randomCode = Math.floor(1000 + Math.random() * 9000);
+      const generatedUserCode = `${rolePrefix}-${randomCode}`;
+
+      const createPayload = {
+        userCode: generatedUserCode,
+        fullName: formVal.fullName,
+        email: formVal.email,
+        password: formVal.password,
+        role: roleEnumNumber, // Đã biến thành số 0, 1 hoặc 2
+        administrativeClass: null // Tạm thời để null
+      };
+
       // GỌI API THÊM MỚI
-      this.userService.createUser(formVal).subscribe({
+      this.userService.createUser(createPayload).subscribe({
         next: () => {
           alert('Đã thêm tài khoản thành công!');
           this.loadUsers(); // Load lại bảng
           this.closeModal();
         },
         error: (err) => {
-          // Ép nó moi móc bằng được cái nguyên nhân lỗi từ .NET ra
           const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
-          alert('Lỗi thêm tài khoản: Backend từ chối vì: ' + backendError);
-          console.error('Chi tiết lỗi 400:', err);
+          alert('Backend từ chối Thêm mới vì: ' + backendError);
         }
       });
+
     } else {
-      // GỌI API CẬP NHẬT
+      // 2. CHUẨN BỊ GÓI HÀNG CHO UPDATE (Theo UpdateUserRequestDto)
       const userId = this.selectedUserId();
+      
       if (userId) {
-        this.userService.updateUser(userId, formVal).subscribe({
+        // Tìm trạng thái hiện tại của User để giữ nguyên isActive
+        const currentUser = this.users().find(u => u.id === userId);
+        const currentIsActive = currentUser?.status === 'Hoạt động';
+
+        const updatePayload = {
+          fullName: formVal.fullName,
+          avatarUrl: null,
+          dateOfBirth: null,
+          administrativeClass: null,
+          isActive: currentIsActive // Gửi lại trạng thái cũ
+          // DTO không cho phép sửa Email và Role nên ta không gửi lên
+        };
+
+        // GỌI API CẬP NHẬT
+        this.userService.updateUser(userId, updatePayload).subscribe({
           next: () => {
-            alert('Đã cập nhật thông tin!');
+            alert('Đã cập nhật thông tin thành công!');
             this.loadUsers(); // Load lại bảng
             this.closeModal();
           },
           error: (err) => {
-          // Ép nó moi móc bằng được cái nguyên nhân lỗi từ .NET ra
-          const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
-          alert('Lỗi cập nhật tài khoản: Backend từ chối vì: ' + backendError);
-          console.error('Chi tiết lỗi 400:', err);
-        }
+            const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
+            alert('Backend từ chối Cập nhật vì: ' + backendError);
+          }
         });
       }
     }

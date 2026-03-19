@@ -20,7 +20,8 @@ export class MainLayoutComponent {
     { path: '/courses', icon: '📚', label: 'Khóa học' },
     { path: '/classes', icon: '🏫', label: 'Lớp học' },
     { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }, 
-    { path: '/instructor/courses', icon: '👨‍🏫', label: 'Quản lý khóa học' }, // tạm thời
+    { path: '/instructor/courses', icon: '👨‍🏫', label: 'Quản lý khóa học' },
+    { path: '/instructor/classes', icon: '👨‍🏫', label: 'Quản lý lớp học' },  // tạm thời
   ];
 
   logout() {

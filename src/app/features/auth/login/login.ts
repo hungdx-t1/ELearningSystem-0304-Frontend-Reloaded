@@ -13,8 +13,7 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-
-  // Tạo Form với điều kiện bắt buộc nhập
+  
   loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
@@ -33,7 +32,16 @@ export class Login {
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']); // <-- Trỏ thẳng đích danh vào đây
+
+        const role = this.authService.getUserRole();
+
+        if (role === 'Admin') {
+          this.router.navigate(['/admin/dashboard']); 
+        } else if (role === 'Instructor') {
+          this.router.navigate(['/instructor/courses']); 
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         this.isLoading.set(false);

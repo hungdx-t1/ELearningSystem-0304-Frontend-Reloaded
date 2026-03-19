@@ -31,13 +31,20 @@ export class UserManagement implements OnInit {
     this.isLoading.set(true);
     this.userService.getAllUsers().subscribe({
       next: (data: any[]) => {
-        // PHIÊN DỊCH DỮ LIỆU: Đổi isActive thành trạng thái chữ
+        
+        // HÀM TỪ ĐIỂN: Dịch số C# thành Chữ Angular
+        const mapRoleToString = (roleValue: any) => {
+          if (roleValue === 0 || roleValue === 'Admin') return 'Admin';
+          if (roleValue === 1 || roleValue === 'Instructor') return 'Instructor';
+          return 'Student'; // Mặc định là 2
+        };
+
         const mappedUsers: User[] = data.map(u => ({
           id: u.id,
-          fullName: u.fullName || 'Chưa cập nhật', // Tránh null
+          fullName: u.fullName || 'Chưa cập nhật',
           email: u.email || '',
-          role: u.role || 'Student',
-          status: u.isActive === false ? 'Khóa' : 'Hoạt động' // Map từ boolean sang chữ
+          role: mapRoleToString(u.role), // Đưa qua hàm dịch để biến thành chữ chuẩn
+          status: u.isActive === false ? 'Khóa' : 'Hoạt động'
         }));
         
         this.users.set(mappedUsers);
@@ -83,6 +90,7 @@ export class UserManagement implements OnInit {
 
   openAddModal() {
     this.modalMode.set('add');
+    this.userForm.enable(); // MỞ KHÓA toàn bộ các ô khi Thêm mới
     this.userForm.reset({ role: 'Student' });
     this.userForm.get('password')?.setValidators([Validators.required, Validators.minLength(6)]);
     this.userForm.get('password')?.updateValueAndValidity();
@@ -92,6 +100,10 @@ export class UserManagement implements OnInit {
   openEditModal(user: User) {
     this.modalMode.set('edit');
     this.selectedUserId.set(user.id);
+    
+    // Mở khóa hết để patchValue không bị lỗi, sau đó mới khóa lại
+    this.userForm.enable(); 
+    
     this.userForm.patchValue({
       fullName: user.fullName,
       email: user.email,
@@ -100,6 +112,11 @@ export class UserManagement implements OnInit {
     });
     this.userForm.get('password')?.clearValidators();
     this.userForm.get('password')?.updateValueAndValidity();
+
+    // CHỐT CHẶN: Khóa mờ ô Email và Role vì Backend DTO không cho phép sửa
+    this.userForm.get('email')?.disable();
+    this.userForm.get('role')?.disable();
+
     this.isModalOpen.set(true);
   }
 
@@ -110,10 +127,11 @@ export class UserManagement implements OnInit {
   saveUser() {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
+      alert('Form chưa hợp lệ! Vui lòng kiểm tra lại độ dài Tên hoặc định dạng Email.');
       return;
     }
 
-    const formVal = this.userForm.value;
+    const formVal = this.userForm.getRawValue();
 
     // PHIÊN DỊCH ROLE: Chuyển từ Chữ (Angular) sang Số (.NET Enum)
     let roleEnumNumber = 2; // Mặc định 2 là Student
@@ -141,7 +159,7 @@ export class UserManagement implements OnInit {
       this.userService.createUser(createPayload).subscribe({
         next: () => {
           alert('Đã thêm tài khoản thành công!');
-          this.loadUsers(); // Load lại bảng
+          this.loadUsers();
           this.closeModal();
         },
         error: (err) => {
@@ -172,7 +190,7 @@ export class UserManagement implements OnInit {
         this.userService.updateUser(userId, updatePayload).subscribe({
           next: () => {
             alert('Đã cập nhật thông tin thành công!');
-            this.loadUsers(); // Load lại bảng
+            this.loadUsers();
             this.closeModal();
           },
           error: (err) => {

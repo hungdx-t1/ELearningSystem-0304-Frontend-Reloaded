@@ -50,7 +50,7 @@
               alt="Avatar"
             />
           } @else {
-            <!-- {{ (authService.userProfile()?.fullName | slice: 0 : 1) || 'U' }} -->
+            {{ (authService.userProfile()?.fullName | slice: 0 : 1) || 'U' }}
           }
         </div>
 

@@ -1,11 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-no-permission',
-  imports: [],
-  templateUrl: './no-permission.html',
-  styleUrl: './no-permission.scss',
+  standalone: true,
+  imports: [RouterLink],
+  templateUrl: './no-permission.html'
 })
-export class NoPermission {
-
-}
+export class NoPermissionComponent {}

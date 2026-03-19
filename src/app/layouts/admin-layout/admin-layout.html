@@ -36,7 +36,13 @@
             {{ authService.userProfile()?.fullName || 'Người dùng' }}
           </span>
           <span class="text-xs text-gray-500 font-medium">
-            {{ authService.userProfile()?.role === 'Student' ? 'Sinh viên' : 'Giảng viên' }}
+            @if (authService.getUserRole() === 'Admin') {
+              <span class="text-red-600 font-bold">Quản trị viên</span>
+            } @else if (authService.getUserRole() === 'Instructor') {
+              <span class="text-blue-600 font-bold">Giảng viên</span>
+            } @else {
+              <span class="text-gray-600 font-bold">Sinh viên</span>
+            }
           </span>
         </div>
 

@@ -14,6 +14,7 @@ import { CourseEditor } from './features/instructor/course-editor/course-editor'
 import { TrainingManagement } from './features/admin/training-management/training-management';
 import { UserManagement } from './features/admin/user-management/user-management';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
+import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -41,7 +42,8 @@ export const routes: Routes = [
     path: 'admin',
     component: AdminLayout,
     children: [
-      { path: '', redirectTo: 'users', pathMatch: 'full' },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: AdminDashboard },
       { path: 'users', component: UserManagement },
       { path: 'training', component: TrainingManagement },
     ]

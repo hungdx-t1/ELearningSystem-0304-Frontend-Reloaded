@@ -1,0 +1,89 @@
+<div class="space-y-6">
+  
+  <div class="flex items-center justify-between border-b border-gray-200 pb-5">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Tổng quan Hệ thống</h1>
+      <p class="text-sm text-gray-500 mt-1">Chào mừng bạn quay lại! Hôm nay hệ thống hoạt động rất tốt.</p>
+    </div>
+    <div class="hidden sm:flex items-center gap-2 bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-sm font-medium text-gray-600">
+      <span>📅</span> 19/03/2026 </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    @for (kpi of kpis(); track kpi.title) {
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+        <div class="flex items-center justify-between">
+          <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl {{ kpi.color }}">
+            {{ kpi.icon }}
+          </div>
+          <div class="px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1"
+               [class.bg-green-100]="kpi.isUp" [class.text-green-700]="kpi.isUp"
+               [class.bg-red-100]="!kpi.isUp" [class.text-red-700]="!kpi.isUp">
+            <span class="text-sm">{{ kpi.isUp ? '↑' : '↓' }}</span> {{ kpi.trend }}
+          </div>
+        </div>
+        <div class="mt-4">
+          <h3 class="text-3xl font-extrabold text-gray-900">{{ kpi.value }}</h3>
+          <p class="text-sm font-medium text-gray-500 mt-1">{{ kpi.title }}</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex items-center justify-between mb-8">
+        <h2 class="text-lg font-bold text-gray-900">Lượt Đăng Ký Học (6 tháng qua)</h2>
+        <button class="text-sm text-blue-600 font-medium hover:underline">Xem chi tiết</button>
+      </div>
+      
+      <div class="flex items-end justify-between h-64 gap-2 sm:gap-6 mt-4 border-b border-gray-100 pb-2">
+        @for (data of chartData(); track data.label) {
+          <div class="flex flex-col items-center flex-1 group relative">
+            
+            <div class="absolute -top-10 bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+              {{ data.value }} HV
+            </div>
+            
+            <div class="w-full bg-blue-100 rounded-t-lg relative overflow-hidden group-hover:bg-blue-200 transition-colors {{ data.height }}">
+              <div class="absolute bottom-0 w-full bg-blue-600 rounded-t-lg animate-slide-up" style="height: 100%;"></div>
+            </div>
+            
+            <span class="text-xs text-gray-500 font-medium mt-3 whitespace-nowrap">{{ data.label }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <h2 class="text-lg font-bold text-gray-900 mb-6">Hoạt động gần đây</h2>
+      
+      <div class="space-y-6">
+        @for (act of recentActivities(); track $index) {
+          <div class="flex gap-4">
+            <div class="relative mt-1">
+              <div class="w-3 h-3 bg-blue-600 rounded-full ring-4 ring-blue-50"></div>
+              @if ($index !== recentActivities().length - 1) {
+                <div class="absolute top-4 left-1.5 w-0.5 h-12 bg-gray-100"></div>
+              }
+            </div>
+            <div>
+              <p class="text-sm text-gray-800">
+                <span class="font-bold text-gray-900">{{ act.user }}</span> 
+                {{ act.action }} 
+                <span class="font-bold text-blue-600">{{ act.target }}</span>
+              </p>
+              <p class="text-xs text-gray-400 font-medium mt-1">{{ act.time }}</p>
+            </div>
+          </div>
+        }
+      </div>
+      
+      <button class="w-full mt-6 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+        Xem tất cả
+      </button>
+    </div>
+
+  </div>
+</div>

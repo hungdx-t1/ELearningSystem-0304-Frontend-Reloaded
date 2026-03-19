@@ -30,8 +30,17 @@ export class UserManagement implements OnInit {
   loadUsers() {
     this.isLoading.set(true);
     this.userService.getAllUsers().subscribe({
-      next: (data) => {
-        this.users.set(data);
+      next: (data: any[]) => {
+        // PHIÊN DỊCH DỮ LIỆU: Đổi isActive thành trạng thái chữ
+        const mappedUsers: User[] = data.map(u => ({
+          id: u.id,
+          fullName: u.fullName || 'Chưa cập nhật', // Tránh null
+          email: u.email || '',
+          role: u.role || 'Student',
+          status: u.isActive === false ? 'Khóa' : 'Hoạt động' // Map từ boolean sang chữ
+        }));
+        
+        this.users.set(mappedUsers);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -50,8 +59,11 @@ export class UserManagement implements OnInit {
     const role = this.roleFilter();
 
     return this.users().filter((user) => {
-      const matchNameOrEmail =
-        user.fullName.toLowerCase().includes(query) || user.email.toLowerCase().includes(query);
+      // nếu null thì gán là chuỗi rỗng ''
+      const name = (user.fullName || '').toLowerCase();
+      const mail = (user.email || '').toLowerCase();
+      
+      const matchNameOrEmail = name.includes(query) || mail.includes(query);
       const matchRole = role ? user.role === role : true;
       return matchNameOrEmail && matchRole;
     });
@@ -95,7 +107,6 @@ export class UserManagement implements OnInit {
     this.isModalOpen.set(false);
   }
 
-  // LƯU DATA (GỌI API THẬT)
   saveUser() {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
@@ -112,7 +123,12 @@ export class UserManagement implements OnInit {
           this.loadUsers(); // Load lại bảng
           this.closeModal();
         },
-        error: (err) => alert('Lỗi khi thêm tài khoản: ' + err.message),
+        error: (err) => {
+          // Ép nó moi móc bằng được cái nguyên nhân lỗi từ .NET ra
+          const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
+          alert('Lỗi thêm tài khoản: Backend từ chối vì: ' + backendError);
+          console.error('Chi tiết lỗi 400:', err);
+        }
       });
     } else {
       // GỌI API CẬP NHẬT
@@ -124,7 +140,12 @@ export class UserManagement implements OnInit {
             this.loadUsers(); // Load lại bảng
             this.closeModal();
           },
-          error: (err) => alert('Lỗi khi cập nhật: ' + err.message),
+          error: (err) => {
+          // Ép nó moi móc bằng được cái nguyên nhân lỗi từ .NET ra
+          const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
+          alert('Lỗi cập nhật tài khoản: Backend từ chối vì: ' + backendError);
+          console.error('Chi tiết lỗi 400:', err);
+        }
         });
       }
     }

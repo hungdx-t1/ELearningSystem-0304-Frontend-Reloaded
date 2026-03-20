@@ -23,6 +23,8 @@ export class AdminClassManagement implements OnInit {
 
   selectedCourseFilter = signal<string>('');
 
+  selectedClassId = signal<string | null>(null);
+
   filteredClasses = computed(() => {
     const courseId = this.selectedCourseFilter();
     if (!courseId) return this.classes();
@@ -80,12 +82,14 @@ export class AdminClassManagement implements OnInit {
 
   openAddModal() {
     this.modalMode.set('add');
+    this.selectedClassId.set(null); // Tạo mới thì clear ID đi
     this.classForm.reset({ courseId: this.selectedCourseFilter(), academicYear: '2025-2026' });
     this.isModalOpen.set(true);
   }
 
   openEditModal(cls: any) {
     this.modalMode.set('edit');
+    this.selectedClassId.set(cls.id); // lưu lại id khi bấm sửa
     this.classForm.patchValue(cls);
     this.isModalOpen.set(true);
   }
@@ -106,17 +110,36 @@ export class AdminClassManagement implements OnInit {
       this.classService.createClass(payload).subscribe({
         next: () => {
           alert('Đã tạo lớp và phân công Giảng viên!');
-          this.loadAllData(); // Tải lại bảng sau khi lưu
+          this.loadAllData(); 
           this.closeModal();
         },
         error: (err) => alert('Lỗi: ' + (err.error?.message || err.message)),
       });
     } else {
-      // Gọi hàm updateClass() ở đây nếu đang Edit
+      const id = this.selectedClassId();
+      if (id) {
+        this.classService.updateClass(id, payload).subscribe({
+          next: () => {
+            alert('Đã cập nhật thông tin phân công lớp học!');
+            this.loadAllData(); // Tải lại bảng
+            this.closeModal();
+          },
+          error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || err.message))
+        });
+      }
     }
   }
 
   deleteClass(cls: any) {
-    /* Logic xóa */
+    if (confirm(`Cảnh báo: Bạn có chắc chắn muốn hủy lớp "${cls.classCode} - ${cls.className}" không?\nHành động này sẽ xóa toàn bộ danh sách sinh viên đã ghi danh vào lớp!`)) {
+      this.classService.deleteClass(cls.id).subscribe({
+        next: () => {
+          alert('Đã hủy lớp thành công!');
+          // Xóa thẳng khỏi mảng cho mượt mà không cần load lại toàn bộ
+          this.classes.update(list => list.filter(c => c.id !== cls.id));
+        },
+        error: (err) => alert('Lỗi khi hủy lớp: ' + (err.error?.message || err.message))
+      });
+    }
   }
 }

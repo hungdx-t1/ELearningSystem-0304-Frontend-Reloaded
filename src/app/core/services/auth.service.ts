@@ -38,11 +38,24 @@ export class AuthService {
   login(credentials: any) {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        localStorage.setItem('token', response.jwtString); 
-        localStorage.setItem('user', JSON.stringify(response.userDto));
+        // 1. IN RA ĐỂ XEM ĐÍCH XÁC BACKEND TRẢ VỀ TÊN BIẾN LÀ GÌ
+        console.log('📦 Phản hồi từ Backend:', response);
 
-        this.currentUser.set(true); // Cập nhật trạng thái đăng nhập cho toàn hệ thống
-        this.userProfile.set(response.userDto); // Bơm dữ liệu vào Signal
+        // 2. DÙNG TOÁN TỬ || ĐỂ HỨNG MỌI TRƯỜNG HỢP (Viết hoa, viết thường, đổi tên)
+        const realToken = response.jwtString || response.JwtString || response.token || response.Token;
+        const realUser = response.userDto || response.UserDto || response.user || response.User;
+
+        // 3. Nếu không có Token thật thì báo lỗi, KHÔNG LƯU chữ "undefined"
+        if (!realToken) {
+          console.error('🚨 Lỗi: Backend không trả về Token!');
+          return;
+        }
+
+        localStorage.setItem('token', realToken); 
+        localStorage.setItem('user', JSON.stringify(realUser));
+
+        this.currentUser.set(true); 
+        this.userProfile.set(realUser); 
       })
     );
   }
@@ -56,28 +69,32 @@ export class AuthService {
 
   // Hàm giải mã Token để lấy Role an toàn
   getUserRole(): string {
-    // 🛡️ CHỐT CHẶN SSR: Nếu đang chạy trên Server thì lờ đi, trả về mặc định
     if (typeof window === 'undefined') {
       return 'Student'; 
     }
 
-    // Giả sử lúc login thành công, bạn lưu token vào localStorage với tên là 'token'
     const token = localStorage.getItem('token'); 
     
-    if (!token) return ''; // Không có token thì vô quyền
+    // 🛡️ CHẶN MỌI THỂ LOẠI RÁC: null, rỗng, hoặc chữ "undefined"
+    if (!token || token === 'undefined' || token === 'null') {
+      return 'Student'; 
+    }
 
     try {
-      const payloadBase64Url = token.split('.')[1];
+      const parts = token.split('.');
+      // JWT chuẩn phải có 3 phần cách nhau bởi dấu chấm. Không đủ 3 phần thì cút luôn!
+      if (parts.length !== 3) {
+        console.error('🚨 Token bị sai định dạng!');
+        return 'Student';
+      }
+
+      const payloadBase64Url = parts[1];
       
-      // 🛠️ CHỮA LỖI Ở ĐÂY: Đổi Base64Url thành Base64 chuẩn
       let base64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
-      
-      // Đắp thêm dấu '=' vào đuôi cho đủ bộ 4 byte (atob cực kỳ khó tính vụ này)
       while (base64.length % 4 !== 0) {
         base64 += '=';
       }
 
-      // Giải mã an toàn (chống lỗi crash và chống lỗi font tiếng Việt)
       const decodedJson = decodeURIComponent(
         window.atob(base64).split('').map(function(c) {
           return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
@@ -91,9 +108,7 @@ export class AuthService {
                     payload['roles'] || 
                     payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
-      if (Array.isArray(rawRole)) {
-        rawRole = rawRole[0];
-      }
+      if (Array.isArray(rawRole)) rawRole = rawRole[0];
 
       if (rawRole === 0 || rawRole === '0') return 'Admin';
       if (rawRole === 1 || rawRole === '1') return 'Instructor';

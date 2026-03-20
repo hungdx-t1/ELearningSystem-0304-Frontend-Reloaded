@@ -13,7 +13,6 @@ import { LessonPlayerComponent } from './features/courses/lesson-player-componen
 import { CourseManagement } from './features/instructor/course-management/course-management';
 import { CourseCreate } from './features/instructor/course-create/course-create';
 import { CourseEditor } from './features/instructor/course-editor/course-editor';
-import { TrainingManagement } from './features/admin/training-management/training-management';
 import { UserManagement } from './features/admin/user-management/user-management';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
@@ -75,7 +74,6 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboard },
       { path: 'users', component: UserManagement },
-      // { path: 'training', component: TrainingManagement }, tạm thời
       { path: 'classes', component: AdminClassManagement },
       { path: 'courses', component: AdminCourseManagement },
     ],

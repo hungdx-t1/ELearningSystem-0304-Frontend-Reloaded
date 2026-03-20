@@ -24,9 +24,13 @@ export class CourseEditor implements OnInit {
 
   // Quản lý Modal
   isChapterModalOpen = signal<boolean>(false);
+  chapterModalMode = signal<'add' | 'edit'>('add');
+
   isLessonModalOpen = signal<boolean>(false);
+  lessonModalMode = signal<'add' | 'edit'>('add');
   
-  selectedChapterId = signal<string>(''); // Nhớ xem đang thêm bài học cho chương nào
+  selectedChapterId = signal<string>(''); 
+  selectedLessonId = signal<string>('');
 
   chapterForm = this.fb.group({
     title: ['', Validators.required],
@@ -81,7 +85,19 @@ export class CourseEditor implements OnInit {
 
   // --- XỬ LÝ CHƯƠNG (CHAPTER) ---
   openChapterModal() {
+    this.chapterModalMode.set('add');
     this.chapterForm.reset({ sortOrder: this.chapters().length + 1 });
+    this.isChapterModalOpen.set(true);
+  }
+
+  openEditChapterModal(chapter: Chapter, event: Event) {
+    event.stopPropagation(); // Ngăn sự kiện click làm thu gọn/mở rộng chương
+    this.chapterModalMode.set('edit');
+    this.selectedChapterId.set(chapter.id);
+    this.chapterForm.patchValue({
+      title: chapter.title,
+      sortOrder: chapter.sortOrder
+    });
     this.isChapterModalOpen.set(true);
   }
 
@@ -93,24 +109,61 @@ export class CourseEditor implements OnInit {
       sortOrder: this.chapterForm.value.sortOrder! 
     };
 
-    this.courseService.createChapter(payload).subscribe({
-      next: () => {
-        this.loadCourseContent(this.courseId()); // Tải lại cây dữ liệu
-        this.isChapterModalOpen.set(false);
-      },
-      error: (err) => alert('Lỗi tạo Chương: ' + err.message)
-    });
+    if (this.chapterModalMode() === 'add') {
+      this.courseService.createChapter(payload).subscribe({
+        next: () => { this.loadCourseContent(this.courseId()); this.isChapterModalOpen.set(false); },
+        error: (err) => alert('Lỗi: ' + err.message)
+      });
+    } else {
+      this.courseService.updateChapter(this.selectedChapterId(), payload).subscribe({
+        next: () => { 
+          this.loadCourseContent(this.courseId()); 
+          this.isChapterModalOpen.set(false); 
+        },
+        error: (err) => alert('Lỗi cập nhật Chương: ' + (err.error?.message || err.message))
+      });
+    }
+  }
+
+  deleteChapter(chapter: Chapter, event: Event) {
+    event.stopPropagation();
+    if (confirm(`Xóa "${chapter.title}" sẽ xóa TOÀN BỘ bài học bên trong. Bạn chắc chắn chứ?`)) {
+      this.courseService.deleteChapter(chapter.id).subscribe({
+        next: () => this.loadCourseContent(this.courseId()),
+        error: (err) => alert('Lỗi xóa Chương: ' + (err.error?.message || err.message))
+      });
+    }
+  }
+
+  toggleChapter(chapter: Chapter) {
+    chapter.isExpanded = !chapter.isExpanded;
   }
 
   // --- XỬ LÝ BÀI HỌC (LESSON) ---
-  openLessonModal(chapterId: string) {
+  openLessonModal(chapterId: string, event: Event) {
+    event.stopPropagation();
+    this.lessonModalMode.set('add');
     this.selectedChapterId.set(chapterId);
     
-    // Tìm chương hiện tại để đếm xem đang có bao nhiêu bài học rồi
     const currentChap = this.chapters().find(c => c.id === chapterId);
     const nextOrder = currentChap && currentChap.lessons ? currentChap.lessons.length + 1 : 1;
 
     this.lessonForm.reset({ type: 0, sortOrder: nextOrder });
+    this.isLessonModalOpen.set(true);
+  }
+
+  openEditLessonModal(lesson: Lesson, chapterId: string, event: Event) {
+    event.stopPropagation();
+    this.lessonModalMode.set('edit');
+    this.selectedLessonId.set(lesson.id);
+    this.selectedChapterId.set(chapterId);
+    
+    this.lessonForm.patchValue({
+      title: lesson.title,
+      type: lesson.type,
+      videoUrl: lesson.videoUrl,
+      sortOrder: lesson.sortOrder
+    });
     this.isLessonModalOpen.set(true);
   }
 
@@ -125,16 +178,29 @@ export class CourseEditor implements OnInit {
       sortOrder: formVal.sortOrder!
     };
 
-    this.courseService.createLesson(payload).subscribe({
-      next: () => {
-        this.loadCourseContent(this.courseId()); // Tải lại cây dữ liệu
-        this.isLessonModalOpen.set(false);
-      },
-      error: (err) => alert('Lỗi tạo Bài học: ' + err.message)
-    });
+    if (this.lessonModalMode() === 'add') {
+      this.courseService.createLesson(payload).subscribe({
+        next: () => { this.loadCourseContent(this.courseId()); this.isLessonModalOpen.set(false); },
+        error: (err) => alert('Lỗi: ' + err.message)
+      });
+    } else {
+      this.courseService.updateLesson(this.selectedLessonId(), payload).subscribe({
+        next: () => { 
+          this.loadCourseContent(this.courseId()); 
+          this.isLessonModalOpen.set(false); 
+        },
+        error: (err) => alert('Lỗi cập nhật Bài học: ' + (err.error?.message || err.message))
+      });
+    }
   }
 
-  toggleChapter(chapter: Chapter) {
-    chapter.isExpanded = !chapter.isExpanded;
+  deleteLesson(lesson: Lesson, event: Event) {
+    event.stopPropagation();
+    if (confirm(`Bạn có chắc muốn xóa bài học "${lesson.title}" không?`)) {
+      this.courseService.deleteLesson(lesson.id).subscribe({
+        next: () => this.loadCourseContent(this.courseId()),
+        error: (err) => alert('Lỗi xóa Bài học: ' + (err.error?.message || err.message))
+      });
+    }
   }
 }

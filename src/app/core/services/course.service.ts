@@ -77,4 +77,22 @@ export class CourseService {
   deleteCourse(id: string) {
     return this.http.delete(`${this.apiUrl}/courses/${id}`);
   }
+
+  // --- API CHO CHƯƠNG (CHAPTER) ---
+  updateChapter(id: string, chapterData: any) {
+    return this.http.put(`${this.apiUrl}/chapters/${id}`, chapterData);
+  }
+
+  deleteChapter(id: string) {
+    return this.http.delete(`${this.apiUrl}/chapters/${id}`);
+  }
+
+  // --- API CHO BÀI HỌC (LESSON) ---
+  updateLesson(id: string, lessonData: any) {
+    return this.http.put(`${this.apiUrl}/lessons/${id}`, lessonData);
+  }
+
+  deleteLesson(id: string) {
+    return this.http.delete(`${this.apiUrl}/lessons/${id}`);
+  }
 }

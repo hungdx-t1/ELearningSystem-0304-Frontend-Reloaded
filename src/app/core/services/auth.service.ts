@@ -25,14 +25,11 @@ export class AuthService {
   login(credentials: any) {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        // Lưu token
-        localStorage.setItem('token', response.token);
-        
-        // LƯU THÊM CỤC USER VÀO MÁY
-        localStorage.setItem('user', JSON.stringify(response.user)); 
+        localStorage.setItem('token', response.jwtString); 
+        localStorage.setItem('user', JSON.stringify(response.userDto));
 
         this.currentUser.set(true); // Cập nhật trạng thái đăng nhập cho toàn hệ thống
-        this.userProfile.set(response.user); // Bơm dữ liệu vào Signal
+        this.userProfile.set(response.userDto); // Bơm dữ liệu vào Signal
       })
     );
   }

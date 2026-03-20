@@ -1,0 +1,65 @@
+<div class="space-y-6">
+  <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Danh mục Khóa học</h1>
+      <p class="text-sm text-gray-500">Quản lý khung chương trình đào tạo của hệ thống.</p>
+    </div>
+    <div class="flex gap-3">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Tìm khóa học..." class="px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+      <button (click)="openAddModal()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm">+ Tạo Khóa Học</button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Tên Môn Học</th>
+          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Ngày Tạo</th>
+          <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Hành động</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        @for (course of filteredCourses(); track course.id) {
+          <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 font-bold text-gray-900">{{ course.title }} <br><span class="font-normal text-sm text-gray-500">{{ course.description }}</span></td>
+            <td class="px-6 py-4 text-sm text-gray-500">{{ course.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td class="px-6 py-4 text-right space-x-3">
+              <button (click)="openEditModal(course)" class="text-blue-600 font-semibold hover:underline">Sửa</button>
+              <button (click)="deleteCourse(course)" class="text-red-600 font-semibold hover:underline">Xóa</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-slide-up">
+      <div class="p-5 border-b bg-gray-50 flex justify-between">
+        <h3 class="font-bold text-lg">{{ modalMode() === 'add' ? 'Tạo Khóa Học' : 'Sửa Khóa Học' }}</h3>
+        <button (click)="closeModal()" class="text-gray-500 hover:text-red-500 font-bold">&times;</button>
+      </div>
+      <form [formGroup]="courseForm" (ngSubmit)="saveCourse()" class="p-5 space-y-4">
+        <div>
+          <label class="block font-semibold mb-1">Tên Môn Học <span class="text-red-500">*</span></label>
+          <input type="text" formControlName="title" class="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Mô tả</label>
+          <textarea formControlName="description" rows="2" class="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+        </div>
+        <div>
+          <label class="block font-semibold mb-1">Link Ảnh bìa</label>
+          <input type="text" formControlName="thumbnailUrl" class="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" (click)="closeModal()" class="px-5 py-2 bg-gray-100 rounded-lg font-semibold hover:bg-gray-200">Hủy</button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">Lưu lại</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

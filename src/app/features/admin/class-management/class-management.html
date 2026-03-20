@@ -1,0 +1,106 @@
+<div class="space-y-6">
+  <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+    <div class="w-full sm:w-auto">
+      <h1 class="text-2xl font-bold text-gray-900">Mở Lớp & Phân Công</h1>
+      <p class="text-sm text-gray-500">Tạo lớp học phần và chỉ định giảng viên phụ trách.</p>
+    </div>
+    <div class="flex w-full sm:w-auto gap-3">
+      <select [(ngModel)]="selectedCourseFilter" class="w-full sm:w-64 px-4 py-2 border rounded-lg outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-medium">
+        <option value="">-- Lọc theo Môn học --</option>
+        @for (c of courses(); track c.id) { <option [value]="c.id">{{ c.title }}</option> }
+      </select>
+      <button (click)="openAddModal()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 whitespace-nowrap shadow-sm">+ Mở Lớp</button>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Lớp Học</th>
+          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Môn Học (Khóa)</th>
+          <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Giảng Viên Phụ Trách</th>
+          <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Hành động</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        @for (cls of filteredClasses(); track cls.id) {
+          <tr class="hover:bg-blue-50/50">
+            <td class="px-6 py-4">
+              <span class="font-bold text-blue-700">{{ cls.classCode }}</span><br>
+              <span class="text-sm font-medium text-gray-900">{{ cls.className }}</span>
+            </td>
+            <td class="px-6 py-4 text-sm"><span class="bg-gray-100 px-2.5 py-1 rounded-md">{{ getCourseName(cls.courseId) }}</span></td>
+            <td class="px-6 py-4">
+              <span class="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
+                👨‍🏫 {{ getInstructorName(cls.instructorId) }}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-right space-x-3">
+              <button (click)="openEditModal(cls)" class="text-blue-600 font-semibold hover:underline">Sửa</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden animate-slide-up">
+      <div class="p-5 border-b bg-gray-50 flex justify-between">
+        <h3 class="font-bold text-xl">{{ modalMode() === 'add' ? 'Mở Lớp & Phân Công' : 'Cập nhật Lớp học' }}</h3>
+        <button (click)="closeModal()" class="text-gray-500 hover:text-red-500 font-bold text-xl">&times;</button>
+      </div>
+
+      <form [formGroup]="classForm" (ngSubmit)="saveClass()" class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block font-bold mb-1">Thuộc Môn học <span class="text-red-500">*</span></label>
+              <select formControlName="courseId" class="w-full border px-4 py-2 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">-- Chọn môn học --</option>
+                @for (c of courses(); track c.id) { <option [value]="c.id">{{ c.title }}</option> }
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Mã Lớp <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="classCode" class="w-full border px-4 py-2 rounded-xl outline-none uppercase font-bold text-blue-700">
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Tên Lớp <span class="text-red-500">*</span></label>
+              <input type="text" formControlName="className" class="w-full border px-4 py-2 rounded-xl outline-none">
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+              <label class="block font-bold text-blue-900 mb-1">🧑‍🏫 Phân công Giảng viên <span class="text-red-500">*</span></label>
+              <select formControlName="instructorId" class="w-full border-blue-200 px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                <option value="">-- Chọn Giảng viên đứng lớp --</option>
+                @for (gv of instructors(); track gv.id) { <option [value]="gv.id">{{ gv.name }}</option> }
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-bold mb-1">Link Google Meet</label>
+              <input type="text" formControlName="googleMeetLink" class="w-full border px-4 py-2 rounded-xl outline-none text-green-600">
+            </div>
+            <div>
+              <label class="block font-bold mb-1">Học kỳ</label>
+              <input type="text" formControlName="academicYear" class="w-full border px-4 py-2 rounded-xl outline-none">
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <button type="button" (click)="closeModal()" class="px-6 py-2.5 bg-gray-100 rounded-xl font-bold hover:bg-gray-200">Hủy</button>
+          <button type="submit" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-md">Lưu Giao Việc</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -35,7 +35,7 @@ export const routes: Routes = [
       { path: 'chat', component: AiChatComponent },
       { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent },
       
-      // BẢO VỆ KHU VỰC CỦA GIẢNG VIÊN (Admin và Instructor được vào, Student bị cấm)
+      // khu vực giảng viên (Admin và Instructor được vào, Student bị cấm)
       { 
         path: 'instructor/courses', 
         component: CourseManagement,
@@ -62,17 +62,17 @@ export const routes: Routes = [
     ]
   },
 
-  // BẢO VỆ TOÀN BỘ KHU VỰC ADMIN (Chỉ Admin mới được vào)
+  // khu vực admin
   {
     path: 'admin',
     component: AdminLayout,
-    canActivate: [authGuard, roleGuard], // Phải đăng nhập VÀ phải có quyền
+    canActivate: [authGuard, roleGuard], // Phải đăng nhập và phải có quyền
     data: { roles: ['Admin'] }, // Chỉ mỗi Admin
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboard },
       { path: 'users', component: UserManagement },
-      { path: 'training', component: TrainingManagement },
+     // { path: 'training', component: TrainingManagement }, tạm thời 
     ]
   },
 

@@ -47,7 +47,7 @@ export class AuthService {
     if (typeof window === 'undefined') {
       return 'Student'; 
     }
-    
+
     // Giả sử lúc login thành công, bạn lưu token vào localStorage với tên là 'token'
     const token = localStorage.getItem('token'); 
     
@@ -60,7 +60,7 @@ export class AuthService {
       const decodedJson = atob(payloadBase64);
       const payload = JSON.parse(decodedJson);
 
-      console.log('📦 Dữ liệu bên trong Token của bạn:', payload);
+      // console.log('📦 Dữ liệu bên trong Token của bạn:', payload);
       let rawRole = payload['role'] || 
                     payload['Role'] || 
                     payload['roles'] || 

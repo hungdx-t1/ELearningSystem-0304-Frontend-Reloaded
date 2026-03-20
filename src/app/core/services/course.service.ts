@@ -67,4 +67,14 @@ export class CourseService {
   createLesson(lessonData: { chapterId: string; title: string; type: number; videoUrl?: string; sortOrder: number }) {
     return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
   }
+
+  // Cập nhật khóa học
+  updateCourse(id: string, courseData: any) {
+    return this.http.put(`${this.apiUrl}/courses/${id}`, courseData);
+  }
+
+  // Xóa khóa học
+  deleteCourse(id: string) {
+    return this.http.delete(`${this.apiUrl}/courses/${id}`);
+  }
 }

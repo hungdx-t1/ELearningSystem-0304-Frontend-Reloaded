@@ -1,12 +1,12 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CourseService, Course } from '../../../core/services/course.service';
-import { DatePipe, SlicePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-admin-course-management',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, DatePipe, SlicePipe],
+  imports: [ReactiveFormsModule, FormsModule, DatePipe],
   templateUrl: './course-management.html',
 })
 export class AdminCourseManagement implements OnInit {

@@ -1,11 +1,11 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { SlicePipe } from '@angular/common';
+// import { SlicePipe } from '@angular/common';
 
 @Component({
   selector: 'app-class-management',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, SlicePipe],
+  imports: [ReactiveFormsModule, FormsModule],
   templateUrl: './class-management.html'
 })
 export class ClassManagement implements OnInit {

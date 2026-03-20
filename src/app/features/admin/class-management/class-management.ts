@@ -1,7 +1,8 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-// Import UserService để lấy danh sách giảng viên
-// import { UserService, User } from '../../../core/services/user.service';
+import { ClassService } from '../../../core/services/class.service';
+import { CourseService } from '../../../core/services/course.service';
+import { UserService } from '../../../core/services/user.service';
 
 @Component({
   selector: 'app-admin-class-management',
@@ -11,8 +12,11 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 })
 export class AdminClassManagement implements OnInit {
   private fb = inject(FormBuilder);
+
+  private classService = inject(ClassService);
+  private courseService = inject(CourseService);
+  private userService = inject(UserService);
   
-  // Dữ liệu giả lập
   courses = signal<any[]>([]);
   classes = signal<any[]>([]);
   instructors = signal<any[]>([]); // Danh sách giảng viên để phân công
@@ -39,12 +43,28 @@ export class AdminClassManagement implements OnInit {
   });
 
   ngOnInit() {
-    // Giả lập dữ liệu Backend
-    this.courses.set([{ id: 'c1', title: 'Lập trình Web' }, { id: 'c2', title: 'Cấu trúc Dữ liệu' }]);
-    this.instructors.set([{ id: 'gv1', name: 'Thầy Tuấn (tuan@lms.com)' }, { id: 'gv2', name: 'Cô Lan (lan@lms.com)' }]);
-    this.classes.set([
-      { id: '1', courseId: 'c1', classCode: 'WEB_L01', className: 'Web Ca Sáng', instructorId: 'gv1', academicYear: '2025' }
-    ]);
+    this.loadAllData();
+  }
+
+  loadAllData() {
+    // Kéo danh sách Lớp học
+    this.classService.getAllClasses().subscribe({
+      next: (data) => this.classes.set(data)
+    });
+
+    // Kéo danh sách Khóa học (để thả vào dropdown chọn môn)
+    this.courseService.getAllCourses().subscribe({
+      next: (data) => this.courses.set(data)
+    });
+
+    // Kéo danh sách User, nhưng chỉ lọc lấy Giảng viên (Role = 1 hoặc 'Instructor')
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        // const instList = users.filter(u => u.role === 1 || u.role === 'Instructor');
+        const instList = users.filter(u => u.role.toLowerCase() === 'instructor' || u.role === 'admin'); // Admin cũng có thể được chọn làm GV
+        this.instructors.set(instList);
+      }
+    });
   }
 
   getCourseName(id: string) { return this.courses().find(c => c.id === id)?.title || 'Không rõ'; }
@@ -69,8 +89,21 @@ export class AdminClassManagement implements OnInit {
       this.classForm.markAllAsTouched();
       return;
     }
-    alert('Đã lưu Lớp học và Phân công Giảng viên thành công!');
-    this.closeModal();
+
+    const payload = this.classForm.value;
+
+    if (this.modalMode() === 'add') {
+      this.classService.createClass(payload).subscribe({
+        next: () => {
+          alert('Đã tạo lớp và phân công Giảng viên!');
+          this.loadAllData(); // Tải lại bảng sau khi lưu
+          this.closeModal();
+        },
+        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+      });
+    } else {
+      // Gọi hàm updateClass() ở đây nếu đang Edit
+    }
   }
 
   deleteClass(cls: any) { /* Logic xóa */ }

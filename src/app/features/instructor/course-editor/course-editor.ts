@@ -1,90 +1,140 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CourseService, Course, Chapter } from '../../../core/services/course.service';
-import { FormsModule } from '@angular/forms'; // Bắt buộc phải có để xài ngModel
+import { Component, inject, signal, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CourseService, Course, Chapter, Lesson } from '../../../core/services/course.service';
 
 @Component({
-  selector: 'app-course-editor',
+  selector: 'app-instructor-course-editor',
   standalone: true,
-  imports: [RouterLink, FormsModule],
+  imports: [ReactiveFormsModule, FormsModule],
   templateUrl: './course-editor.html'
 })
 export class CourseEditor implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
 
-  course = signal<Course | null>(null);
+  courseId = signal<string>('');
+  courseInfo = signal<Course | null>(null);
+  
+  // Mảng chứa các Chương (Mỗi chương sẽ cõng thêm mảng Bài học ở trong)
   chapters = signal<Chapter[]>([]);
   isLoading = signal<boolean>(true);
 
-  // Biến lưu trữ giá trị ô nhập liệu mới
-  newChapterTitle = signal('');
+  // Quản lý Modal
+  isChapterModalOpen = signal<boolean>(false);
+  isLessonModalOpen = signal<boolean>(false);
+  
+  selectedChapterId = signal<string>(''); // Nhớ xem đang thêm bài học cho chương nào
 
-  async ngOnInit() {
-    this.loadCourseData();
+  chapterForm = this.fb.group({
+    title: ['', Validators.required],
+    sortOrder: [1, Validators.required]
+  });
+
+  lessonForm = this.fb.group({
+    title: ['', Validators.required],
+    type: [0, Validators.required], // 0: Video, 1: Document, 2: Quiz
+    videoUrl: [''],
+    sortOrder: [1, Validators.required]
+  });
+
+  ngOnInit() {
+    // Lấy ID khóa học từ URL (ví dụ: /instructor/courses/123/manage)
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.courseId.set(id);
+      this.loadCourseContent(id);
+    } else {
+      this.router.navigate(['/instructor/courses']);
+    }
   }
 
-  async loadCourseData() {
-    const courseId = this.route.snapshot.paramMap.get('id');
-    if (!courseId) return;
-
+  async loadCourseContent(id: string) {
+    this.isLoading.set(true);
     try {
-      this.isLoading.set(true);
-      const courseData = await this.courseService.getCourseById(courseId);
-      this.course.set(courseData);
+      // 1. Kéo thông tin khóa học
+      const course = await this.courseService.getCourseById(id);
+      this.courseInfo.set(course);
 
-      const chaptersData = await this.courseService.getChaptersByCourseId(courseId);
-      for (let chapter of chaptersData) {
-        chapter.lessons = await this.courseService.getLessonsByChapterId(chapter.id);
-        chapter.isExpanded = true;
+      // 2. Kéo danh sách các Chương
+      const chapterList = await this.courseService.getChaptersByCourseId(id);
+      
+      // 3. Với mỗi Chương, kéo các Bài học của nó về (Lắp ghép dữ liệu)
+      for (let chap of chapterList) {
+        const lessons = await this.courseService.getLessonsByChapterId(chap.id);
+        chap.lessons = lessons;
+        chap.isExpanded = true; // Mặc định mở rộng để dễ nhìn
       }
-      this.chapters.set(chaptersData);
+
+      // Đưa vào Signal để render ra UI
+      // Sắp xếp chương theo thứ tự SortOrder
+      this.chapters.set(chapterList.sort((a, b) => a.sortOrder - b.sortOrder));
     } catch (error) {
-      console.error(error);
+      console.error('Lỗi tải nội dung khóa học', error);
+      alert('Không thể tải dữ liệu khóa học!');
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  // Hàm tạo Chương mới
-  addChapter() {
-    const title = this.newChapterTitle().trim();
-    const courseId = this.course()?.id;
-    if (!title || !courseId) return;
+  // --- XỬ LÝ CHƯƠNG (CHAPTER) ---
+  openChapterModal() {
+    this.chapterForm.reset({ sortOrder: this.chapters().length + 1 });
+    this.isChapterModalOpen.set(true);
+  }
 
-    const newSortOrder = this.chapters().length + 1; // Tự tính số thứ tự
+  saveChapter() {
+    if (this.chapterForm.invalid) return;
+    const payload = { 
+      courseId: this.courseId(), 
+      title: this.chapterForm.value.title!, 
+      sortOrder: this.chapterForm.value.sortOrder! 
+    };
 
-    this.courseService.createChapter({ courseId, title, sortOrder: newSortOrder }).subscribe({
+    this.courseService.createChapter(payload).subscribe({
       next: () => {
-        this.newChapterTitle.set(''); // Xóa trắng ô nhập
-        this.loadCourseData(); // Load lại danh sách cho mới
+        this.loadCourseContent(this.courseId()); // Tải lại cây dữ liệu
+        this.isChapterModalOpen.set(false);
       },
-      error: (err) => alert('Lỗi khi tạo Chương mới!')
+      error: (err) => alert('Lỗi tạo Chương: ' + err.message)
     });
   }
 
-  // Hàm tạo Bài học mới (Sử dụng prompt của trình duyệt cho nhanh & ngầu)
-  addLesson(chapterId: string, currentLessonsCount: number) {
-    const title = prompt('Nhập tên bài học mới (VD: Bài 1: Cài đặt phần mềm):');
-    if (!title) return;
+  // --- XỬ LÝ BÀI HỌC (LESSON) ---
+  openLessonModal(chapterId: string) {
+    this.selectedChapterId.set(chapterId);
+    
+    // Tìm chương hiện tại để đếm xem đang có bao nhiêu bài học rồi
+    const currentChap = this.chapters().find(c => c.id === chapterId);
+    const nextOrder = currentChap && currentChap.lessons ? currentChap.lessons.length + 1 : 1;
 
-    const videoUrl = prompt('Nhập link Video (VD: https://youtube.com/...):') || '';
-    const newSortOrder = currentLessonsCount + 1;
+    this.lessonForm.reset({ type: 0, sortOrder: nextOrder });
+    this.isLessonModalOpen.set(true);
+  }
 
-    this.courseService.createLesson({
-      chapterId,
-      title,
-      type: 0, // Mặc định là Video
-      videoUrl,
-      sortOrder: newSortOrder
-    }).subscribe({
-      next: () => this.loadCourseData(), // Tải lại giao diện
-      error: (err) => alert('Lỗi khi tạo Bài học!')
+  saveLesson() {
+    if (this.lessonForm.invalid) return;
+    const formVal = this.lessonForm.value;
+    const payload = {
+      chapterId: this.selectedChapterId(),
+      title: formVal.title!,
+      type: Number(formVal.type),
+      videoUrl: formVal.videoUrl || undefined,
+      sortOrder: formVal.sortOrder!
+    };
+
+    this.courseService.createLesson(payload).subscribe({
+      next: () => {
+        this.loadCourseContent(this.courseId()); // Tải lại cây dữ liệu
+        this.isLessonModalOpen.set(false);
+      },
+      error: (err) => alert('Lỗi tạo Bài học: ' + err.message)
     });
   }
 
   toggleChapter(chapter: Chapter) {
     chapter.isExpanded = !chapter.isExpanded;
-    this.chapters.set([...this.chapters()]);
   }
 }

@@ -15,12 +15,25 @@ export class AuthService {
     typeof window !== 'undefined' ? !!localStorage.getItem('token') : false
   );
 
+  // màng lọc an toàn để đọc LocalStorage
+  private getStoredUser() {
+    if (typeof window === 'undefined') return null; // Chặn SSR
+    
+    const userStr = localStorage.getItem('user');
+    // Nếu không có, hoặc đang dính chữ 'undefined' thì báo null ngay
+    if (!userStr || userStr === 'undefined') return null; 
+
+    try {
+      return JSON.parse(userStr); // Cố gắng dịch JSON
+    } catch (error) {
+      console.error('Lỗi đọc User từ LocalStorage, đang tiến hành dọn rác...', error);
+      localStorage.removeItem('user'); // Nếu dịch lỗi (rác) thì xóa luôn cho sạch
+      return null;
+    }
+  }
+
   // Signal lưu thông tin chi tiết của User (Đọc từ localStorage nếu có)
-  userProfile = signal<any>(
-    typeof window !== 'undefined' && localStorage.getItem('user') 
-      ? JSON.parse(localStorage.getItem('user')!) 
-      : null
-  );
+  userProfile = signal<any>(this.getStoredUser());
 
   login(credentials: any) {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
@@ -54,13 +67,25 @@ export class AuthService {
     if (!token) return ''; // Không có token thì vô quyền
 
     try {
-      // JWT Token có 3 phần cách nhau bởi dấu chấm. Phần số 2 (payload) chứa dữ liệu
-      const payloadBase64 = token.split('.')[1];
-      // Giải mã Base64 thành chuỗi JSON
-      const decodedJson = atob(payloadBase64);
+      const payloadBase64Url = token.split('.')[1];
+      
+      // 🛠️ CHỮA LỖI Ở ĐÂY: Đổi Base64Url thành Base64 chuẩn
+      let base64 = payloadBase64Url.replace(/-/g, '+').replace(/_/g, '/');
+      
+      // Đắp thêm dấu '=' vào đuôi cho đủ bộ 4 byte (atob cực kỳ khó tính vụ này)
+      while (base64.length % 4 !== 0) {
+        base64 += '=';
+      }
+
+      // Giải mã an toàn (chống lỗi crash và chống lỗi font tiếng Việt)
+      const decodedJson = decodeURIComponent(
+        window.atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join('')
+      );
+
       const payload = JSON.parse(decodedJson);
 
-      // console.log('📦 Dữ liệu bên trong Token của bạn:', payload);
       let rawRole = payload['role'] || 
                     payload['Role'] || 
                     payload['roles'] || 
@@ -76,10 +101,6 @@ export class AuthService {
 
       return rawRole || 'Student';
 
-      // // Backend .NET thường giấu Role ở 1 trong 2 cái key này:
-      // const role = payload['role'] || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-      
-      // return role || 'Student'; // Trả về Role, nếu lỗi thì ép về Student cho an toàn
     } catch (error) {
       console.error('Lỗi giải mã token:', error);
       return 'Student'; 

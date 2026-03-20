@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { Login } from './features/auth/login/login'; 
+import { Login } from './features/auth/login/login';
 import { MainLayoutComponent } from './layouts/main-layout-component/main-layout-component';
 import { DashboardComponent } from './features/dashboard-component/dashboard-component';
 import { authGuard } from './core/guards/auth.guard';
@@ -18,6 +18,8 @@ import { UserManagement } from './features/admin/user-management/user-management
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard';
 import { ClassManagement } from './features/instructor/class-management/class-management';
+import { AdminClassManagement } from './features/admin/class-management/class-management';
+import { AdminCourseManagement } from './features/admin/course-management/course-management';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -28,38 +30,39 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent }, 
+      { path: 'dashboard', component: DashboardComponent },
       { path: 'courses', redirectTo: 'dashboard' },
       { path: 'courses/:id', component: CourseDetail },
       { path: 'classes', component: ClassListComponent },
       { path: 'chat', component: AiChatComponent },
       { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent },
-      
+
       // khu vực giảng viên (Admin và Instructor được vào, Student bị cấm)
-      { 
-        path: 'instructor/courses', 
+      {
+        path: 'instructor/courses',
         component: CourseManagement,
         canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] } // Truyền data quy định quyền
+        data: { roles: ['Instructor', 'Admin'] }, // Truyền data quy định quyền
       },
-      { 
-        path: 'instructor/courses/create', 
+      {
+        path: 'instructor/courses/create',
         component: CourseCreate,
         canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] }
+        data: { roles: ['Instructor', 'Admin'] },
       },
-      { 
-        path: 'instructor/courses/:id/manage', 
+      {
+        path: 'instructor/courses/:id/manage',
         component: CourseEditor,
         canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] }
-      },{ 
-        path: 'instructor/classes', 
+        data: { roles: ['Instructor', 'Admin'] },
+      },
+      {
+        path: 'instructor/classes',
         component: ClassManagement,
         canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] }
+        data: { roles: ['Instructor', 'Admin'] },
       },
-    ]
+    ],
   },
 
   // khu vực admin
@@ -72,13 +75,15 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboard },
       { path: 'users', component: UserManagement },
-     // { path: 'training', component: TrainingManagement }, tạm thời 
-    ]
+      // { path: 'training', component: TrainingManagement }, tạm thời
+      { path: 'classes', component: AdminClassManagement },
+      { path: 'courses', component: AdminCourseManagement },
+    ],
   },
 
   // Trang cấm truy cập 403
   { path: 'no-permission', component: NoPermissionComponent },
 
   // Gõ link bậy bạ ra 404
-  { path: '**', component: NotFoundComponent }
+  { path: '**', component: NotFoundComponent },
 ];

@@ -16,7 +16,8 @@ export class AdminLayout {
   menuItems = [
     { path: '/admin/dashboard', icon: '📊', label: 'Tổng quan hệ thống' },
     { path: '/admin/users', icon: '👥', label: 'Quản lý Người dùng' },
-    { path: '/admin/training', icon: '🏫', label: 'Quản lý Đào tạo' },
+    { path: '/admin/courses', icon: '🏫', label: 'Quản lý Khóa học' },
+    { path: '/admin/classes', icon: '🏛️', label: 'Quản lý Lớp học' },
     { path: '/admin/settings', icon: '⚙️', label: 'Cài đặt hệ thống' }
   ];
 

@@ -43,6 +43,11 @@ export class AuthService {
 
   // Hàm giải mã Token để lấy Role an toàn
   getUserRole(): string {
+    // 🛡️ CHỐT CHẶN SSR: Nếu đang chạy trên Server thì lờ đi, trả về mặc định
+    if (typeof window === 'undefined') {
+      return 'Student'; 
+    }
+    
     // Giả sử lúc login thành công, bạn lưu token vào localStorage với tên là 'token'
     const token = localStorage.getItem('token'); 
     

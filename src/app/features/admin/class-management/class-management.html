@@ -80,7 +80,9 @@
               <label class="block font-bold text-blue-900 mb-1">🧑‍🏫 Phân công Giảng viên <span class="text-red-500">*</span></label>
               <select formControlName="instructorId" class="w-full border-blue-200 px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 font-medium">
                 <option value="">-- Chọn Giảng viên đứng lớp --</option>
-                @for (gv of instructors(); track gv.id) { <option [value]="gv.id">{{ gv.name }}</option> }
+                @for (gv of instructors(); track gv.id) { 
+                  <option [value]="gv.id">{{ gv.fullName }}</option> 
+                }
               </select>
             </div>
 

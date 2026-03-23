@@ -62,7 +62,9 @@ export class QuizBuilder implements OnInit {
   }
 
   openEditForm(q: Question) {
-    this.editingQuestionId.set(q.id!);
+    // Dùng || null để nếu q.id bị undefined thì nó tự biến thành null
+    this.editingQuestionId.set(q.id || null); 
+    
     this.questionForm.patchValue({
       content: q.content,
       optionA: q.optionA,
@@ -113,14 +115,13 @@ export class QuizBuilder implements OnInit {
     }
   }
 
-  deleteQuestion(id: string) {
+  deleteQuestion(id?: string) {
+    if (!id) return; 
+
     if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này vĩnh viễn?')) {
       this.questionService.deleteQuestion(id).subscribe({
         next: () => {
-          // Xóa mượt trên giao diện khỏi tốn công load lại toàn bộ
           this.questions.update(list => list.filter(q => q.id !== id));
-          
-          // Nếu đang mở form sửa chính câu này thì đóng form lại
           if (this.editingQuestionId() === id) {
             this.isFormOpen.set(false);
           }

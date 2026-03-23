@@ -32,6 +32,8 @@ export class CourseEditor implements OnInit {
   selectedChapterId = signal<string>(''); 
   selectedLessonId = signal<string>('');
 
+  isUploading = signal<boolean>(false);
+
   chapterForm = this.fb.group({
     title: ['', Validators.required],
     sortOrder: [1, Validators.required]
@@ -202,5 +204,28 @@ export class CourseEditor implements OnInit {
         error: (err) => alert('Lỗi xóa Bài học: ' + (err.error?.message || err.message))
       });
     }
+  }
+
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    this.isUploading.set(true);
+
+    this.courseService.uploadFile(file).subscribe({
+      next: (response) => {
+        // Bơm thẳng cái URL từ Cloudinary vào Form
+        this.lessonForm.patchValue({ videoUrl: response.url });
+        this.isUploading.set(false);
+        // Reset ô input file để có thể chọn lại file khác nếu muốn
+        input.value = ''; 
+      },
+      error: (err) => {
+        alert('Lỗi Upload: ' + (err.error?.message || err.message));
+        this.isUploading.set(false);
+        input.value = '';
+      }
+    });
   }
 }

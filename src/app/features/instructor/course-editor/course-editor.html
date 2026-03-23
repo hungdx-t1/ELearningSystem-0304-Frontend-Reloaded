@@ -31,7 +31,7 @@
           <div class="bg-gray-50 border-b border-gray-200 p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
                (click)="toggleChapter(chapter)">
             <div class="flex items-center gap-3">
-              <span class="text-gray-400 font-bold w-6 text-center">{{ chapter.isExpanded ? '▼' : '▶' }}</span>
+              <span class="text-gray-400 font-bold w-6 text-center">{{ chapter.isExpanded ? '🔽' : '▶️' }}</span>
               <span class="font-bold text-gray-900 text-lg">Chương {{ chapter.sortOrder }}: {{ chapter.title }}</span>
             </div>
             <div class="flex items-center gap-3">
@@ -165,15 +165,39 @@
           />
         </div>
 
-        @if (lessonForm.get('type')?.value == 0) {
-          <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <label class="block font-bold text-blue-900 mb-1">Link Video (Youtube)</label>
-            <input
-              type="url"
-              formControlName="videoUrl"
-              placeholder="https://youtube.com/..."
-              class="w-full border px-4 py-2 rounded-lg outline-none text-blue-700"
-            />
+        @if (lessonForm.get('type')?.value == 0 || lessonForm.get('type')?.value == 1) {
+          <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+            <label class="block font-bold text-blue-900 mb-2">
+              Nguồn dữ liệu {{ lessonForm.get('type')?.value == 0 ? 'Video' : 'Tài liệu' }}
+            </label>
+            
+            <div class="flex flex-col gap-3">
+              <div class="relative">
+                <input type="file" (change)="onFileSelected($event)" 
+                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                       [disabled]="isUploading()"
+                       [accept]="lessonForm.get('type')?.value == 0 ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
+                
+                <div class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border-2 border-dashed border-blue-300 rounded-lg text-blue-600 font-bold hover:bg-blue-100 transition"
+                     [class.bg-gray-100]="isUploading()" [class.text-gray-400]="isUploading()">
+                  @if (isUploading()) {
+                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Đang tải lên Cloudinary...
+                  } @else {
+                    <span>☁️ Tải file từ máy tính lên</span>
+                  }
+                </div>
+              </div>
+
+              <div class="text-center text-sm font-bold text-blue-300">HOẶC</div>
+
+              <input type="url" formControlName="videoUrl" 
+                     placeholder="Dán link Youtube / Google Drive vào đây..." 
+                     class="w-full border px-4 py-2.5 rounded-lg outline-none text-blue-700 focus:ring-2 focus:ring-blue-500 shadow-sm" />
+            </div>
           </div>
         }
 

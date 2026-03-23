@@ -95,4 +95,11 @@ export class CourseService {
   deleteLesson(id: string) {
     return this.http.delete(`${this.apiUrl}/lessons/${id}`);
   }
+
+  // --- API Upload --
+  uploadFile(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<{ message: string; url: string }>(`${this.apiUrl}/files/upload`, formData);
+  }
 }

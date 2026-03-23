@@ -19,6 +19,7 @@ import { AdminDashboard } from './features/admin/admin-dashboard/admin-dashboard
 import { ClassManagement } from './features/instructor/class-management/class-management';
 import { AdminClassManagement } from './features/admin/class-management/class-management';
 import { AdminCourseManagement } from './features/admin/course-management/course-management';
+import { QuizBuilder } from './features/instructor/quiz-builder/quiz-builder';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -58,6 +59,12 @@ export const routes: Routes = [
       {
         path: 'instructor/classes',
         component: ClassManagement,
+        canActivate: [roleGuard],
+        data: { roles: ['Instructor', 'Admin'] },
+      },
+      {
+        path: 'instructor/courses/:courseId/quizzes/:lessonId',
+        component: QuizBuilder,
         canActivate: [roleGuard],
         data: { roles: ['Instructor', 'Admin'] },
       },

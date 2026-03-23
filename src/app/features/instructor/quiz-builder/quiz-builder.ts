@@ -1,6 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Question, QuestionService } from '../../../core/services/question.service';
 
 @Component({
   selector: 'app-quiz-builder',
@@ -13,11 +14,13 @@ export class QuizBuilder implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
 
+  private questionService = inject(QuestionService);
+
   courseId = signal<string>('');
   lessonId = signal<string>('');
   
   // Danh sách câu hỏi của bài Quiz này
-  questions = signal<any[]>([]);
+  questions = signal<Question[]>([]);
   
   // Trạng thái Form
   isFormOpen = signal<boolean>(false);
@@ -46,11 +49,10 @@ export class QuizBuilder implements OnInit {
   }
 
   loadQuestions() {
-    // Tạm thời dùng mock data, sau này bạn gọi API C# ở đây
-    // this.quizService.getQuestionsByLessonId(this.lessonId()).subscribe(...)
-    this.questions.set([
-      { id: '1', content: 'HTML là viết tắt của từ gì?', optionA: 'Hyper Text Markup Language', optionB: 'Home Tool Markup Language', optionC: 'Hyperlinks and Text Markup Language', optionD: 'Hyper Tool Multi Language', correctOption: 'A' }
-    ]);
+    this.questionService.getQuestionsByLessonId(this.lessonId()).subscribe({
+      next: (data) => this.questions.set(data),
+      error: (err) => console.error('Lỗi khi tải câu hỏi:', err)
+    });
   }
 
   openAddForm() {
@@ -59,9 +61,17 @@ export class QuizBuilder implements OnInit {
     this.isFormOpen.set(true);
   }
 
-  openEditForm(q: any) {
-    this.editingQuestionId.set(q.id);
-    this.questionForm.patchValue(q);
+  openEditForm(q: Question) {
+    this.editingQuestionId.set(q.id!);
+    this.questionForm.patchValue({
+      content: q.content,
+      optionA: q.optionA,
+      optionB: q.optionB,
+      optionC: q.optionC,
+      optionD: q.optionD,
+      correctOption: q.correctOption,
+      explanation: q.explanation
+    });
     this.isFormOpen.set(true);
   }
 
@@ -80,23 +90,43 @@ export class QuizBuilder implements OnInit {
       ...this.questionForm.value
     };
 
-    if (this.editingQuestionId()) {
-      // Gọi API Cập nhật (Update)
-      console.log('Đang cập nhật:', payload);
-      alert('Đã cập nhật câu hỏi!');
-    } else {
-      // Gọi API Thêm mới (Create)
-      console.log('Đang thêm mới:', payload);
-      alert('Đã thêm câu hỏi mới!');
-    }
+    const id = this.editingQuestionId();
     
-    this.isFormOpen.set(false);
+    if (id) {
+      // API UPDATE
+      this.questionService.updateQuestion(id, payload).subscribe({
+        next: () => {
+          this.loadQuestions(); // Cập nhật danh sách bên trái
+          this.isFormOpen.set(false); // Đóng form
+        },
+        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || err.message))
+      });
+    } else {
+      // API CREATE
+      this.questionService.createQuestion(payload).subscribe({
+        next: () => {
+          this.loadQuestions(); 
+          this.isFormOpen.set(false);
+        },
+        error: (err) => alert('Lỗi thêm mới: ' + (err.error?.message || err.message))
+      });
+    }
   }
 
   deleteQuestion(id: string) {
-    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này?')) {
-      // Gọi API Xóa (Delete)
-      this.questions.update(list => list.filter(q => q.id !== id));
+    if (confirm('Bạn có chắc chắn muốn xóa câu hỏi này vĩnh viễn?')) {
+      this.questionService.deleteQuestion(id).subscribe({
+        next: () => {
+          // Xóa mượt trên giao diện khỏi tốn công load lại toàn bộ
+          this.questions.update(list => list.filter(q => q.id !== id));
+          
+          // Nếu đang mở form sửa chính câu này thì đóng form lại
+          if (this.editingQuestionId() === id) {
+            this.isFormOpen.set(false);
+          }
+        },
+        error: (err) => alert('Lỗi xóa: ' + (err.error?.message || err.message))
+      });
     }
   }
 }

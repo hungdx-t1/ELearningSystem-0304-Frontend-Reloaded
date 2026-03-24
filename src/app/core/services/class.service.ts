@@ -32,6 +32,11 @@ export class ClassService {
     return this.http.post(`${this.apiUrl}/${classId}/enroll`, { studentId: studentId });
   }
 
+  // Lấy danh sách lớp của một Sinh viên
+  getStudentClasses(studentId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/student/${studentId}`);
+  }
+
   // Import file Excel
   importStudentsExcel(classId: string, file: File): Observable<any> {
     const formData = new FormData();

@@ -1,16 +1,39 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { ClassService } from '../../../../core/services/class.service';
 
 @Component({
   selector: 'app-class-list-component',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink], // Nhớ import RouterLink để dùng chuyển trang
   templateUrl: './class-list-component.html',
   styleUrl: './class-list-component.scss',
 })
-export class ClassListComponent {
-  // Tạo dữ liệu giả (Mock data) để "bơm" vào giao diện
-  dummyClasses = [
-    { id: 1, name: 'Lập trình Web nâng cao', teacher: 'Thầy A', schedule: 'Thứ 2, 4, 6 (Ca 1)' },
-    { id: 2, name: 'Kiến trúc Phần mềm', teacher: 'Cô B', schedule: 'Thứ 3, 5 (Ca 3)' },
-    { id: 3, name: 'Trí tuệ Nhân tạo', teacher: 'Thầy C', schedule: 'Thứ 7 (Ca 2)' }
-  ];
+export class ClassListComponent implements OnInit {
+  private classService = inject(ClassService);
+
+  myClasses = signal<any[]>([]);
+  isLoading = signal<boolean>(true);
+
+  // Tạm thời hardcode StudentId (Giống cái id xài bên LessonPlayer lúc nãy)
+  // TODO: Sau này làm phần Auth (Đăng nhập) xong thì lấy ID từ localStorage nhé
+  mockStudentId = '00000000-0000-0000-0000-000000000001';
+
+  ngOnInit() {
+    this.loadMyClasses();
+  }
+
+  loadMyClasses() {
+    this.isLoading.set(true);
+    this.classService.getStudentClasses(this.mockStudentId).subscribe({
+      next: (data) => {
+        this.myClasses.set(data);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Lỗi tải danh sách lớp:', err);
+        this.isLoading.set(false);
+      }
+    });
+  }
 }

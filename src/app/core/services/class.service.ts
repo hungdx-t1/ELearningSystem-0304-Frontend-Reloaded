@@ -22,4 +22,25 @@ export class ClassService {
   deleteClass(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
+
+  getClassDetails(classId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${classId}/details`);
+  }
+
+  // Thêm 1 sinh viên (ghi danh) - Dùng lại API enroll cũ của bạn
+  enrollStudent(classId: string, studentId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${classId}/enroll`, { studentId: studentId });
+  }
+
+  // Import file Excel
+  importStudentsExcel(classId: string, file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.apiUrl}/${classId}/import-students`, formData);
+  }
+
+  // Đuổi học
+  removeStudent(classId: string, studentId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${classId}/remove-student/${studentId}`);
+  }
 }

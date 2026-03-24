@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClassService } from '../../../core/services/class.service';
-import { UserService } from '../../../core/services/user.service';
+import { UserService, User } from '../../../core/services/user.service';
 import { SlicePipe } from '@angular/common';
 
 @Component({
@@ -22,17 +22,14 @@ export class InstructorClassDetail implements OnInit {
   classId = signal<string>('');
   classInfo = signal<any>(null);
   
-  // Danh sách sinh viên trong lớp
   students = signal<any[]>([]);
   isLoading = signal<boolean>(true);
 
-  // Quản lý Modal thêm 1 sinh viên
   isAddModalOpen = signal<boolean>(false);
   addStudentForm = this.fb.group({
     emailOrCode: ['', Validators.required]
   });
 
-  // Trạng thái Import Excel
   isImporting = signal<boolean>(false);
 
   ngOnInit() {
@@ -45,30 +42,30 @@ export class InstructorClassDetail implements OnInit {
     }
   }
 
+  // 1. KÉO DỮ LIỆU THẬT
   loadClassData(id: string) {
     this.isLoading.set(true);
-    
-    // Tạm thời dùng setTimeout giả lập API
-    setTimeout(() => {
-      this.classInfo.set({
-        id: id,
-        classCode: 'L01-C#',
-        className: 'Lập trình C# Cơ bản',
-        courseName: 'Khóa học C# .NET Core',
-        googleMeetLink: 'https://meet.google.com/abc-xyz-def',
-        academicYear: '2025-2026'
-      });
-
-      this.students.set([
-        { id: 'sv1', fullName: 'Nguyễn Văn A', email: 'nva@school.edu.vn', studentCode: 'SV001', joinDate: '2026-03-20' },
-        { id: 'sv2', fullName: 'Trần Thị B', email: 'ttb@school.edu.vn', studentCode: 'SV002', joinDate: '2026-03-22' }
-      ]);
-      
-      this.isLoading.set(false);
-    }, 500);
+    this.classService.getClassDetails(id).subscribe({
+      next: (data) => {
+        // Tách data thành classInfo và danh sách students
+        this.classInfo.set({
+          id: data.id,
+          classCode: data.classCode,
+          className: data.className,
+          courseName: data.courseName,
+          googleMeetLink: data.googleMeetLink,
+          academicYear: data.academicYear
+        });
+        this.students.set(data.students);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        alert('Lỗi tải thông tin lớp: ' + err.message);
+        this.isLoading.set(false);
+      }
+    });
   }
 
-  // --- XỬ LÝ COPY LINK MEET ---
   copyMeetLink() {
     const link = this.classInfo()?.googleMeetLink;
     if (link) {
@@ -77,33 +74,53 @@ export class InstructorClassDetail implements OnInit {
     }
   }
 
-  // --- XỬ LÝ THÊM 1 SINH VIÊN ---
   openAddModal() {
     this.addStudentForm.reset();
     this.isAddModalOpen.set(true);
   }
 
+  // 2. THÊM TAY 1 SINH VIÊN
   saveStudent() {
     if (this.addStudentForm.invalid) return;
+    const emailOrCode = this.addStudentForm.value.emailOrCode!;
     
-    const emailOrCode = this.addStudentForm.value.emailOrCode;
-    // TODO: Gọi API C# -> Tìm SV theo Email/Code -> Thêm vào bảng ClassEnrollment
-    console.log(`Đang thêm SV: ${emailOrCode} vào lớp ${this.classId()}`);
-    
-    alert(`Đã gửi yêu cầu thêm sinh viên ${emailOrCode}!`);
-    this.isAddModalOpen.set(false);
-    // this.loadClassData(this.classId()); // Tải lại danh sách
+    // Cần gọi API tìm userId trước (hoặc nhờ BE C# viết 1 API EnrollByEmail cho lẹ)
+    // Tạm thời mình dùng API lấy tất cả user rồi filter bên Frontend cho nhanh
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        const student = users.find(u => u.email === emailOrCode || u.fullName.includes(emailOrCode)); // Note: Chỗ u.UserCode tùy thuộc DTO của bạn
+        
+        if (!student) {
+          alert('Không tìm thấy Sinh viên này trong hệ thống!');
+          return;
+        }
+
+        // Tìm thấy ID rồi thì đẩy vô Lớp
+        this.classService.enrollStudent(this.classId(), student.id).subscribe({
+          next: () => {
+            alert(`Đã thêm thành công!`);
+            this.loadClassData(this.classId()); // Tải lại danh sách
+            this.isAddModalOpen.set(false);
+          },
+          error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+        });
+      }
+    });
   }
 
+  // 3. ĐUỔI HỌC (XÓA KHỎI LỚP)
   removeStudent(studentId: string, name: string) {
-    if (confirm(`Bạn có chắc muốn xóa sinh viên ${name} khỏi lớp không? Toàn bộ điểm số của sinh viên này trong lớp sẽ bị mất!`)) {
-      // TODO: Gọi API xóa khỏi ClassEnrollment
-      this.students.update(list => list.filter(s => s.id !== studentId));
-      alert('Đã xóa sinh viên khỏi lớp.');
+    if (confirm(`Xóa sinh viên ${name} khỏi lớp sẽ mất toàn bộ điểm số. Bạn chắc chứ?`)) {
+      this.classService.removeStudent(this.classId(), studentId).subscribe({
+        next: () => {
+          this.students.update(list => list.filter(s => s.id !== studentId)); // Xóa trên giao diện
+        },
+        error: (err) => alert('Lỗi xóa: ' + err.message)
+      });
     }
   }
 
-  // --- XỬ LÝ IMPORT EXCEL ---
+  // 4. UPLOAD EXCEL THẦN THÁNH
   onExcelImport(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -111,13 +128,25 @@ export class InstructorClassDetail implements OnInit {
     const file = input.files[0];
     this.isImporting.set(true);
 
-    // TODO: Gửi file Excel này xuống API C# để C# đọc và insert hàng loạt vào DB
-    console.log('Đang upload file Excel:', file.name);
-    
-    setTimeout(() => {
-      alert('Đã import thành công danh sách sinh viên từ Excel!');
-      this.isImporting.set(false);
-      input.value = ''; // Reset thẻ input
-    }, 1500);
+    this.classService.importStudentsExcel(this.classId(), file).subscribe({
+      next: (response) => {
+        this.isImporting.set(false);
+        input.value = ''; // Reset
+        
+        // Hiện thông báo + lỗi nếu có
+        let msg = response.message;
+        if (response.errors && response.errors.length > 0) {
+          msg += '\n\nTuy nhiên có vài lỗi sau:\n' + response.errors.join('\n');
+        }
+        alert(msg);
+        
+        this.loadClassData(this.classId()); // Tải lại bảng để thấy sinh viên mới
+      },
+      error: (err) => {
+        alert('Lỗi Import: ' + (err.error?.message || err.message));
+        this.isImporting.set(false);
+        input.value = '';
+      }
+    });
   }
 }

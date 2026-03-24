@@ -17,13 +17,22 @@
       }
 
       @if (currentLesson()?.type === 1) {
-        <div class="bg-gray-800 rounded-xl overflow-hidden shadow-lg aspect-video flex flex-col items-center justify-center text-white border border-gray-700 p-8 text-center">
-          <span class="text-6xl mb-4">📄</span>
-          <h2 class="text-2xl font-bold mb-2">Tài liệu đọc</h2>
-          <p class="text-gray-400 mb-6">Bạn vui lòng tải tài liệu đính kèm về máy để đọc.</p>
-          <a [href]="currentLesson()?.videoUrl" target="_blank" class="px-6 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-700 shadow-md transition">
-            ⬇️ Tải tài liệu xuống
-          </a>
+        <div class="bg-gray-100 rounded-xl overflow-hidden shadow-lg aspect-video border border-gray-200 relative group">
+          
+          @if (safeDocumentUrl()) {
+            <iframe [src]="safeDocumentUrl()" class="w-full h-full border-0" title="Tài liệu bài học"></iframe>
+          } @else {
+            <div class="w-full h-full flex flex-col items-center justify-center text-gray-500">
+              <span class="text-4xl mb-2">⚠️</span>
+              <p>Chưa có file tài liệu đính kèm.</p>
+            </div>
+          }
+
+          <div class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <a [href]="currentLesson()?.videoUrl" target="_blank" class="px-5 py-2.5 bg-blue-600/90 backdrop-blur-sm text-white rounded-lg font-bold hover:bg-blue-700 shadow-xl flex items-center gap-2">
+              <span>⬇️</span> Tải tài liệu về máy
+            </a>
+          </div>
         </div>
       }
 
@@ -89,6 +98,23 @@
           <h2 class="text-2xl font-bold text-gray-900 mb-2">✍️ Nộp bài tự luận</h2>
           <p class="text-gray-600 mb-6 pb-4 border-b">Hãy đọc kỹ yêu cầu bài tập và đính kèm file (nếu có) trước khi nộp.</p>
           
+          @if (currentLesson()?.videoUrl) {
+            <div class="mb-8 bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-2xl shrink-0">
+                  📥
+                </div>
+                <div>
+                  <h4 class="font-bold text-indigo-900 text-lg">Đề bài đính kèm</h4>
+                  <p class="text-sm text-indigo-700 mt-0.5">Giảng viên đã đính kèm tệp đề bài. Vui lòng xem hoặc tải về để làm bài.</p>
+                </div>
+              </div>
+              <a [href]="currentLesson()?.videoUrl" target="_blank" class="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition flex items-center gap-2">
+                <span>👀</span> Xem / Tải Đề Bài
+              </a>
+            </div>
+          }
+
           <div class="mb-6 p-4 rounded-xl border" 
                [class.bg-gray-50]="!mySubmission()" [class.border-gray-200]="!mySubmission()"
                [class.bg-blue-50]="mySubmission() && mySubmission().score === null" [class.border-blue-200]="mySubmission() && mySubmission().score === null"

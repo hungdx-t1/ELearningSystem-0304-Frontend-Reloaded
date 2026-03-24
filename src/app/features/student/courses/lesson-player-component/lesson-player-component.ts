@@ -5,6 +5,7 @@ import { CourseService, Course, Chapter, Lesson } from '../../../../core/service
 import { SubmissionService } from '../../../../core/services/submission.service';
 import { QuestionService, Question } from '../../../../core/services/question.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-lesson-player-component',
@@ -23,6 +24,9 @@ export class LessonPlayerComponent implements OnInit {
   private submissionService = inject(SubmissionService);
   private questionService = inject(QuestionService);
 
+  // Tiêm DomSanitizer vào
+  private sanitizer = inject(DomSanitizer);
+
   courseId = signal<string>('');
   lessonId = signal<string>('');
   
@@ -33,6 +37,15 @@ export class LessonPlayerComponent implements OnInit {
   // Dữ liệu Bài học hiện tại
   currentLesson = signal<Lesson | null>(null);
   isLoading = signal<boolean>(true);
+
+  safeDocumentUrl = computed(() => {
+    const lesson = this.currentLesson();
+    if (lesson && lesson.type === 1 && lesson.videoUrl) {
+      // Đóng dấu "An toàn" cho link Cloudinary để Angular cho phép đưa vào iframe
+      return this.sanitizer.bypassSecurityTrustResourceUrl(lesson.videoUrl);
+    }
+    return null;
+  });
 
   // --- DỮ LIỆU RIÊNG CHO LOẠI 2: TRẮC NGHIỆM (QUIZ) ---
   questions = signal<Question[]>([]);
@@ -52,9 +65,6 @@ export class LessonPlayerComponent implements OnInit {
   realStudentId = this.authService.getCurrentUserId(); 
 
   classId = signal<string>('');
-
-  // Tạm thời hardcode ClassId, sau này truyền qua URL từ trang Class List sang
-  mockClassId = '00000000-0000-0000-0000-000000000001';
 
   ngOnInit() {
     // 1. Đọc cái classId ẩn trên URL (?classId=...)

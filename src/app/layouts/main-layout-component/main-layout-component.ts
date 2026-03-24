@@ -22,6 +22,7 @@ export class MainLayoutComponent {
     { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }, 
     { path: '/instructor/courses', icon: '👨‍🏫', label: 'Quản lý khóa học' },
     { path: '/instructor/classes', icon: '👨‍🏫', label: 'Quản lý lớp học' },  // tạm thời
+    { path: '/instructor/assignments', icon: '👨‍🏫', label: 'Chấm điểm bài tập' },  // tạm thời
   ];
 
   logout() {

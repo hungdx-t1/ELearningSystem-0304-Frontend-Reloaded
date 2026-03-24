@@ -20,6 +20,7 @@ import { ClassManagement } from './features/instructor/class-management/class-ma
 import { AdminClassManagement } from './features/admin/class-management/class-management';
 import { AdminCourseManagement } from './features/admin/course-management/course-management';
 import { QuizBuilder } from './features/instructor/quiz-builder/quiz-builder';
+import { AssignmentGrading } from './features/instructor/assignment-grading/assignment-grading';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -65,6 +66,12 @@ export const routes: Routes = [
       {
         path: 'instructor/courses/:courseId/quizzes/:lessonId',
         component: QuizBuilder,
+        canActivate: [roleGuard],
+        data: { roles: ['Instructor', 'Admin'] },
+      },
+      {
+        path: 'instructor/assignments',
+        component: AssignmentGrading,
         canActivate: [roleGuard],
         data: { roles: ['Instructor', 'Admin'] },
       },

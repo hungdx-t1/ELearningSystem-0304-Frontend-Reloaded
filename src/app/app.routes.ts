@@ -22,6 +22,7 @@ import { AdminCourseManagement } from './features/admin/course-management/course
 import { QuizBuilder } from './features/instructor/quiz-builder/quiz-builder';
 import { AssignmentGrading } from './features/instructor/assignment-grading/assignment-grading';
 import { InstructorClassDetail } from './features/instructor/class-detail/class-detail';
+import { InstructorLayout } from './layouts/instructor-layout/instructor-layout';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -37,52 +38,46 @@ export const routes: Routes = [
       { path: 'courses/:id', component: CourseDetail },
       { path: 'classes', component: ClassListComponent },
       { path: 'chat', component: AiChatComponent },
-      { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent },
-
-      // khu vực giảng viên (Admin và Instructor được vào, Student bị cấm)
-      {
-        path: 'instructor/courses',
-        component: CourseManagement,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] }, // Truyền data quy định quyền
-      },
-      {
-        path: 'instructor/courses/create',
-        component: CourseCreate,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
-      {
-        path: 'instructor/courses/:id/manage',
-        component: CourseEditor,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
-      {
-        path: 'instructor/classes',
-        component: ClassManagement,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
-      {
-        path: 'instructor/classes/:id', 
-        component: InstructorClassDetail,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
-      {
-        path: 'instructor/courses/:courseId/quizzes/:lessonId',
-        component: QuizBuilder,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
-      {
-        path: 'instructor/assignments',
-        component: AssignmentGrading,
-        canActivate: [roleGuard],
-        data: { roles: ['Instructor', 'Admin'] },
-      },
+      { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent }
     ],
+  },
+
+  // khu vực giảng viên (instructor) 
+  {
+    path: 'instructor',
+    component: InstructorLayout,
+    canActivate: [authGuard, roleGuard], 
+    data: { roles: ['Instructor', 'Admin'] },
+    children: [
+      {
+        path: 'courses',
+        component: CourseManagement,
+      },
+      {
+        path: 'courses/create',
+        component: CourseCreate,
+      },
+      {
+        path: 'courses/:id/manage',
+        component: CourseEditor,
+      },
+      {
+        path: 'classes',
+        component: ClassManagement,
+      },
+      {
+        path: 'classes/:id', 
+        component: InstructorClassDetail,
+      },
+      {
+        path: 'courses/:courseId/quizzes/:lessonId',
+        component: QuizBuilder,
+      },
+      {
+        path: 'assignments',
+        component: AssignmentGrading,
+      },
+    ]
   },
 
   // khu vực admin

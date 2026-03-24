@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CourseService, Course, Chapter } from '../../../core/services/course.service';
+import { CourseService, Course, Chapter } from '../../../../core/services/course.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({

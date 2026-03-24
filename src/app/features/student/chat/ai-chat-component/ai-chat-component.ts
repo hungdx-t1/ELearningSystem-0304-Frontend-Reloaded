@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, inject, signal, AfterViewChecked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ChatService, ChatMessage } from '../../../core/services/chat.service';
+import { ChatService, ChatMessage } from '../../../../core/services/chat.service';
 import { marked } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
 

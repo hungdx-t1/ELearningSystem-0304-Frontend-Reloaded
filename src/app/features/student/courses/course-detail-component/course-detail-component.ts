@@ -59,4 +59,26 @@ export class CourseDetail implements OnInit {
     // Cập nhật lại Signal để giao diện vẽ lại
     this.chapters.set([...this.chapters()]); 
   }
+
+  // Trả về Emoji tương ứng với loại bài học
+  getLessonIcon(type: number | undefined): string {
+    switch (type) {
+      case 0: return '▶️';
+      case 1: return '📄';
+      case 2: return '📝';
+      case 3: return '✍️';
+      default: return '📄';
+    }
+  }
+
+  // Trả về Nhãn (Badge text)
+  getLessonBadge(lesson: any): string {
+    switch (lesson.type) {
+      case 0: return lesson.duration ? `${lesson.duration} phút` : 'Video';
+      case 1: return 'Tài liệu';
+      case 2: return 'Trắc nghiệm';
+      case 3: return 'Tự luận';
+      default: return 'Bài học';
+    }
+  }
 }

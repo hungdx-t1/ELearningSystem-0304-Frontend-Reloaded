@@ -43,49 +43,29 @@
                 </span>
               </button>
 
-              <!-- @if (chapter.isExpanded) {
-                <div class="divide-y divide-gray-100">
-                  @if (chapter.lessons?.length === 0) {
-                    <p class="p-4 text-sm text-gray-500 italic px-8">Chưa có bài học.</p>
-                  }
-                  
-                  @for (lesson of chapter.lessons; track lesson.id) {
-                    
-                    <a [routerLink]="['/courses', course()?.id, 'lessons', lesson.id]" 
-                       class="flex items-center justify-between p-4 pl-8 hover:bg-blue-50 transition cursor-pointer group">
-                      <div class="flex items-center gap-3">
-                        <span class="text-xl group-hover:text-blue-600 transition">
-                          {{ lesson.type === 0 ? '▶️' : '📄' }}
-                        </span>
-                        <span class="text-gray-700 font-medium group-hover:text-blue-700">
-                          Bài {{ lesson.sortOrder }}: {{ lesson.title }}
-                        </span>
-                      </div>
-                      <span class="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
-                        {{ lesson.duration ? lesson.duration + ' phút' : 'Tài liệu' }}
-                      </span>
-                    </a>
-                    
-                  }
-                </div>
-              } -->
-
               <div class="divide-y divide-gray-100 overflow-hidden" [@slideInOut]="chapter.isExpanded ? 'expanded' : 'collapsed'">
                 @for (lesson of chapter.lessons; track lesson.id) {
                   <a [routerLink]="['/courses', course()?.id, 'lessons', lesson.id]" 
                        queryParamsHandling="preserve"
                        class="flex items-center justify-between p-4 pl-8 hover:bg-blue-50 transition cursor-pointer group">
+                      
                       <div class="flex items-center gap-3">
-                        <span class="text-xl group-hover:text-blue-600 transition">
-                          {{ lesson.type === 0 ? '▶️' : '📄' }}
+                        <span class="text-xl group-hover:scale-110 transition-transform">
+                          {{ getLessonIcon(lesson.type) }}
                         </span>
                         <span class="text-gray-700 font-medium group-hover:text-blue-700">
                           Bài {{ lesson.sortOrder }}: {{ lesson.title }}
                         </span>
                       </div>
-                      <span class="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
-                        {{ lesson.duration ? lesson.duration + ' phút' : 'Tài liệu' }}
+                      
+                      <span class="text-xs font-bold px-2.5 py-1 rounded-md"
+                            [class.bg-blue-100]="lesson.type === 0" [class.text-blue-700]="lesson.type === 0"
+                            [class.bg-gray-100]="lesson.type === 1" [class.text-gray-600]="lesson.type === 1"
+                            [class.bg-orange-100]="lesson.type === 2" [class.text-orange-700]="lesson.type === 2"
+                            [class.bg-purple-100]="lesson.type === 3" [class.text-purple-700]="lesson.type === 3">
+                        {{ getLessonBadge(lesson) }}
                       </span>
+                      
                     </a>
                   }
               </div>

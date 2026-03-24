@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { CourseService, Course } from '../../core/services/course.service';
+import { CourseService, Course } from '../../../core/services/course.service';
 import { RouterLink } from '@angular/router';
 import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
 

@@ -49,6 +49,7 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard], 
     data: { roles: ['Instructor', 'Admin'] },
     children: [
+      { path: '', redirectTo: 'courses', pathMatch: 'full' },
       {
         path: 'courses',
         component: CourseManagement,
@@ -94,10 +95,7 @@ export const routes: Routes = [
       { path: 'courses', component: AdminCourseManagement },
     ],
   },
-
-  // Trang cấm truy cập 403
+  
   { path: 'no-permission', component: NoPermissionComponent },
-
-  // Gõ link bậy bạ ra 404
   { path: '**', component: NotFoundComponent },
 ];

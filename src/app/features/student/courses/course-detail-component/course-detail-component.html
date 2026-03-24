@@ -73,6 +73,7 @@
               <div class="divide-y divide-gray-100 overflow-hidden" [@slideInOut]="chapter.isExpanded ? 'expanded' : 'collapsed'">
                 @for (lesson of chapter.lessons; track lesson.id) {
                   <a [routerLink]="['/courses', course()?.id, 'lessons', lesson.id]" 
+                       queryParamsHandling="preserve"
                        class="flex items-center justify-between p-4 pl-8 hover:bg-blue-50 transition cursor-pointer group">
                       <div class="flex items-center gap-3">
                         <span class="text-xl group-hover:text-blue-600 transition">

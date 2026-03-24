@@ -52,7 +52,9 @@
               </td>
               
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <a [routerLink]="['/courses', c.courseId]" class="inline-block px-5 py-2 bg-blue-600 text-white hover:bg-blue-700 font-bold rounded-lg shadow-sm transition">
+                <a [routerLink]="['/courses', c.courseId]" 
+                   [queryParams]="{ classId: c.id }"
+                   class="inline-block px-5 py-2 bg-blue-600 text-white hover:bg-blue-700 font-bold rounded-lg shadow-sm transition">
                   Vào học
                 </a>
               </td>

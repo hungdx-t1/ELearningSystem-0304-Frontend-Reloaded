@@ -51,11 +51,21 @@ export class LessonPlayerComponent implements OnInit {
   // LẤY ID THẬT TỪ LOCAL STORAGE QUA AUTH SERVICE
   realStudentId = this.authService.getCurrentUserId(); 
 
+  classId = signal<string>('');
+
   // Tạm thời hardcode ClassId, sau này truyền qua URL từ trang Class List sang
   mockClassId = '00000000-0000-0000-0000-000000000001';
 
   ngOnInit() {
-    // Theo dõi sự thay đổi của URL (để khi bấm bài khác trên sidebar nó tự load lại)
+    // 1. Đọc cái classId ẩn trên URL (?classId=...)
+    this.route.queryParamMap.subscribe(qParams => {
+      const clsId = qParams.get('classId');
+      if (clsId) {
+        this.classId.set(clsId);
+      }
+    });
+
+    // 2. Kéo dữ liệu Bài học (Giữ nguyên như cũ)
     this.route.paramMap.subscribe(params => {
       const cId = params.get('courseId');
       const lId = params.get('lessonId');
@@ -113,7 +123,7 @@ export class LessonPlayerComponent implements OnInit {
           this.questions.set(data);
           
           // Kiểm tra xem đã làm bài này chưa bằng ID Thật
-          this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.realStudentId).subscribe({
+          this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
             next: (sub) => {
               if (sub && sub.score != null) {
                 this.quizScore.set(sub.score ?? null); 
@@ -133,7 +143,7 @@ export class LessonPlayerComponent implements OnInit {
 
     // NẾU LÀ TỰ LUẬN (3): (Giữ nguyên như cũ)
     if (lesson.type === 3) {
-      this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.realStudentId).subscribe({
+      this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
         next: (sub) => {
           if (sub) {
             this.mySubmission.set(sub);
@@ -172,8 +182,9 @@ export class LessonPlayerComponent implements OnInit {
       // Gói dữ liệu gửi xuống Backend C# với ID Thật
       const payload = {
         lessonId: this.lessonId(),
-        classId: this.mockClassId,
+        classId: this.classId(),
         studentId: this.realStudentId,
+        submissionUrl: this.submissionForm.value.submissionUrl,
         score: finalScore
       };
 
@@ -209,7 +220,7 @@ export class LessonPlayerComponent implements OnInit {
   submitAssignment() {
     const payload = {
       lessonId: this.lessonId(),
-      classId: this.mockClassId,
+      classId: this.classId(),
       studentId: this.realStudentId, // Dùng ID Thật
       submissionUrl: this.submissionForm.value.submissionUrl,
       studentNote: this.submissionForm.value.studentNote

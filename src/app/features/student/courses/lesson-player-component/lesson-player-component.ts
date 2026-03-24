@@ -38,13 +38,35 @@ export class LessonPlayerComponent implements OnInit {
   currentLesson = signal<Lesson | null>(null);
   isLoading = signal<boolean>(true);
 
-  safeDocumentUrl = computed(() => {
-    const lesson = this.currentLesson();
-    if (lesson && lesson.type === 1 && lesson.videoUrl) {
-      // Đóng dấu "An toàn" cho link Cloudinary để Angular cho phép đưa vào iframe
-      return this.sanitizer.bypassSecurityTrustResourceUrl(lesson.videoUrl);
+  // 1. Kiểm tra xem link có phải của YouTube không
+  isYouTubeVideo = computed(() => {
+    const url = this.currentLesson()?.videoUrl;
+    return url ? (url.includes('youtube.com') || url.includes('youtu.be')) : false;
+  });
+
+  // 2. Hàm Regex thần thánh bóc tách ID YouTube từ mọi thể loại link
+  getYouTubeEmbedUrl(url: string): string | null {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2].length === 11) {
+      return 'https://www.youtube.com/embed/' + match[2];
     }
     return null;
+  }
+
+  // 3. Tạo link an toàn cho iframe (Cân cả YouTube lẫn PDF Cloudinary)
+  safeResourceUrl = computed(() => {
+    const lesson = this.currentLesson();
+    if (!lesson || !lesson.videoUrl) return null;
+
+    if (this.isYouTubeVideo()) {
+      const embedUrl = this.getYouTubeEmbedUrl(lesson.videoUrl);
+      return embedUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl) : null;
+    }
+
+    // Nếu không phải YouTube thì trả về link gốc (PDF, mp4 của Cloudinary...)
+    return this.sanitizer.bypassSecurityTrustResourceUrl(lesson.videoUrl);
   });
 
   // --- DỮ LIỆU RIÊNG CHO LOẠI 2: TRẮC NGHIỆM (QUIZ) ---

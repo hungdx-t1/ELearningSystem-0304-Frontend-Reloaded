@@ -10,17 +10,21 @@
       
       @if (currentLesson()?.type === 0) {
         <div class="bg-black rounded-xl overflow-hidden shadow-lg aspect-video relative">
-          <video controls autoplay class="w-full h-full outline-none" [src]="currentLesson()?.videoUrl">
-            Trình duyệt của bạn không hỗ trợ thẻ video.
-          </video>
+          @if (isYouTubeVideo() && safeResourceUrl()) {
+            <iframe [src]="safeResourceUrl()" class="w-full h-full border-0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+          } @else {
+            <video controls autoplay class="w-full h-full outline-none" [src]="currentLesson()?.videoUrl">
+              Trình duyệt của bạn không hỗ trợ thẻ video.
+            </video>
+          }
         </div>
       }
 
       @if (currentLesson()?.type === 1) {
         <div class="bg-gray-100 rounded-xl overflow-hidden shadow-lg aspect-video border border-gray-200 relative group">
           
-          @if (safeDocumentUrl()) {
-            <iframe [src]="safeDocumentUrl()" class="w-full h-full border-0" title="Tài liệu bài học"></iframe>
+          @if (safeResourceUrl()) {
+            <iframe [src]="safeResourceUrl()" class="w-full h-full border-0" title="Tài liệu bài học"></iframe>
           } @else {
             <div class="w-full h-full flex flex-col items-center justify-center text-gray-500">
               <span class="text-4xl mb-2">⚠️</span>
@@ -99,20 +103,27 @@
           <p class="text-gray-600 mb-6 pb-4 border-b">Hãy đọc kỹ yêu cầu bài tập và đính kèm file (nếu có) trước khi nộp.</p>
           
           @if (currentLesson()?.videoUrl) {
-            <div class="mb-8 bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div class="flex items-start gap-4">
-                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-2xl shrink-0">
-                  📥
-                </div>
-                <div>
-                  <h4 class="font-bold text-indigo-900 text-lg">Đề bài đính kèm</h4>
-                  <p class="text-sm text-indigo-700 mt-0.5">Giảng viên đã đính kèm tệp đề bài. Vui lòng xem hoặc tải về để làm bài.</p>
+            @if (isYouTubeVideo() && safeResourceUrl()) {
+              <div class="mb-8">
+                <h4 class="font-bold text-gray-800 mb-2">🎥 Video hướng dẫn / Đề bài:</h4>
+                <div class="rounded-xl overflow-hidden shadow-sm aspect-video border border-gray-200">
+                  <iframe [src]="safeResourceUrl()" class="w-full h-full border-0" allowfullscreen></iframe>
                 </div>
               </div>
-              <a [href]="currentLesson()?.videoUrl" target="_blank" class="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition flex items-center gap-2">
-                <span>👀</span> Xem / Tải Đề Bài
-              </a>
-            </div>
+            } @else {
+              <div class="mb-8 bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-start gap-4">
+                  <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-2xl shrink-0">📥</div>
+                  <div>
+                    <h4 class="font-bold text-indigo-900 text-lg">Đề bài đính kèm</h4>
+                    <p class="text-sm text-indigo-700 mt-0.5">Giảng viên đã đính kèm tệp đề bài. Vui lòng xem hoặc tải về để làm bài.</p>
+                  </div>
+                </div>
+                <a [href]="currentLesson()?.videoUrl" target="_blank" class="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition flex items-center gap-2">
+                  <span>👀</span> Xem / Tải Đề Bài
+                </a>
+              </div>
+            }
           }
 
           <div class="mb-6 p-4 rounded-xl border" 

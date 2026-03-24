@@ -102,4 +102,9 @@ export class CourseService {
     formData.append('file', file);
     return this.http.post<{ message: string; url: string }>(`${this.apiUrl}/files/upload`, formData);
   }
+
+  // Lấy danh sách Bài tập tự luận của 1 khóa học (để thả vào Dropdown)
+  getAssignmentsByCourse(courseId: string) {
+    return this.http.get<any[]>(`${this.apiUrl}/courses/${courseId}/assignments`);
+  }
 }

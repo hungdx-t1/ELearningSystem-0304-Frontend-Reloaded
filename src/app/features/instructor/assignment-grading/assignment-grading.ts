@@ -21,10 +21,34 @@ export class AssignmentGrading implements OnInit {
   private userService = inject(UserService);
 
   classes = signal<any[]>([]);
+  assignments = signal<any[]>([]);
+
   allLessons = signal<any[]>([]);
   
   selectedClassId = signal<string>('');
   selectedLessonId = signal<string>('');
+
+  onClassChange(event: Event) {
+    const classId = (event.target as HTMLSelectElement).value;
+    this.selectedClassId.set(classId);
+    
+    // Reset bài tập đang chọn và danh sách bài tập cũ
+    this.selectedLessonId.set('');
+    this.assignments.set([]);
+    this.submissions.set([]); // Xóa danh sách bài nộp cũ trên bảng
+
+    if (!classId) return;
+
+    // Tìm khóa học (CourseId) của cái Lớp vừa chọn
+    const selectedClass = this.classes().find(c => c.id === classId);
+    if (selectedClass && selectedClass.courseId) {
+      // Gọi API lấy danh sách bài tự luận của khóa học đó
+      this.courseService.getAssignmentsByCourse(selectedClass.courseId).subscribe({
+        next: (data) => this.assignments.set(data),
+        error: (err) => console.error('Lỗi tải bài tập:', err)
+      });
+    }
+  }
 
   // Lọc ra các Lesson thuộc Course của cái Lớp đang chọn
   filteredLessons = computed(() => {

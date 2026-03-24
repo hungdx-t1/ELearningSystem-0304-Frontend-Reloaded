@@ -1,7 +1,7 @@
 <div class="space-y-6 pb-20">
-  <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+  <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
     <div class="flex items-center gap-4">
-      <button [routerLink]="['/instructor/courses', courseId(), 'manage']" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">
+      <button [routerLink]="['/instructor/courses', courseId(), 'manage']" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition shrink-0">
         <span class="text-xl font-bold text-gray-600">←</span>
       </button>
       <div>
@@ -9,9 +9,16 @@
         <h1 class="text-2xl font-bold text-gray-900">Bài tập trắc nghiệm</h1>
       </div>
     </div>
-    <button (click)="openAddForm()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 shadow-sm disabled:opacity-50">
-      + Thêm Câu Hỏi
-    </button>
+    
+    <div class="flex items-center gap-3">
+      <button (click)="openAiModal()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 shadow-sm disabled:opacity-50 flex items-center gap-2 border border-indigo-200 transition">
+        <span>✨</span> Tạo bằng AI
+      </button>
+      
+      <button (click)="openAddForm()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 shadow-sm disabled:opacity-50 transition">
+        + Thêm thủ công
+      </button>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -97,9 +104,64 @@
         <div class="h-full flex flex-col items-center justify-center text-gray-400 py-20 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
           <span class="text-6xl mb-4">👈</span>
           <p class="font-medium">Chọn một câu hỏi bên trái để sửa</p>
-          <p class="text-sm mt-1">hoặc bấm "+ Thêm Câu Hỏi" để tạo mới</p>
+          <p class="text-sm mt-1">hoặc bấm "+ Thêm thủ công" để tạo mới</p>
         </div>
       }
     </div>
   </div>
 </div>
+
+@if (isAiModalOpen()) {
+  <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up relative">
+      
+      <div class="h-2 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+
+      <div class="p-6 md:p-8">
+        <div class="flex justify-between items-start mb-6">
+          <div>
+            <h2 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">AI Trợ Giảng</span> ✨
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">Hệ thống sẽ tự động soạn câu hỏi và giải thích đáp án giúp bạn.</p>
+          </div>
+          <button (click)="closeAiModal()" [disabled]="isGenerating()" class="text-gray-400 hover:text-red-500 text-2xl font-bold disabled:opacity-50">&times;</button>
+        </div>
+
+        @if (isGenerating()) {
+          <div class="py-12 flex flex-col items-center justify-center text-center space-y-4">
+            <div class="relative w-16 h-16">
+              <div class="absolute inset-0 rounded-full border-4 border-indigo-100"></div>
+              <div class="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+              <div class="absolute inset-4 bg-indigo-100 rounded-full animate-pulse"></div>
+            </div>
+            <div>
+              <p class="font-bold text-indigo-900 text-lg">AI đang suy nghĩ...</p>
+              <p class="text-sm text-indigo-600 mt-1">Đang soạn câu hỏi và đáp án. Vui lòng không đóng trang!</p>
+            </div>
+          </div>
+        } @else {
+          <div class="space-y-5">
+            <div>
+              <label class="block font-bold text-gray-700 mb-2">Chủ đề bài học <span class="text-red-500">*</span></label>
+              <textarea [(ngModel)]="aiTopic" rows="3" placeholder="VD: Lập trình Java Core cơ bản, Biến và Kiểu dữ liệu..." 
+                        class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800"></textarea>
+            </div>
+
+            <div>
+              <label class="block font-bold text-gray-700 mb-2">Số lượng câu hỏi (Tối đa 20)</label>
+              <input type="number" [(ngModel)]="aiCount" min="1" max="20" 
+                     class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 text-gray-800 font-bold">
+            </div>
+
+            <div class="pt-4 mt-2">
+              <button (click)="generateWithAi()" class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/30 hover:scale-[1.02] transition-all flex justify-center items-center gap-2">
+                Bắt đầu tạo câu hỏi 🚀
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

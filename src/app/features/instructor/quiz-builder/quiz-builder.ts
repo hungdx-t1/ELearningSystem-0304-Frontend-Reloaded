@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Question, QuestionService } from '../../../core/services/question.service';
+import { AiService } from '../../../core/services/ai.service';
 
 @Component({
   selector: 'app-quiz-builder',
@@ -15,6 +16,7 @@ export class QuizBuilder implements OnInit {
   private fb = inject(FormBuilder);
 
   private questionService = inject(QuestionService);
+  private aiService = inject(AiService);
 
   courseId = signal<string>('');
   lessonId = signal<string>('');
@@ -25,6 +27,12 @@ export class QuizBuilder implements OnInit {
   // Trạng thái Form
   isFormOpen = signal<boolean>(false);
   editingQuestionId = signal<string | null>(null);
+
+  // --- TRẠNG THÁI MODAL AI ---
+  isAiModalOpen = signal<boolean>(false);
+  isGenerating = signal<boolean>(false);
+  aiTopic = signal<string>('');
+  aiCount = signal<number>(5); // Mặc định sinh 5 câu
 
   // Form chung 4 đáp án cố định (Rất dễ code và quản lý)
   questionForm = this.fb.group({
@@ -129,5 +137,66 @@ export class QuizBuilder implements OnInit {
         error: (err) => alert('Lỗi xóa: ' + (err.error?.message || err.message))
       });
     }
+  }
+
+  // --- LOGIC CHO AI GENERATOR ---
+  openAiModal() {
+    this.isAiModalOpen.set(true);
+  }
+
+  closeAiModal() {
+    if (this.isGenerating()) return; // Đang chạy thì không cho đóng
+    this.isAiModalOpen.set(false);
+    this.aiTopic.set('');
+  }
+
+  generateWithAi() {
+    if (!this.aiTopic().trim()) {
+      alert('Vui lòng nhập chủ đề bạn muốn AI tạo câu hỏi!');
+      return;
+    }
+    if (this.aiCount() <= 0 || this.aiCount() > 20) {
+      alert('Số lượng câu hỏi tối đa là 20 câu 1 lần để đảm bảo chất lượng.');
+      return;
+    }
+
+    this.isGenerating.set(true);
+
+    this.aiService.generateQuiz(this.aiTopic(), this.aiCount()).subscribe({
+      next: (generatedQuestions: any[]) => {
+        if (generatedQuestions && generatedQuestions.length > 0) {
+          let completedCount = 0;
+          
+          // Lặp qua mảng JSON AI trả về và gọi API lưu từng câu vào DB
+          generatedQuestions.forEach(q => {
+            const payload = { lessonId: this.lessonId(), ...q };
+            
+            this.questionService.createQuestion(payload).subscribe({
+              next: () => {
+                completedCount++;
+                // Khi đã lưu xong toàn bộ câu hỏi
+                if (completedCount === generatedQuestions.length) {
+                  alert(`✨ AI đã tạo và lưu thành công ${completedCount} câu hỏi!`);
+                  this.loadQuestions();
+                  this.isGenerating.set(false);
+                  this.closeAiModal();
+                }
+              },
+              error: (err) => {
+                console.error('Lỗi khi lưu câu hỏi AI sinh ra:', err);
+              }
+            });
+          });
+
+        } else {
+          alert('AI không thể tạo được câu hỏi. Vui lòng thử lại với chủ đề khác.');
+          this.isGenerating.set(false);
+        }
+      },
+      error: (err) => {
+        alert('Lỗi kết nối với não bộ AI: ' + (err.error?.message || err.message));
+        this.isGenerating.set(false);
+      }
+    });
   }
 }

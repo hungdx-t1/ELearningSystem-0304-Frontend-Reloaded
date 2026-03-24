@@ -50,34 +50,13 @@ export const routes: Routes = [
     data: { roles: ['Instructor', 'Admin'] },
     children: [
       { path: '', redirectTo: 'courses', pathMatch: 'full' },
-      {
-        path: 'courses',
-        component: CourseManagement,
-      },
-      {
-        path: 'courses/create',
-        component: CourseCreate,
-      },
-      {
-        path: 'courses/:id/manage',
-        component: CourseEditor,
-      },
-      {
-        path: 'classes',
-        component: ClassManagement,
-      },
-      {
-        path: 'classes/:id', 
-        component: InstructorClassDetail,
-      },
-      {
-        path: 'courses/:courseId/quizzes/:lessonId',
-        component: QuizBuilder,
-      },
-      {
-        path: 'assignments',
-        component: AssignmentGrading,
-      },
+      { path: 'courses', component: CourseManagement },
+      { path: 'courses/create', component: CourseCreate },
+      { path: 'courses/:id/manage', component: CourseEditor },
+      { path: 'classes', component: ClassManagement },
+      { path: 'classes/:id', component: InstructorClassDetail },
+      { path: 'courses/:courseId/quizzes/:lessonId', component: QuizBuilder},
+      { path: 'assignments', component: AssignmentGrading },
     ]
   },
 
@@ -95,7 +74,7 @@ export const routes: Routes = [
       { path: 'courses', component: AdminCourseManagement },
     ],
   },
-  
+
   { path: 'no-permission', component: NoPermissionComponent },
   { path: '**', component: NotFoundComponent },
 ];

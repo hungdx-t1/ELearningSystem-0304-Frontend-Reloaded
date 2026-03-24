@@ -58,21 +58,45 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   @for (opt of ['A', 'B', 'C', 'D']; track opt) {
-                    <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-white transition"
-                           [class.border-blue-500]="quizAnswers()[q.id!] === opt"
-                           [class.bg-blue-50]="quizAnswers()[q.id!] === opt"
-                           [class.opacity-60]="quizScore() !== null && q.correctOption !== opt"
+                    <label class="flex items-center p-3 border rounded-lg cursor-pointer transition"
+                           [class.hover:bg-gray-50]="quizScore() === null"
+                           
+                           [class.border-blue-500]="quizScore() === null && quizAnswers()[q.id!] === opt"
+                           [class.bg-blue-50]="quizScore() === null && quizAnswers()[q.id!] === opt"
+                           
+                           [class.opacity-60]="quizScore() !== null && q.correctOption !== opt && quizAnswers()[q.id!] !== opt"
+                           
                            [class.border-green-500]="quizScore() !== null && q.correctOption === opt"
-                           [class.bg-green-50]="quizScore() !== null && q.correctOption === opt">
+                           [class.bg-green-50]="quizScore() !== null && q.correctOption === opt"
+                           
+                           [class.border-red-500]="quizScore() !== null && quizAnswers()[q.id!] === opt && q.correctOption !== opt"
+                           [class.bg-red-50]="quizScore() !== null && quizAnswers()[q.id!] === opt && q.correctOption !== opt">
+                      
                       <input type="radio" [name]="'q_' + q.id" [value]="opt" [disabled]="quizScore() !== null"
-                             (change)="selectAnswer(q.id!, opt)" [checked]="quizAnswers()[q.id!] === opt" class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500">
-                      <span class="ml-3 font-medium text-gray-700">
-                        <span class="font-bold text-gray-500 mr-1">{{ opt }}.</span> 
+                             (change)="selectAnswer(q.id!, opt)" [checked]="quizAnswers()[q.id!] === opt" 
+                             class="w-4 h-4 border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                             [class.text-blue-600]="quizScore() === null"
+                             [class.text-green-600]="quizScore() !== null && q.correctOption === opt"
+                             [class.text-red-600]="quizScore() !== null && quizAnswers()[q.id!] === opt && q.correctOption !== opt">
+                      
+                      <span class="ml-3 font-medium"
+                            [class.text-gray-700]="quizScore() === null || (quizScore() !== null && q.correctOption !== opt && quizAnswers()[q.id!] !== opt)"
+                            [class.text-green-800]="quizScore() !== null && q.correctOption === opt"
+                            [class.text-red-800]="quizScore() !== null && quizAnswers()[q.id!] === opt && q.correctOption !== opt">
+                        
+                        <span class="font-bold mr-1" 
+                              [class.text-gray-500]="quizScore() === null"
+                              [class.text-green-700]="quizScore() !== null && q.correctOption === opt"
+                              [class.text-red-700]="quizScore() !== null && quizAnswers()[q.id!] === opt && q.correctOption !== opt">{{ opt }}.</span> 
                         {{ opt === 'A' ? q.optionA : (opt === 'B' ? q.optionB : (opt === 'C' ? q.optionC : q.optionD)) }}
                       </span>
                       
-                      @if (quizScore() !== null && q.correctOption === opt) {
-                        <span class="ml-auto text-green-500 font-bold">✔️</span>
+                      @if (quizScore() !== null) {
+                        @if (q.correctOption === opt) {
+                          <span class="ml-auto text-green-500 font-bold text-lg">✔️</span>
+                        } @else if (quizAnswers()[q.id!] === opt) {
+                          <span class="ml-auto text-red-500 font-bold text-lg">❌</span>
+                        }
                       }
                     </label>
                   }

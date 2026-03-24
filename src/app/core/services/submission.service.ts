@@ -30,6 +30,11 @@ export class SubmissionService {
     return this.http.get<Submission[]>(`${this.apiUrl}/class/${classId}/lesson/${lessonId}`);
   }
 
+  // Lấy bài nộp CỦA RIÊNG 1 SINH VIÊN (Dành cho màn hình học tập)
+  getSubmissionAsync(classId: string, lessonId: string, studentId: string): Observable<Submission> {
+    return this.http.get<Submission>(`${this.apiUrl}/class/${classId}/lesson/${lessonId}/student/${studentId}`);
+  }
+
   // Sinh viên nộp bài
   submitWork(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/submit`, data);

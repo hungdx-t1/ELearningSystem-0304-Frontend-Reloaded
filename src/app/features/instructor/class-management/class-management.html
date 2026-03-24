@@ -63,8 +63,12 @@
               </div>
             </td>
             <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-              <button (click)="openEditModal(cls)" class="text-blue-600 hover:text-blue-900 font-semibold">Sửa</button>
-              <button (click)="deleteClass(cls)" class="text-red-600 hover:text-red-900 font-semibold">Xóa</button>
+              <button [routerLink]="['/instructor/classes', cls.id]" class="text-green-600 hover:text-green-900 font-bold bg-green-50 px-3 py-1.5 rounded-md transition">
+                Quản lý lớp
+              </button>
+              
+              <button (click)="openEditModal(cls)" class="text-blue-600 hover:text-blue-900 font-semibold px-2">Sửa</button>
+              <button (click)="deleteClass(cls)" class="text-red-600 hover:text-red-900 font-semibold px-2">Xóa</button>
             </td>
           </tr>
         }

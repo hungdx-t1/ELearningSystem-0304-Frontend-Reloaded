@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 import { CourseService, Course, Chapter, Lesson } from '../../../../core/services/course.service';
 import { SubmissionService } from '../../../../core/services/submission.service';
 import { QuestionService, Question } from '../../../../core/services/question.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-lesson-player-component',
@@ -15,6 +16,8 @@ import { QuestionService, Question } from '../../../../core/services/question.se
 export class LessonPlayerComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
+
+  private authService = inject(AuthService);
   
   private courseService = inject(CourseService);
   private submissionService = inject(SubmissionService);
@@ -45,9 +48,10 @@ export class LessonPlayerComponent implements OnInit {
     submissionUrl: ['']
   });
 
-  // Tạm thời hardcode ClassId và StudentId (Vì SV phải đăng nhập và vào từ 1 Lớp học)
-  // TODO: Sau này bạn lấy từ localStorage (Token) hoặc URL
-  mockStudentId = '00000000-0000-0000-0000-000000000001'; 
+  // LẤY ID THẬT TỪ LOCAL STORAGE QUA AUTH SERVICE
+  realStudentId = this.authService.getCurrentUserId(); 
+
+  // Tạm thời hardcode ClassId, sau này truyền qua URL từ trang Class List sang
   mockClassId = '00000000-0000-0000-0000-000000000001';
 
   ngOnInit() {
@@ -108,12 +112,10 @@ export class LessonPlayerComponent implements OnInit {
         next: (data) => {
           this.questions.set(data);
           
-          // Kiểm tra xem đã làm bài này chưa
-          this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.mockStudentId).subscribe({
+          // Kiểm tra xem đã làm bài này chưa bằng ID Thật
+          this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.realStudentId).subscribe({
             next: (sub) => {
-              // Dùng != null để bao luôn cả trường hợp undefined và null
               if (sub && sub.score != null) {
-                // Thêm ?? null để TypeScript hết bắt bẻ
                 this.quizScore.set(sub.score ?? null); 
               } else {
                 this.quizScore.set(null); 
@@ -131,7 +133,7 @@ export class LessonPlayerComponent implements OnInit {
 
     // NẾU LÀ TỰ LUẬN (3): (Giữ nguyên như cũ)
     if (lesson.type === 3) {
-      this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.mockStudentId).subscribe({
+      this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.realStudentId).subscribe({
         next: (sub) => {
           if (sub) {
             this.mySubmission.set(sub);
@@ -167,11 +169,11 @@ export class LessonPlayerComponent implements OnInit {
       const finalScore = Number(((correct / qList.length) * 10).toFixed(2));
       this.quizScore.set(finalScore); // Cập nhật UI ngay lập tức
       
-      // Gói dữ liệu gửi xuống Backend C#
+      // Gói dữ liệu gửi xuống Backend C# với ID Thật
       const payload = {
         lessonId: this.lessonId(),
         classId: this.mockClassId,
-        studentId: this.mockStudentId,
+        studentId: this.realStudentId,
         score: finalScore
       };
 
@@ -208,7 +210,7 @@ export class LessonPlayerComponent implements OnInit {
     const payload = {
       lessonId: this.lessonId(),
       classId: this.mockClassId,
-      studentId: this.mockStudentId,
+      studentId: this.realStudentId, // Dùng ID Thật
       submissionUrl: this.submissionForm.value.submissionUrl,
       studentNote: this.submissionForm.value.studentNote
     };
@@ -218,7 +220,7 @@ export class LessonPlayerComponent implements OnInit {
         alert('Đã nộp bài thành công!');
         this.mySubmission.set(res); // Cập nhật UI sang trạng thái "Đã nộp"
       },
-      error: (err) => alert('Lỗi nộp bài: ' + err.message)
+      error: (err) => alert('Lỗi nộp bài: ' + (err.error?.message || err.message))
     });
   }
 }

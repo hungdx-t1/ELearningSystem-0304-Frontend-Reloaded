@@ -121,4 +121,16 @@ export class AuthService {
       return 'Student'; 
     }
   }
+
+  // Lấy ID của User đang đăng nhập hiện tại
+  getCurrentUserId(): string {
+    const user = this.userProfile();
+    
+    if (user) {
+      // Hứng cả 2 trường hợp chữ 'i' thường hoặc 'I' hoa tùy Backend trả về
+      return user.id || user.Id || ''; 
+    }
+    
+    return ''; // Nếu chưa đăng nhập thì trả về rỗng
+  }
 }

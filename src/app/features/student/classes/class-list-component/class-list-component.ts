@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ClassService } from '../../../../core/services/class.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-class-list-component',
@@ -11,13 +12,10 @@ import { ClassService } from '../../../../core/services/class.service';
 })
 export class ClassListComponent implements OnInit {
   private classService = inject(ClassService);
+  private authService = inject(AuthService);
 
   myClasses = signal<any[]>([]);
   isLoading = signal<boolean>(true);
-
-  // Tạm thời hardcode StudentId (Giống cái id xài bên LessonPlayer lúc nãy)
-  // TODO: Sau này làm phần Auth (Đăng nhập) xong thì lấy ID từ localStorage nhé
-  mockStudentId = '00000000-0000-0000-0000-000000000001';
 
   ngOnInit() {
     this.loadMyClasses();
@@ -25,7 +23,10 @@ export class ClassListComponent implements OnInit {
 
   loadMyClasses() {
     this.isLoading.set(true);
-    this.classService.getStudentClasses(this.mockStudentId).subscribe({
+
+    const realStudentId = this.authService.getCurrentUserId(); 
+
+    this.classService.getStudentClasses(realStudentId).subscribe({
       next: (data) => {
         this.myClasses.set(data);
         this.isLoading.set(false);

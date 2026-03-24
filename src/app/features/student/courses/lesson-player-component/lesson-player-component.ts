@@ -102,18 +102,34 @@ export class LessonPlayerComponent implements OnInit {
 
   // --- XỬ LÝ LOGIC THEO LOẠI BÀI HỌC ---
   handleSpecificLessonLogic(lesson: any) {
-    // Nếu là Quiz (2): Kéo câu hỏi về
+    // NẾU LÀ QUIZ (2): Kéo câu hỏi và Điểm cũ về
     if (lesson.type === 2) {
       this.questionService.getQuestionsByLessonId(lesson.id).subscribe({
         next: (data) => {
           this.questions.set(data);
-          this.quizScore.set(null); // Reset điểm
-          this.quizAnswers.set({}); // Reset đáp án
+          
+          // Kiểm tra xem đã làm bài này chưa
+          this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.mockStudentId).subscribe({
+            next: (sub) => {
+              // Dùng != null để bao luôn cả trường hợp undefined và null
+              if (sub && sub.score != null) {
+                // Thêm ?? null để TypeScript hết bắt bẻ
+                this.quizScore.set(sub.score ?? null); 
+              } else {
+                this.quizScore.set(null); 
+                this.quizAnswers.set({});
+              }
+            },
+            error: () => {
+              this.quizScore.set(null);
+              this.quizAnswers.set({});
+            }
+          });
         }
       });
     }
 
-    // Nếu là Assignment (3): Kéo bài nộp cũ về (nếu có)
+    // NẾU LÀ TỰ LUẬN (3): (Giữ nguyên như cũ)
     if (lesson.type === 3) {
       this.submissionService.getSubmissionAsync(this.mockClassId, lesson.id, this.mockStudentId).subscribe({
         next: (sub) => {
@@ -125,7 +141,7 @@ export class LessonPlayerComponent implements OnInit {
             this.submissionForm.reset();
           }
         },
-        error: () => this.mySubmission.set(null) // Lỗi 404 (Chưa nộp) thì gán null
+        error: () => this.mySubmission.set(null) 
       });
     }
   }
@@ -136,20 +152,35 @@ export class LessonPlayerComponent implements OnInit {
     this.quizAnswers.update(answers => ({ ...answers, [questionId]: option }));
   }
 
+  // --- LOGIC KHI BẤM NÚT NỘP BÀI QUIZ ---
   submitQuiz() {
     if (confirm('Bạn chắc chắn muốn nộp bài trắc nghiệm này?')) {
       const qList = this.questions();
       let correct = 0;
       const myAnswers = this.quizAnswers();
 
+      // Chấm điểm tại máy khách
       qList.forEach(q => {
         if (myAnswers[q.id!] === q.correctOption) correct++;
       });
 
-      const finalScore = (correct / qList.length) * 10;
-      this.quizScore.set(Number(finalScore.toFixed(2))); // Cập nhật điểm lên UI
+      const finalScore = Number(((correct / qList.length) * 10).toFixed(2));
+      this.quizScore.set(finalScore); // Cập nhật UI ngay lập tức
       
-      // TODO: Bạn có thể gọi API lưu điểm này vào bảng Submission giống phần Tự luận
+      // Gói dữ liệu gửi xuống Backend C#
+      const payload = {
+        lessonId: this.lessonId(),
+        classId: this.mockClassId,
+        studentId: this.mockStudentId,
+        score: finalScore
+      };
+
+      this.submissionService.submitQuiz(payload).subscribe({
+        next: () => {
+          alert(`Đã nộp bài! Điểm của bạn là: ${finalScore}/10`);
+        },
+        error: (err) => alert('Lỗi khi lưu điểm: ' + (err.error?.message || err.message))
+      });
     }
   }
 

@@ -44,4 +44,9 @@ export class SubmissionService {
   gradeSubmission(id: string, score: number, feedback: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/${id}/grade`, { score, feedback });
   }
+
+  // Sinh viên nộp bài trắc nghiệm (Lưu điểm)
+  submitQuiz(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/submit-quiz`, data);
+  }
 }

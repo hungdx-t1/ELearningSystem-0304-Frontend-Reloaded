@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CourseService, Course } from '../../../core/services/course.service';
 import { DatePipe } from '@angular/common';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-admin-course-management',
@@ -12,6 +13,8 @@ import { DatePipe } from '@angular/common';
 export class AdminCourseManagement implements OnInit {
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
+
+  private notiService = inject(NotificationService);
 
   courses = signal<Course[]>([]);
   isLoading = signal<boolean>(false);
@@ -46,7 +49,7 @@ export class AdminCourseManagement implements OnInit {
       },
       error: (err) => {
         console.error('Lỗi khi tải danh sách Khóa học:', err);
-        alert('Không thể tải dữ liệu từ máy chủ!');
+        this.notiService.error('Không thể tải dữ liệu từ máy chủ!');
         this.isLoading.set(false);
       },
     });
@@ -85,12 +88,12 @@ export class AdminCourseManagement implements OnInit {
       // Gọi API CREATE
       this.courseService.createCourse(payload).subscribe({
         next: () => {
-          alert('Đã tạo Khóa học thành công!');
+          this.notiService.success('Đã tạo Khóa học thành công!');
           this.loadCourses(); // Tải lại bảng để thấy dữ liệu mới
           this.closeModal();
         },
         error: (err) => {
-          alert('Lỗi khi tạo Khóa học: ' + (err.error?.message || err.message));
+          this.notiService.error('Lỗi khi tạo Khóa học: ' + (err.error?.message || err.message));
         },
       });
     } else {
@@ -100,11 +103,11 @@ export class AdminCourseManagement implements OnInit {
 
         this.courseService.updateCourse(id, payload).subscribe({
           next: () => {
-            alert('Cập nhật Khóa học thành công!');
+            this.notiService.success('Cập nhật Khóa học thành công!');
             this.loadCourses();
             this.closeModal();
           },
-          error: (err) => alert('Lỗi cập nhật: ' + err.message),
+          error: (err) => this.notiService.error('Lỗi cập nhật: ' + (err.error?.message || err.message)),
         });
       }
     }
@@ -121,7 +124,7 @@ export class AdminCourseManagement implements OnInit {
           // Xóa ngay trên giao diện cho mượt
           this.courses.update((list) => list.filter((c) => c.id !== course.id));
         },
-        error: (err) => alert('Lỗi khi xóa: ' + (err.error?.message || err.message)),
+        error: (err) => this.notiService.error('Lỗi khi xóa: ' + (err.error?.message || err.message)),
       });
     }
   }

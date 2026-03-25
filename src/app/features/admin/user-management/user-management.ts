@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { UserService, User } from '../../../core/services/user.service'; // Import Service
 import { SlicePipe } from '@angular/common';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-user-management',
@@ -13,8 +14,10 @@ import { SlicePipe } from '@angular/common';
 export class UserManagement implements OnInit {
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
-  private userService = inject(UserService); // Tiêm UserService vào đây
+  private userService = inject(UserService);
 
+  private notiService = inject(NotificationService);
+  
   isUploading = signal<boolean>(false);
   isExporting = signal<boolean>(false);
   isLoading = signal<boolean>(true); // Thêm trạng thái loading khi tải trang
@@ -127,7 +130,7 @@ export class UserManagement implements OnInit {
   saveUser() {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
-      alert('Form chưa hợp lệ! Vui lòng kiểm tra lại độ dài Tên hoặc định dạng Email.');
+      this.notiService.error('Form chưa hợp lệ! Vui lòng kiểm tra lại độ dài Tên hoặc định dạng Email.');
       return;
     }
 
@@ -158,13 +161,13 @@ export class UserManagement implements OnInit {
       // GỌI API THÊM MỚI
       this.userService.createUser(createPayload).subscribe({
         next: () => {
-          alert('Đã thêm tài khoản thành công!');
+          this.notiService.success('Đã thêm tài khoản thành công!');
           this.loadUsers();
           this.closeModal();
         },
         error: (err) => {
           const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
-          alert('Backend từ chối Thêm mới vì: ' + backendError);
+          this.notiService.error('Backend từ chối Thêm mới vì: ' + backendError);
         }
       });
 
@@ -189,13 +192,13 @@ export class UserManagement implements OnInit {
         // GỌI API CẬP NHẬT
         this.userService.updateUser(userId, updatePayload).subscribe({
           next: () => {
-            alert('Đã cập nhật thông tin thành công!');
+            this.notiService.success('Đã cập nhật thông tin thành công!');
             this.loadUsers();
             this.closeModal();
           },
           error: (err) => {
             const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
-            alert('Backend từ chối Cập nhật vì: ' + backendError);
+            this.notiService.error('Backend từ chối Cập nhật vì: ' + backendError);
           }
         });
       }
@@ -217,7 +220,7 @@ export class UserManagement implements OnInit {
             ),
           );
         },
-        error: (err) => alert('Lỗi khi đổi trạng thái: ' + err.message),
+        error: (err) => this.notiService.error('Lỗi khi đổi trạng thái: ' + err.message),
       });
     }
   }
@@ -233,7 +236,7 @@ export class UserManagement implements OnInit {
           // Xóa thẳng khỏi màn hình
           this.users.update((list) => list.filter((u) => u.id !== user.id));
         },
-        error: (err) => alert('Lỗi khi xóa tài khoản: ' + err.message),
+        error: (err) => this.notiService.error('Lỗi khi xóa tài khoản: ' + err.message),
       });
     }
   }
@@ -252,12 +255,12 @@ export class UserManagement implements OnInit {
       this.http.post<any>('http://localhost:5189/api/admin/users/import', formData).subscribe({
         next: (res) => {
           this.isUploading.set(false);
-          alert(res.message); // Báo thành công
+          this.notiService.success(res.message); // Báo thành công
           // Tương lai: Gọi hàm load lại danh sách User ở đây
         },
         error: (err) => {
           this.isUploading.set(false);
-          alert(err.error?.message || 'Có lỗi xảy ra khi tải file lên!');
+          this.notiService.error(err.error?.message || 'Có lỗi xảy ra khi tải file lên!');
         },
       });
 
@@ -294,7 +297,7 @@ export class UserManagement implements OnInit {
         },
         error: (err) => {
           console.error(err);
-          alert('Có lỗi xảy ra khi tải file Excel!');
+          this.notiService.error('Có lỗi xảy ra khi tải file Excel!');
           this.isExporting.set(false);
         },
       });

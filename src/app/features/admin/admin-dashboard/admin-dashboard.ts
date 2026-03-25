@@ -1,6 +1,7 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { DashboardService, DashboardData } from '../../../core/services/dashboard.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -10,6 +11,8 @@ import { DashboardService, DashboardData } from '../../../core/services/dashboar
 })
 export class AdminDashboard implements OnInit {
   private dashboardService = inject(DashboardService);
+
+  private notiService = inject(NotificationService);
 
   today = new Date(); // Lấy ngày tự động thay vì gõ cứng
   isLoading = signal<boolean>(true);

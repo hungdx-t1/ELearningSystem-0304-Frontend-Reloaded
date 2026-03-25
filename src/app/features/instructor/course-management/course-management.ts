@@ -2,6 +2,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { Course, CourseService } from '../../../core/services/course.service';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-course-management',
@@ -11,6 +12,8 @@ import { DatePipe } from '@angular/common';
 })
 export class CourseManagement implements OnInit {
   private courseService = inject(CourseService);
+
+  private notiService = inject(NotificationService);
 
   courses = signal<Course[]>([]);
   isLoading = signal<boolean>(true);
@@ -37,7 +40,7 @@ export class CourseManagement implements OnInit {
   deleteCourse(id: string) {
     if (confirm('Bạn có chắc chắn muốn xóa khóa học này không? Toàn bộ bài giảng sẽ bị mất!')) {
       // TODO: Gọi API Xóa  
-      alert('Chức năng xóa sẽ sớm được kích hoạt!');
+      this.notiService.warning('Chức năng xóa sẽ sớm được kích hoạt!');
     }
   }
 }

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClassService } from '../../../core/services/class.service';
 import { UserService, User } from '../../../core/services/user.service';
 import { SlicePipe } from '@angular/common';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-instructor-class-detail',
@@ -18,6 +19,8 @@ export class InstructorClassDetail implements OnInit {
   
   private classService = inject(ClassService);
   private userService = inject(UserService);
+
+  private notiService = inject(NotificationService);
 
   classId = signal<string>('');
   classInfo = signal<any>(null);
@@ -60,7 +63,7 @@ export class InstructorClassDetail implements OnInit {
         this.isLoading.set(false);
       },
       error: (err) => {
-        alert('Lỗi tải thông tin lớp: ' + err.message);
+        this.notiService.error('Lỗi tải thông tin lớp: ' + err.message);
         this.isLoading.set(false);
       }
     });
@@ -70,7 +73,7 @@ export class InstructorClassDetail implements OnInit {
     const link = this.classInfo()?.googleMeetLink;
     if (link) {
       navigator.clipboard.writeText(link);
-      alert('Đã copy link Google Meet!');
+      this.notiService.success('Đã copy link Google Meet!');
     }
   }
 
@@ -91,18 +94,18 @@ export class InstructorClassDetail implements OnInit {
         const student = users.find(u => u.email === emailOrCode || u.fullName.includes(emailOrCode)); // Note: Chỗ u.UserCode tùy thuộc DTO của bạn
         
         if (!student) {
-          alert('Không tìm thấy Sinh viên này trong hệ thống!');
+          this.notiService.error('Không tìm thấy Sinh viên này trong hệ thống!');
           return;
         }
 
         // Tìm thấy ID rồi thì đẩy vô Lớp
         this.classService.enrollStudent(this.classId(), student.id).subscribe({
           next: () => {
-            alert(`Đã thêm thành công!`);
+            this.notiService.success(`Đã thêm thành công!`);
             this.loadClassData(this.classId()); // Tải lại danh sách
             this.isAddModalOpen.set(false);
           },
-          error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+          error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message))
         });
       }
     });
@@ -115,7 +118,7 @@ export class InstructorClassDetail implements OnInit {
         next: () => {
           this.students.update(list => list.filter(s => s.id !== studentId)); // Xóa trên giao diện
         },
-        error: (err) => alert('Lỗi xóa: ' + err.message)
+        error: (err) => this.notiService.error('Lỗi xóa: ' + err.message)
       });
     }
   }
@@ -138,12 +141,12 @@ export class InstructorClassDetail implements OnInit {
         if (response.errors && response.errors.length > 0) {
           msg += '\n\nTuy nhiên có vài lỗi sau:\n' + response.errors.join('\n');
         }
-        alert(msg);
+        this.notiService.success(msg);
         
         this.loadClassData(this.classId()); // Tải lại bảng để thấy sinh viên mới
       },
       error: (err) => {
-        alert('Lỗi Import: ' + (err.error?.message || err.message));
+        this.notiService.error('Lỗi Import: ' + (err.error?.message || err.message));
         this.isImporting.set(false);
         input.value = '';
       }

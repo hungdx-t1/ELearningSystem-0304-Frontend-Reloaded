@@ -2,6 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter, Lesson } from '../../../core/services/course.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-instructor-course-editor',
@@ -14,6 +15,8 @@ export class CourseEditor implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
+
+  private notiService = inject(NotificationService);
 
   courseId = signal<string>('');
   courseInfo = signal<Course | null>(null);
@@ -79,7 +82,7 @@ export class CourseEditor implements OnInit {
       this.chapters.set(chapterList.sort((a, b) => a.sortOrder - b.sortOrder));
     } catch (error) {
       console.error('Lỗi tải nội dung khóa học', error);
-      alert('Không thể tải dữ liệu khóa học!');
+      this.notiService.error('Không thể tải dữ liệu khóa học!');
     } finally {
       this.isLoading.set(false);
     }
@@ -114,7 +117,7 @@ export class CourseEditor implements OnInit {
     if (this.chapterModalMode() === 'add') {
       this.courseService.createChapter(payload).subscribe({
         next: () => { this.loadCourseContent(this.courseId()); this.isChapterModalOpen.set(false); },
-        error: (err) => alert('Lỗi: ' + err.message)
+        error: (err) => this.notiService.error('Lỗi: ' + err.message)
       });
     } else {
       this.courseService.updateChapter(this.selectedChapterId(), payload).subscribe({
@@ -122,7 +125,7 @@ export class CourseEditor implements OnInit {
           this.loadCourseContent(this.courseId()); 
           this.isChapterModalOpen.set(false); 
         },
-        error: (err) => alert('Lỗi cập nhật Chương: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi cập nhật Chương: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -132,7 +135,7 @@ export class CourseEditor implements OnInit {
     if (confirm(`Xóa "${chapter.title}" sẽ xóa TOÀN BỘ bài học bên trong. Bạn chắc chắn chứ?`)) {
       this.courseService.deleteChapter(chapter.id).subscribe({
         next: () => this.loadCourseContent(this.courseId()),
-        error: (err) => alert('Lỗi xóa Chương: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi xóa Chương: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -193,7 +196,7 @@ export class CourseEditor implements OnInit {
           this.loadCourseContent(this.courseId()); 
           this.isLessonModalOpen.set(false); 
         },
-        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message))
       });
     } else {
       this.courseService.updateLesson(this.selectedLessonId(), payload).subscribe({
@@ -201,7 +204,7 @@ export class CourseEditor implements OnInit {
           this.loadCourseContent(this.courseId()); 
           this.isLessonModalOpen.set(false); 
         },
-        error: (err) => alert('Lỗi cập nhật Bài học: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi cập nhật Bài học: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -211,7 +214,7 @@ export class CourseEditor implements OnInit {
     if (confirm(`Bạn có chắc muốn xóa bài học "${lesson.title}" không?`)) {
       this.courseService.deleteLesson(lesson.id).subscribe({
         next: () => this.loadCourseContent(this.courseId()),
-        error: (err) => alert('Lỗi xóa Bài học: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi xóa Bài học: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -232,7 +235,7 @@ export class CourseEditor implements OnInit {
         input.value = ''; 
       },
       error: (err) => {
-        alert('Lỗi Upload: ' + (err.error?.message || err.message));
+        this.notiService.error('Lỗi Upload: ' + (err.error?.message || err.message));
         this.isUploading.set(false);
         input.value = '';
       }
@@ -263,7 +266,7 @@ export class CourseEditor implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        alert('Lỗi khi xuất file Excel từ máy chủ!');
+        this.notiService.error('Lỗi khi xuất file Excel từ máy chủ!');
       }
     });
   }

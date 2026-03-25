@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Question, QuestionService } from '../../../core/services/question.service';
 import { AiService } from '../../../core/services/ai.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-quiz-builder',
@@ -14,6 +15,8 @@ export class QuizBuilder implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+
+  private notiService = inject(NotificationService);
 
   private questionService = inject(QuestionService);
   private aiService = inject(AiService);
@@ -112,7 +115,7 @@ export class QuizBuilder implements OnInit {
           this.loadQuestions(); // Cập nhật danh sách bên trái
           this.isFormOpen.set(false); // Đóng form
         },
-        error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi cập nhật: ' + (err.error?.message || err.message))
       });
     } else {
       // API CREATE
@@ -121,7 +124,7 @@ export class QuizBuilder implements OnInit {
           this.loadQuestions(); 
           this.isFormOpen.set(false);
         },
-        error: (err) => alert('Lỗi thêm mới: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi thêm mới: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -137,7 +140,7 @@ export class QuizBuilder implements OnInit {
             this.isFormOpen.set(false);
           }
         },
-        error: (err) => alert('Lỗi xóa: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi xóa: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -157,11 +160,11 @@ export class QuizBuilder implements OnInit {
   generateWithAi() {
     // Nếu KHÔNG có file thì BẮT BUỘC phải có chủ đề
     if (!this.aiFile() && !this.aiTopic().trim()) {
-      alert('Vui lòng nhập chủ đề hoặc đính kèm tài liệu!');
+      this.notiService.error('Vui lòng nhập chủ đề hoặc đính kèm tài liệu!');
       return;
     }
     if (this.aiCount() <= 0 || this.aiCount() > 20) {
-      alert('Số lượng câu hỏi tối đa là 20 câu 1 lần để đảm bảo chất lượng.');
+      this.notiService.error('Số lượng câu hỏi tối đa là 20 câu 1 lần để đảm bảo chất lượng.');
       return;
     }
 
@@ -182,7 +185,7 @@ export class QuizBuilder implements OnInit {
               next: () => {
                 completedCount++;
                 if (completedCount === generatedQuestions.length) {
-                  alert(`✨ AI đã bóc tách tài liệu và lưu thành công ${completedCount} câu hỏi!`);
+                  this.notiService.success(`✨ AI đã bóc tách tài liệu và lưu thành công ${completedCount} câu hỏi!`);
                   this.loadQuestions();
                   this.isGenerating.set(false);
                   this.closeAiModal();
@@ -192,12 +195,12 @@ export class QuizBuilder implements OnInit {
             });
           });
         } else {
-          alert('AI không thể đọc được file này. Vui lòng thử file PDF/TXT khác.');
+          this.notiService.error('AI không thể đọc được file này. Vui lòng thử file PDF/TXT khác.');
           this.isGenerating.set(false);
         }
       },
       error: (err) => {
-        alert('Lỗi kết nối với não bộ AI: ' + (err.error?.message || err.message));
+        this.notiService.error('Lỗi kết nối với não bộ AI: ' + (err.error?.message || err.message));
         this.isGenerating.set(false);
       }
     });

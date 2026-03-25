@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 import { RouterLink } from '@angular/router';
 import { ClassService } from '../../../core/services/class.service';
 import { CourseService } from '../../../core/services/course.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-class-management',
@@ -16,6 +17,8 @@ export class ClassManagement implements OnInit {
   // Tiêm 2 service vào
   private classService = inject(ClassService);
   private courseService = inject(CourseService);
+  
+  private notiService = inject(NotificationService);
 
   courses = signal<any[]>([]);
   classes = signal<any[]>([]);
@@ -102,22 +105,22 @@ export class ClassManagement implements OnInit {
     if (this.modalMode() === 'add') {
       this.classService.createClass(formVal).subscribe({
         next: () => {
-          alert('Tạo lớp học thành công!');
+          this.notiService.success('Tạo lớp học thành công!');
           this.loadData();
           this.closeModal();
         },
-        error: (err) => alert('Lỗi tạo lớp: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi tạo lớp: ' + (err.error?.message || err.message))
       });
     } else {
       const classId = this.selectedClassId();
       if (classId) {
         this.classService.updateClass(classId, formVal).subscribe({
           next: () => {
-            alert('Cập nhật lớp học thành công!');
+            this.notiService.success('Cập nhật lớp học thành công!');
             this.loadData();
             this.closeModal();
           },
-          error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || err.message))
+          error: (err) => this.notiService.error('Lỗi cập nhật: ' + (err.error?.message || err.message))
         });
       }
     }
@@ -130,7 +133,7 @@ export class ClassManagement implements OnInit {
         next: () => {
           this.classes.update(list => list.filter(c => c.id !== cls.id));
         },
-        error: (err) => alert('Lỗi xóa lớp: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi xóa lớp: ' + (err.error?.message || err.message))
       });
     }
   }

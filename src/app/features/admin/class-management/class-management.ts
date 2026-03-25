@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 import { ClassService } from '../../../core/services/class.service';
 import { CourseService } from '../../../core/services/course.service';
 import { UserService } from '../../../core/services/user.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-admin-class-management',
@@ -16,6 +17,8 @@ export class AdminClassManagement implements OnInit {
   private classService = inject(ClassService);
   private courseService = inject(CourseService);
   private userService = inject(UserService);
+
+  private notiService = inject(NotificationService);
 
   courses = signal<any[]>([]);
   classes = signal<any[]>([]);
@@ -109,22 +112,23 @@ export class AdminClassManagement implements OnInit {
     if (this.modalMode() === 'add') {
       this.classService.createClass(payload).subscribe({
         next: () => {
-          alert('Đã tạo lớp và phân công Giảng viên!');
+          this.notiService.success('Đã tạo lớp và phân công Giảng viên!');
+         // alert('Đã tạo lớp và phân công Giảng viên!');
           this.loadAllData(); 
           this.closeModal();
         },
-        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message)),
+        error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message)),
       });
     } else {
       const id = this.selectedClassId();
       if (id) {
         this.classService.updateClass(id, payload).subscribe({
           next: () => {
-            alert('Đã cập nhật thông tin phân công lớp học!');
+            this.notiService.success('Đã cập nhật thông tin phân công lớp học!');
             this.loadAllData(); // Tải lại bảng
             this.closeModal();
           },
-          error: (err) => alert('Lỗi cập nhật: ' + (err.error?.message || err.message))
+          error: (err) => this.notiService.error('Lỗi cập nhật: ' + (err.error?.message || err.message))
         });
       }
     }
@@ -134,11 +138,11 @@ export class AdminClassManagement implements OnInit {
     if (confirm(`Cảnh báo: Bạn có chắc chắn muốn hủy lớp "${cls.classCode} - ${cls.className}" không?\nHành động này sẽ xóa toàn bộ danh sách sinh viên đã ghi danh vào lớp!`)) {
       this.classService.deleteClass(cls.id).subscribe({
         next: () => {
-          alert('Đã hủy lớp thành công!');
+          this.notiService.success('Đã hủy lớp thành công!');
           // Xóa thẳng khỏi mảng cho mượt mà không cần load lại toàn bộ
           this.classes.update(list => list.filter(c => c.id !== cls.id));
         },
-        error: (err) => alert('Lỗi khi hủy lớp: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi khi hủy lớp: ' + (err.error?.message || err.message))
       });
     }
   }

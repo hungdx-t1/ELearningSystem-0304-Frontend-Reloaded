@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CourseService } from '../../../core/services/course.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-course-create',
@@ -13,6 +14,8 @@ export class CourseCreate {
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
   private router = inject(Router);
+
+  private notiService = inject(NotificationService);
 
   courseForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5)]],

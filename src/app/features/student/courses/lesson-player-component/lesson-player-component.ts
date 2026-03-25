@@ -6,6 +6,7 @@ import { SubmissionService } from '../../../../core/services/submission.service'
 import { QuestionService, Question } from '../../../../core/services/question.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { DomSanitizer } from '@angular/platform-browser';
+import { NotificationService } from '../../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-lesson-player-component',
@@ -23,6 +24,8 @@ export class LessonPlayerComponent implements OnInit {
   private courseService = inject(CourseService);
   private submissionService = inject(SubmissionService);
   private questionService = inject(QuestionService);
+
+  private notiService = inject(NotificationService);
 
   // Tiêm DomSanitizer vào
   private sanitizer = inject(DomSanitizer);
@@ -222,9 +225,9 @@ export class LessonPlayerComponent implements OnInit {
 
       this.submissionService.submitQuiz(payload).subscribe({
         next: () => {
-          alert(`Đã nộp bài! Điểm của bạn là: ${finalScore}/10`);
+          this.notiService.success(`Đã nộp bài! Điểm của bạn là: ${finalScore}/10`);
         },
-        error: (err) => alert('Lỗi khi lưu điểm: ' + (err.error?.message || err.message))
+        error: (err) => this.notiService.error('Lỗi khi lưu điểm: ' + (err.error?.message || err.message))
       });
     }
   }
@@ -243,7 +246,7 @@ export class LessonPlayerComponent implements OnInit {
         this.isUploading.set(false);
       },
       error: () => {
-        alert('Lỗi Upload file!');
+        this.notiService.error('Lỗi Upload file!');
         this.isUploading.set(false);
       }
     });
@@ -260,10 +263,10 @@ export class LessonPlayerComponent implements OnInit {
 
     this.submissionService.submitWork(payload).subscribe({
       next: (res) => {
-        alert('Đã nộp bài thành công!');
+        this.notiService.success('Đã nộp bài thành công!');
         this.mySubmission.set(res); // Cập nhật UI sang trạng thái "Đã nộp"
       },
-      error: (err) => alert('Lỗi nộp bài: ' + (err.error?.message || err.message))
+      error: (err) => this.notiService.error('Lỗi nộp bài: ' + (err.error?.message || err.message))
     });
   }
 }

@@ -5,6 +5,7 @@ import { SubmissionService } from '../../../core/services/submission.service';
 import { ClassService } from '../../../core/services/class.service';
 import { CourseService } from '../../../core/services/course.service';
 import { UserService } from '../../../core/services/user.service';
+import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-assignment-grading',
@@ -19,6 +20,8 @@ export class AssignmentGrading implements OnInit {
   private classService = inject(ClassService);
   private courseService = inject(CourseService);
   private userService = inject(UserService);
+
+  private notiService = inject(NotificationService);
 
   classes = signal<any[]>([]);
   assignments = signal<any[]>([]);
@@ -98,7 +101,7 @@ export class AssignmentGrading implements OnInit {
     const lId = this.selectedLessonId();
 
     if (!cId || !lId) {
-      alert('Vui lòng chọn cả Lớp học và Bài tập để lọc!');
+      this.notiService.error('Vui lòng chọn cả Lớp học và Bài tập để lọc!');
       return;
     }
 
@@ -167,10 +170,10 @@ export class AssignmentGrading implements OnInit {
           return s;
         }));
 
-        alert('Đã lưu điểm và nhận xét thành công!');
+        this.notiService.success('Đã lưu điểm và nhận xét thành công!');
         this.closeModal();
       },
-      error: (err) => alert('Lỗi chấm điểm: ' + (err.error?.message || err.message))
+      error: (err) => this.notiService.error('Lỗi chấm điểm: ' + (err.error?.message || err.message))
     });
   }
 }

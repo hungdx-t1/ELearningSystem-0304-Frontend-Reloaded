@@ -238,4 +238,33 @@ export class CourseEditor implements OnInit {
       }
     });
   }
+
+  exportExcel(lessonId: string, lessonTitle: string, event: Event) {
+    event.stopPropagation();
+    
+    // Đổi trạng thái hiển thị loading nếu cần...
+    
+    this.courseService.exportLessonScores(lessonId).subscribe({
+      next: (blobData) => {
+        // Tạo một URL ảo trỏ vào vùng nhớ chứa file
+        const url = window.URL.createObjectURL(blobData);
+        
+        // Tạo một thẻ <a> ẩn để tự động bấm tải xuống
+        const a = document.createElement('a');
+        a.href = url;
+        // Gắn tên bài học vào tên file tải về cho chuyên nghiệp
+        a.download = `Bang_Diem_${lessonTitle.replace(/[^a-zA-Z0-9]/g, '_')}.xlsx`; 
+        document.body.appendChild(a);
+        a.click();
+        
+        // Dọn rác
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Lỗi khi xuất file Excel từ máy chủ!');
+      }
+    });
+  }
 }

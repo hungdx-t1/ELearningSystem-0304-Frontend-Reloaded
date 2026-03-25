@@ -118,4 +118,10 @@ export class CourseService {
   getAssignmentsByCourse(courseId: string) {
     return this.http.get<any[]>(`${this.apiUrl}/courses/${courseId}/assignments`);
   }
+
+  exportLessonScores(lessonId: string) {
+    return this.http.get(`${this.apiUrl}/submissions/lesson/${lessonId}/export`, { 
+      responseType: 'blob' 
+    });
+  }
 }

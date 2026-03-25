@@ -62,15 +62,23 @@
                     <span class="font-semibold text-gray-800">Bài {{ lesson.sortOrder }}: {{ lesson.title }}</span>
                   </div>
                   
-                  <div class="opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
+                  <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2">
+                    
                     @if (lesson.type === 2) {
                       <button [routerLink]="['/instructor/courses', courseId(), 'quizzes', lesson.id]" 
-                              class="text-xs text-white bg-orange-500 hover:bg-orange-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition">
+                              class="text-xs text-white bg-orange-500 hover:bg-orange-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1">
                         📝 Soạn câu hỏi
                       </button>
                     }
                     
-                    <button (click)="openEditLessonModal(lesson, chapter.id, $event)" class="text-xs text-gray-500 hover:text-blue-600 font-bold">Sửa</button>
+                    @if (lesson.type === 2 || lesson.type === 3) {
+                      <button (click)="exportExcel(lesson.id, lesson.title, $event)" 
+                              class="text-xs text-white bg-green-600 hover:bg-green-700 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1">
+                        📊 Xuất bảng điểm
+                      </button>
+                    }
+                    
+                    <div class="w-px h-4 bg-gray-300 mx-1"></div> <button (click)="openEditLessonModal(lesson, chapter.id, $event)" class="text-xs text-gray-500 hover:text-blue-600 font-bold">Sửa</button>
                     <button (click)="deleteLesson(lesson, $event)" class="text-xs text-gray-500 hover:text-red-600 font-bold">Xóa</button>
                   </div>
                 </div>

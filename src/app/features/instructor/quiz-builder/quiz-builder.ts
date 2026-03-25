@@ -28,6 +28,9 @@ export class QuizBuilder implements OnInit {
   isFormOpen = signal<boolean>(false);
   editingQuestionId = signal<string | null>(null);
 
+  // Thêm biến này dưới khối khai báo trạng thái Modal AI
+  aiFile = signal<File | null>(null);
+
   // --- TRẠNG THÁI MODAL AI ---
   isAiModalOpen = signal<boolean>(false);
   isGenerating = signal<boolean>(false);
@@ -148,11 +151,13 @@ export class QuizBuilder implements OnInit {
     if (this.isGenerating()) return; // Đang chạy thì không cho đóng
     this.isAiModalOpen.set(false);
     this.aiTopic.set('');
+    this.aiFile.set(null); // Reset file
   }
 
   generateWithAi() {
-    if (!this.aiTopic().trim()) {
-      alert('Vui lòng nhập chủ đề bạn muốn AI tạo câu hỏi!');
+    // Nếu KHÔNG có file thì BẮT BUỘC phải có chủ đề
+    if (!this.aiFile() && !this.aiTopic().trim()) {
+      alert('Vui lòng nhập chủ đề hoặc đính kèm tài liệu!');
       return;
     }
     if (this.aiCount() <= 0 || this.aiCount() > 20) {
@@ -162,34 +167,32 @@ export class QuizBuilder implements OnInit {
 
     this.isGenerating.set(true);
 
-    this.aiService.generateQuiz(this.aiTopic(), this.aiCount()).subscribe({
+    // Quyết định xem gọi hàm nào của AiService
+    const aiRequest$ = this.aiFile() 
+      ? this.aiService.generateQuizFromFile(this.aiFile()!, this.aiTopic(), this.aiCount())
+      : this.aiService.generateQuiz(this.aiTopic(), this.aiCount());
+
+    aiRequest$.subscribe({
       next: (generatedQuestions: any[]) => {
         if (generatedQuestions && generatedQuestions.length > 0) {
           let completedCount = 0;
-          
-          // Lặp qua mảng JSON AI trả về và gọi API lưu từng câu vào DB
           generatedQuestions.forEach(q => {
             const payload = { lessonId: this.lessonId(), ...q };
-            
             this.questionService.createQuestion(payload).subscribe({
               next: () => {
                 completedCount++;
-                // Khi đã lưu xong toàn bộ câu hỏi
                 if (completedCount === generatedQuestions.length) {
-                  alert(`✨ AI đã tạo và lưu thành công ${completedCount} câu hỏi!`);
+                  alert(`✨ AI đã bóc tách tài liệu và lưu thành công ${completedCount} câu hỏi!`);
                   this.loadQuestions();
                   this.isGenerating.set(false);
                   this.closeAiModal();
                 }
               },
-              error: (err) => {
-                console.error('Lỗi khi lưu câu hỏi AI sinh ra:', err);
-              }
+              error: (err) => console.error(err)
             });
           });
-
         } else {
-          alert('AI không thể tạo được câu hỏi. Vui lòng thử lại với chủ đề khác.');
+          alert('AI không thể đọc được file này. Vui lòng thử file PDF/TXT khác.');
           this.isGenerating.set(false);
         }
       },
@@ -198,5 +201,15 @@ export class QuizBuilder implements OnInit {
         this.isGenerating.set(false);
       }
     });
+  }
+
+  // hàm bắt sự kiện chọn file
+  onAiFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.aiFile.set(input.files[0]);
+    } else {
+      this.aiFile.set(null);
+    }
   }
 }

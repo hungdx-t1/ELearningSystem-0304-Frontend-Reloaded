@@ -23,6 +23,7 @@ import { QuizBuilder } from './features/instructor/quiz-builder/quiz-builder';
 import { AssignmentGrading } from './features/instructor/assignment-grading/assignment-grading';
 import { InstructorClassDetail } from './features/instructor/class-detail/class-detail';
 import { InstructorLayout } from './layouts/instructor-layout/instructor-layout';
+import { rootRedirectGuard } from './core/guards/root-redirect.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -30,24 +31,59 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, rootRedirectGuard],
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'courses', redirectTo: 'dashboard' },
-      { path: 'courses/:id', component: CourseDetail },
-      { path: 'classes', component: ClassListComponent },
-      { path: 'chat', component: AiChatComponent },
-      { path: 'courses/:courseId/lessons/:lessonId', component: LessonPlayerComponent }
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
+      {
+        path: 'courses',
+        redirectTo: 'dashboard',
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
+      {
+        path: 'courses/:id',
+        component: CourseDetail,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
+      {
+        path: 'classes',
+        component: ClassListComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
+      {
+        path: 'chat',
+        component: AiChatComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
+      {
+        path: 'courses/:courseId/lessons/:lessonId',
+        component: LessonPlayerComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] },
+      },
     ],
   },
 
-  // khu vực giảng viên (instructor) 
+  // khu vực giảng viên (instructor)
   {
     path: 'instructor',
     component: InstructorLayout,
-    canActivate: [authGuard, roleGuard], 
-    data: { roles: ['Instructor', 'Admin'] },
+    canActivate: [authGuard, roleGuard],
+    // data: { roles: ['Instructor', 'Admin'] },
+    data: { roles: ['Instructor'] },
     children: [
       { path: '', redirectTo: 'courses', pathMatch: 'full' },
       { path: 'courses', component: CourseManagement },
@@ -55,9 +91,9 @@ export const routes: Routes = [
       { path: 'courses/:id/manage', component: CourseEditor },
       { path: 'classes', component: ClassManagement },
       { path: 'classes/:id', component: InstructorClassDetail },
-      { path: 'courses/:courseId/quizzes/:lessonId', component: QuizBuilder},
+      { path: 'courses/:courseId/quizzes/:lessonId', component: QuizBuilder },
       { path: 'assignments', component: AssignmentGrading },
-    ]
+    ],
   },
 
   // khu vực admin

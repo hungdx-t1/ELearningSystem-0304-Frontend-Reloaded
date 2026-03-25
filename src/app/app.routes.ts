@@ -47,8 +47,7 @@ export const routes: Routes = [
       {
         path: 'courses',
         redirectTo: 'dashboard',
-        canActivate: [roleGuard],
-        data: { roles: ['Student'] },
+        pathMatch: 'full' 
       },
       {
         path: 'courses/:id',
@@ -82,7 +81,6 @@ export const routes: Routes = [
     path: 'instructor',
     component: InstructorLayout,
     canActivate: [authGuard, roleGuard],
-    // data: { roles: ['Instructor', 'Admin'] },
     data: { roles: ['Instructor'] },
     children: [
       { path: '', redirectTo: 'courses', pathMatch: 'full' },
@@ -100,8 +98,8 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
-    canActivate: [authGuard, roleGuard], // Phải đăng nhập và phải có quyền
-    data: { roles: ['Admin'] }, // Chỉ mỗi Admin
+    canActivate: [authGuard, roleGuard], 
+    data: { roles: ['Admin'] }, 
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboard },

@@ -163,7 +163,8 @@ export class CourseEditor implements OnInit {
     this.lessonForm.patchValue({
       title: lesson.title,
       type: lesson.type,
-      videoUrl: lesson.videoUrl,
+      // Phân làn khi sửa: Nếu là Tài liệu thì lấy documentUrl đắp lên form, ngược lại lấy videoUrl
+      videoUrl: lesson.type === 1 ? lesson.documentUrl : lesson.videoUrl,
       sortOrder: lesson.sortOrder
     });
     this.isLessonModalOpen.set(true);
@@ -172,18 +173,27 @@ export class CourseEditor implements OnInit {
   saveLesson() {
     if (this.lessonForm.invalid) return;
     const formVal = this.lessonForm.value;
+    const typeNum = Number(formVal.type);
+
+    // Bắt đầu phân làn dữ liệu trước khi đóng gói gửi cho C#
     const payload = {
       chapterId: this.selectedChapterId(),
       title: formVal.title!,
-      type: Number(formVal.type),
-      videoUrl: formVal.videoUrl || undefined,
+      type: typeNum,
+      // Nếu là Video (0) hoặc Tự luận (3) thì nhét link vào videoUrl
+      videoUrl: (typeNum === 0 || typeNum === 3) ? formVal.videoUrl : undefined,
+      // Nếu là Tài liệu (1) thì nhét link vào documentUrl để C# không chửi
+      documentUrl: typeNum === 1 ? formVal.videoUrl : undefined,
       sortOrder: formVal.sortOrder!
     };
 
     if (this.lessonModalMode() === 'add') {
       this.courseService.createLesson(payload).subscribe({
-        next: () => { this.loadCourseContent(this.courseId()); this.isLessonModalOpen.set(false); },
-        error: (err) => alert('Lỗi: ' + err.message)
+        next: () => { 
+          this.loadCourseContent(this.courseId()); 
+          this.isLessonModalOpen.set(false); 
+        },
+        error: (err) => alert('Lỗi: ' + (err.error?.message || err.message))
       });
     } else {
       this.courseService.updateLesson(this.selectedLessonId(), payload).subscribe({

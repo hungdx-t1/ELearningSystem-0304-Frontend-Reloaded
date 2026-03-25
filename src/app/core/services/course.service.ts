@@ -15,8 +15,9 @@ export interface Lesson {
   id: string;
   chapterId: string;
   title: string;
-  type: number; // 0: Video, 1: Document, 2: Quiz
-  videoUrl?: string;
+  type: number; // 0: Video, 1: Document, 2: Quiz, 3: Assignment
+  videoUrl?: string | null; 
+  documentUrl?: string | null;
   duration?: number;
   sortOrder: number;
 }
@@ -64,7 +65,17 @@ export class CourseService {
   }
 
   // Gửi lệnh tạo Bài học mới
-  createLesson(lessonData: { chapterId: string; title: string; type: number; videoUrl?: string; sortOrder: number }) {
+  // createLesson(lessonData: { chapterId: string; title: string; type: number; videoUrl?: string; sortOrder: number }) {
+  //   return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
+  // }
+  createLesson(lessonData: { 
+    chapterId: string; 
+    title: string; 
+    type: number; 
+    videoUrl?: string | null;       // Cho phép null
+    documentUrl?: string | null;    // Bổ sung thêm documentUrl
+    sortOrder: number 
+  }) {
     return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
   }
 

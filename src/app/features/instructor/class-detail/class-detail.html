@@ -139,32 +139,72 @@
                 </div>
               }
 
-              <div class="max-w-[85%] px-3 py-2 rounded-xl shadow-sm relative group"
-                   [class.bg-blue-600]="msg.senderId === currentUserId" [class.text-white]="msg.senderId === currentUserId" [class.rounded-tr-sm]="msg.senderId === currentUserId"
-                   [class.bg-white]="msg.senderId !== currentUserId" [class.text-gray-800]="msg.senderId !== currentUserId" [class.border]="msg.senderId !== currentUserId" [class.border-gray-200]="msg.senderId !== currentUserId" [class.rounded-tl-sm]="msg.senderId !== currentUserId">
-                
-                <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
-                <span class="absolute top-1/2 -translate-y-1/2 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition whitespace-nowrap font-medium"
-                      [class.-left-10]="msg.senderId === currentUserId" [class.-right-10]="msg.senderId !== currentUserId">
-                  {{ msg.timestamp?.toDate() | date:'HH:mm' }}
-                </span>
-              </div>
+              <div class="max-w-[85%] px-3 py-2 rounded-xl shadow-sm relative group bg-white border border-gray-200">
+  
+  <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+  
+  @if (msg.fileUrl) {
+    <a [href]="msg.fileUrl" target="_blank" class="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
+      <span class="text-2xl">📎</span>
+      <span class="text-sm font-bold text-blue-600 truncate max-w-[200px]">{{ msg.fileName }}</span>
+    </a>
+  }
+
+  <div class="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition bg-white shadow-md border rounded-full px-2 py-1 flex gap-1 z-10">
+    <button (click)="reactToMessage(msg.id!, '👍', msg.reactions)" class="hover:scale-125 transition">👍</button>
+    <button (click)="reactToMessage(msg.id!, '❤️', msg.reactions)" class="hover:scale-125 transition">❤️</button>
+    <button (click)="reactToMessage(msg.id!, '😂', msg.reactions)" class="hover:scale-125 transition">😂</button>
+    <button (click)="reactToMessage(msg.id!, '😢', msg.reactions)" class="hover:scale-125 transition">😢</button>
+  </div>
+
+  @if (msg.reactions && getReactionSummary(msg.reactions).length > 0) {
+    <div class="absolute -bottom-3 right-2 flex gap-1 bg-white shadow-sm border rounded-full px-1.5 py-0.5 text-[10px]">
+      @for (react of getReactionSummary(msg.reactions); track react.icon) {
+        <span class="flex items-center gap-0.5">
+          {{ react.icon }} <span class="font-bold text-gray-500">{{ react.count }}</span>
+        </span>
+      }
+    </div>
+  }
+</div>
             </div>
           }
         </div>
 
         <div class="p-3 bg-white border-t border-gray-100 rounded-b-xl">
-          <form (ngSubmit)="sendMessage()" class="flex items-end gap-2 relative">
-            <textarea [(ngModel)]="newMessage" name="msgInput" rows="1" 
-                      class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-3 py-2.5 text-sm resize-none outline-none transition"
-                      placeholder="Nhập tin..." (keydown.enter)="$event.preventDefault(); sendMessage()"></textarea>
-            <button type="submit" [disabled]="!newMessage().trim()" 
-                    class="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:bg-gray-400">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-                <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-              </svg>
-            </button>
-          </form>
+          <form (ngSubmit)="sendMessage()" class="flex flex-col gap-2 relative">
+  
+  @if (selectedFile()) {
+    <div class="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
+      <span class="text-sm font-bold text-blue-700 truncate">📎 {{ selectedFile()?.name }}</span>
+      <button type="button" (click)="selectedFile.set(null)" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
+    </div>
+  }
+
+  <div class="flex items-end gap-2">
+    <div class="relative shrink-0">
+      <input type="file" (change)="onChatFileSelected($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" [disabled]="isUploadingFile()">
+      <button type="button" class="p-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition disabled:opacity-50">
+        📎
+      </button>
+    </div>
+
+    <textarea [(ngModel)]="newMessage" name="msgInput" rows="1" 
+              class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-3 py-2.5 text-sm resize-none outline-none transition"
+              placeholder="Nhập tin nhắn..."></textarea>
+    
+    <button type="submit" [disabled]="(!newMessage().trim() && !selectedFile()) || isUploadingFile()" 
+            class="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center">
+      @if (isUploadingFile()) {
+        <span class="animate-pulse">⏳</span>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+          <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+        </svg>
+      }
+    </button>
+  </div>
+</form>
         </div>
       </div>
     </div>

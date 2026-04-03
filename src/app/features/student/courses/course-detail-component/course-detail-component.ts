@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { ChatMessage, RealtimeChatService } from '../../../../core/services/realtime-chat.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { NotificationService } from '../../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-course-detail-component',
@@ -27,6 +28,11 @@ export class CourseDetail implements OnInit, AfterViewChecked {
 
   public authService = inject(AuthService);
   private chatService = inject(RealtimeChatService);
+
+  private notificationService = inject(NotificationService);
+
+  isUploadingFile = signal<boolean>(false);
+  selectedFile = signal<File | null>(null);
 
   // Quản lý trạng thái bằng Signal
   course = signal<Course | null>(null);
@@ -101,17 +107,55 @@ export class CourseDetail implements OnInit, AfterViewChecked {
 
   sendMessage() {
     const cId = this.classId();
-    if (!this.newMessage().trim() || !cId) return;
-    
-    this.chatService.sendMessage(
-      cId,
-      this.currentUserId,
-      this.currentUserName,
-      this.currentUserRole,
-      this.newMessage().trim()
-    );
-    
+    if ((!this.newMessage().trim() && !this.selectedFile()) || !cId) return;
+
+    const fileToUpload = this.selectedFile();
+    const messageText = this.newMessage().trim();
+
+    // Reset UI ngay lập tức để người dùng thấy mượt
     this.newMessage.set('');
+    this.selectedFile.set(null);
+
+    if (fileToUpload) {
+      this.isUploadingFile.set(true);
+      // Gọi API C# upload lên Cloudinary
+      this.courseService.uploadFile(fileToUpload).subscribe({
+        next: (res) => {
+          this.chatService.sendMessage(cId, this.currentUserId, this.currentUserName, this.currentUserRole, messageText, res.url, fileToUpload.name);
+          this.isUploadingFile.set(false);
+        },
+        error: () => {
+          alert('Lỗi upload file!');
+          this.isUploadingFile.set(false);
+        }
+      });
+    } else {
+      // Gửi tin nhắn text bình thường
+      this.chatService.sendMessage(cId, this.currentUserId, this.currentUserName, this.currentUserRole, messageText);
+    }
+  }
+
+  reactToMessage(msgId: string, reaction: string, currentReactions: any) {
+    const cId = this.classId();
+    if (cId) {
+      this.chatService.toggleReaction(cId, msgId, this.currentUserId, reaction, currentReactions);
+    }
+  }
+
+  getReactionSummary(reactions: any = {}) {
+    const summary: any = {};
+    Object.values(reactions).forEach((val: any) => {
+      summary[val] = (summary[val] || 0) + 1;
+    });
+    // Trả về dạng mảng: [ {icon: '❤️', count: 2}, {icon: '👍', count: 1} ]
+    return Object.keys(summary).map(key => ({ icon: key, count: summary[key] }));
+  }
+
+  onChatFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile.set(input.files[0]);
+    }
   }
 
   // course and class management functions

@@ -1,79 +1,155 @@
-<!-- CourseDetailComponent on Student side -->
-<div class="max-w-5xl mx-auto space-y-8">
+<div class="max-w-7xl mx-auto space-y-8 pb-10">
+  
   @if (isLoading()) {
     <div class="flex justify-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   } @else if (course()) {
+    
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
       <div class="h-64 bg-gray-900 relative">
         <img
           [src]="course()?.thumbnailUrl || 'https://placehold.co/1200x400?text=Course+Cover'"
           class="w-full h-full object-cover opacity-60"
         />
-        <div
-          class="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-gray-900 to-transparent"
-        >
+        <div class="absolute bottom-0 left-0 p-8 w-full bg-gradient-to-t from-gray-900 to-transparent">
           <h1 class="text-4xl font-extrabold text-white mb-2">{{ course()?.title }}</h1>
           <p class="text-gray-200 text-lg max-w-3xl line-clamp-2">{{ course()?.description }}</p>
         </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6">Nội dung khóa học</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Nội dung khóa học</h2>
 
-      @if (chapters().length === 0) {
-        <p class="text-gray-500 italic">Khóa học này chưa có nội dung nào.</p>
-      } @else {
-        <div class="space-y-4">
-          @for (chapter of chapters(); track chapter.id) {
-            <div class="border border-gray-200 rounded-xl overflow-hidden">
-              <button
-                (click)="toggleChapter(chapter)"
-                class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <span class="font-bold text-gray-800 text-left">
-                  Chương {{ chapter.sortOrder }}: {{ chapter.title }}
-                </span>
-                <span
-                  class="text-gray-500 transform transition-transform duration-200"
-                  [class.rotate-180]="chapter.isExpanded"
+        @if (chapters().length === 0) {
+          <p class="text-gray-500 italic">Khóa học này chưa có nội dung nào.</p>
+        } @else {
+          <div class="space-y-4">
+            @for (chapter of chapters(); track chapter.id) {
+              <div class="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  (click)="toggleChapter(chapter)"
+                  class="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors"
                 >
-                  ▼
-                </span>
-              </button>
+                  <span class="font-bold text-gray-800 text-left">
+                    Chương {{ chapter.sortOrder }}: {{ chapter.title }}
+                  </span>
+                  <span
+                    class="text-gray-500 transform transition-transform duration-200"
+                    [class.rotate-180]="chapter.isExpanded"
+                  >
+                    ▼
+                  </span>
+                </button>
 
-              <div class="divide-y divide-gray-100 overflow-hidden" [@slideInOut]="chapter.isExpanded ? 'expanded' : 'collapsed'">
-                @for (lesson of chapter.lessons; track lesson.id) {
-                  <a [routerLink]="['/courses', course()?.id, 'lessons', lesson.id]" 
-                       queryParamsHandling="preserve"
-                       class="flex items-center justify-between p-4 pl-8 hover:bg-blue-50 transition cursor-pointer group">
-                      
-                      <div class="flex items-center gap-3">
-                        <span class="text-xl group-hover:scale-110 transition-transform">
-                          {{ getLessonIcon(lesson.type) }}
+                <div class="divide-y divide-gray-100 overflow-hidden" [@slideInOut]="chapter.isExpanded ? 'expanded' : 'collapsed'">
+                  @for (lesson of chapter.lessons; track lesson.id) {
+                    <a [routerLink]="['/courses', course()?.id, 'lessons', lesson.id]" 
+                         queryParamsHandling="preserve"
+                         class="flex items-center justify-between p-4 pl-8 hover:bg-blue-50 transition cursor-pointer group">
+                        
+                        <div class="flex items-center gap-3">
+                          <span class="text-xl group-hover:scale-110 transition-transform">
+                            {{ getLessonIcon(lesson.type) }}
+                          </span>
+                          <span class="text-gray-700 font-medium group-hover:text-blue-700">
+                            Bài {{ lesson.sortOrder }}: {{ lesson.title }}
+                          </span>
+                        </div>
+                        
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-md"
+                              [class.bg-blue-100]="lesson.type === 0" [class.text-blue-700]="lesson.type === 0"
+                              [class.bg-gray-100]="lesson.type === 1" [class.text-gray-600]="lesson.type === 1"
+                              [class.bg-orange-100]="lesson.type === 2" [class.text-orange-700]="lesson.type === 2"
+                              [class.bg-purple-100]="lesson.type === 3" [class.text-purple-700]="lesson.type === 3">
+                          {{ getLessonBadge(lesson) }}
                         </span>
-                        <span class="text-gray-700 font-medium group-hover:text-blue-700">
-                          Bài {{ lesson.sortOrder }}: {{ lesson.title }}
-                        </span>
-                      </div>
-                      
-                      <span class="text-xs font-bold px-2.5 py-1 rounded-md"
-                            [class.bg-blue-100]="lesson.type === 0" [class.text-blue-700]="lesson.type === 0"
-                            [class.bg-gray-100]="lesson.type === 1" [class.text-gray-600]="lesson.type === 1"
-                            [class.bg-orange-100]="lesson.type === 2" [class.text-orange-700]="lesson.type === 2"
-                            [class.bg-purple-100]="lesson.type === 3" [class.text-purple-700]="lesson.type === 3">
-                        {{ getLessonBadge(lesson) }}
-                      </span>
-                      
-                    </a>
-                  }
+                        
+                      </a>
+                    }
+                </div>
               </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="lg:col-span-1">
+        @if (classId()) {
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 flex flex-col h-[650px] sticky top-24">
+            
+            <div class="p-4 border-b border-gray-100 bg-gray-50 rounded-t-2xl">
+              <h3 class="font-bold text-gray-900 flex items-center gap-2">
+                <span>💬</span> Thảo luận trực tiếp
+              </h3>
+              <p class="text-[11px] text-gray-500 mt-0.5">Giảng viên và các bạn trong lớp đều thấy</p>
             </div>
-          }
-        </div>
-      }
+
+            <div #chatScroll class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50/50">
+              @if (messages().length === 0) {
+                <div class="h-full flex flex-col items-center justify-center text-gray-400">
+                  <span class="text-4xl mb-2 opacity-50">👋</span>
+                  <p class="text-sm font-medium">Bạn có câu hỏi nào không?</p>
+                </div>
+              }
+
+              @for (msg of messages(); track msg.id) {
+                <div class="flex flex-col" [class.items-end]="msg.senderId === currentUserId" [class.items-start]="msg.senderId !== currentUserId">
+                  
+                  @if (msg.senderId !== currentUserId) {
+                    <div class="flex items-baseline gap-1.5 mb-1 ml-1">
+                      <span class="text-[11px] font-bold text-gray-700">{{ msg.senderName }}</span>
+                      <span class="text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"
+                            [class.bg-blue-100]="msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'"
+                            [class.text-blue-700]="msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'"
+                            [class.bg-gray-200]="msg.senderRole === 'Student'"
+                            [class.text-gray-600]="msg.senderRole === 'Student'">
+                        {{ msg.senderRole === 'Instructor' || msg.senderRole === 'Admin' ? 'GV' : 'SV' }}
+                      </span>
+                    </div>
+                  }
+
+                  <div class="max-w-[85%] px-3 py-2 rounded-xl shadow-sm relative group"
+                       [class.bg-blue-600]="msg.senderId === currentUserId" [class.text-white]="msg.senderId === currentUserId" [class.rounded-tr-sm]="msg.senderId === currentUserId"
+                       [class.bg-white]="msg.senderId !== currentUserId" [class.text-gray-800]="msg.senderId !== currentUserId" [class.border]="msg.senderId !== currentUserId" [class.border-gray-200]="msg.senderId !== currentUserId" [class.rounded-tl-sm]="msg.senderId !== currentUserId">
+                    
+                    <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
+                    <span class="absolute top-1/2 -translate-y-1/2 text-[10px] text-gray-400 opacity-0 group-hover:opacity-100 transition whitespace-nowrap font-medium"
+                          [class.-left-10]="msg.senderId === currentUserId" [class.-right-10]="msg.senderId !== currentUserId">
+                      {{ msg.timestamp?.toDate() | date:'HH:mm' }}
+                    </span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="p-3 bg-white border-t border-gray-100 rounded-b-2xl">
+              <form (ngSubmit)="sendMessage()" class="flex items-end gap-2 relative">
+                <textarea [(ngModel)]="newMessage" name="msgInput" rows="1" 
+                          class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-3 py-2.5 text-sm resize-none outline-none transition"
+                          placeholder="Nhập tin nhắn..." (keydown.enter)="$event.preventDefault(); sendMessage()"></textarea>
+                <button type="submit" [disabled]="!newMessage().trim()" 
+                        class="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:bg-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
+                    <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+            
+          </div>
+        } @else {
+          <div class="bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 flex flex-col items-center justify-center h-[300px] p-6 text-center mt-0 lg:mt-[100px]">
+            <span class="text-4xl mb-3 opacity-50">🔒</span>
+            <p class="font-bold text-gray-800">Box Chat bị khóa</p>
+            <p class="text-sm text-gray-500 mt-1">Vui lòng vào khóa học này thông qua tab "Lớp học" để tham gia nhóm thảo luận.</p>
+          </div>
+        }
+      </div>
+
     </div>
   }
 </div>

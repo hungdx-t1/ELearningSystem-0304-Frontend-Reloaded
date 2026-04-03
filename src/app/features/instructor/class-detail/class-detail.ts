@@ -73,6 +73,17 @@ export class InstructorClassDetail implements OnInit, AfterViewChecked {
     this.isLoading.set(true);
     this.classService.getClassDetails(id).subscribe({
       next: (data) => {
+        // bảo mật
+        const currentUserId = this.authService.getCurrentUserId();
+        const currentUserRole = this.authService.getUserRole();
+
+        // Kiểm tra: Nếu không phải Admin VÀ Giảng viên của lớp khác với người đang đăng nhập
+        if (currentUserRole !== 'Admin' && data.instructorId && data.instructorId !== currentUserId) {
+          this.notiService.error('Cảnh báo: Bạn không có quyền quản lý lớp học này!');
+          this.router.navigate(['/no-permission']);
+          return;
+        }
+
         // Tách data thành classInfo và danh sách students
         this.classInfo.set({
           id: data.id,
@@ -86,7 +97,12 @@ export class InstructorClassDetail implements OnInit, AfterViewChecked {
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.notiService.error('Lỗi tải thông tin lớp: ' + err.message);
+        if (err.status === 403) {
+          this.notiService.error('Bạn không có quyền truy cập dữ liệu này!');
+          this.router.navigate(['/no-permission']);
+        } else {
+          this.notiService.error('Lỗi tải thông tin lớp: ' + (err.error?.message || err.message));
+        }
         this.isLoading.set(false);
       }
     });

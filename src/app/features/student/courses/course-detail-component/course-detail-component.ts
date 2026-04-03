@@ -1,6 +1,6 @@
 // CourseDetailComponent on Student side
 import { AfterViewChecked, Component, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter } from '../../../../core/services/course.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +23,7 @@ import { NotificationService } from '../../../../../v2/app/core/services/notific
 })
 export class CourseDetail implements OnInit, AfterViewChecked {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private courseService = inject(CourseService);
 
   public authService = inject(AuthService);
@@ -77,8 +78,15 @@ export class CourseDetail implements OnInit, AfterViewChecked {
         }
         
         this.chapters.set(chaptersData);
-      } catch (error) {
+      } catch (error : any) {
         console.error('Lỗi khi tải dữ liệu:', error);
+
+        if (error.status === 403) {
+          this.notificationService.warning('Bạn chưa được ghi danh vào môn học này!');
+          this.router.navigate(['/no-permission']);
+        } else {
+          this.notificationService.error('Không thể tải dữ liệu khóa học.');
+        }
       } finally {
         this.isLoading.set(false);
       }

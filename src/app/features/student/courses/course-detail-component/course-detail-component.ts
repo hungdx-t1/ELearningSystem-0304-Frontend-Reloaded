@@ -4,14 +4,13 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter } from '../../../../core/services/course.service';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
 import { ChatMessage, RealtimeChatService } from '../../../../core/services/realtime-chat.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationService } from '../../../../../v2/app/core/services/notification.service';
 
 @Component({
   selector: 'app-course-detail-component',
-  imports: [RouterLink, FormsModule, DatePipe],
+  imports: [RouterLink, FormsModule],
   templateUrl: './course-detail-component.html',
   styleUrl: './course-detail-component.scss',
   animations: [
@@ -125,7 +124,7 @@ export class CourseDetail implements OnInit, AfterViewChecked {
           this.isUploadingFile.set(false);
         },
         error: () => {
-          alert('Lỗi upload file!');
+          this.notificationService.error('Lỗi upload file!');
           this.isUploadingFile.set(false);
         }
       });

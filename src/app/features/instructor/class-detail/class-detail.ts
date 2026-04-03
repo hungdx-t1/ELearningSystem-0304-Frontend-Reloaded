@@ -1,26 +1,30 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ClassService } from '../../../core/services/class.service';
 import { UserService, User } from '../../../core/services/user.service';
-import { SlicePipe } from '@angular/common';
+import { DatePipe, SlicePipe } from '@angular/common';
 import { NotificationService } from '../../../../v2/app/core/services/notification.service';
+import { ChatMessage, RealtimeChatService } from '../../../core/services/realtime-chat.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-instructor-class-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterModule, SlicePipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterModule, SlicePipe, DatePipe],
   templateUrl: './class-detail.html'
 })
-export class InstructorClassDetail implements OnInit {
+export class InstructorClassDetail implements OnInit, AfterViewChecked {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private fb = inject(FormBuilder);
   
   private classService = inject(ClassService);
   private userService = inject(UserService);
-
   private notiService = inject(NotificationService);
+
+  public authService = inject(AuthService);
+  private chatService = inject(RealtimeChatService);
 
   classId = signal<string>('');
   classInfo = signal<any>(null);
@@ -35,17 +39,27 @@ export class InstructorClassDetail implements OnInit {
 
   isImporting = signal<boolean>(false);
 
+  // Chat variables
+  @ViewChild('chatScroll') private chatScrollContainer!: ElementRef;
+  messages = signal<ChatMessage[]>([]);
+  newMessage = signal<string>('');
+  
+  currentUserId = this.authService.getCurrentUserId();
+  currentUserRole = this.authService.getUserRole();
+  currentUserName = this.authService.userProfile()?.fullName || 'Giảng viên';
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.classId.set(id);
       this.loadClassData(id);
+      this.loadChat();
     } else {
       this.router.navigate(['/instructor/classes']);
     }
   }
 
-  // 1. KÉO DỮ LIỆU THẬT
+  // quản lý sinh viên trong lớp
   loadClassData(id: string) {
     this.isLoading.set(true);
     this.classService.getClassDetails(id).subscribe({
@@ -82,7 +96,7 @@ export class InstructorClassDetail implements OnInit {
     this.isAddModalOpen.set(true);
   }
 
-  // 2. THÊM TAY 1 SINH VIÊN
+  // thêm sv mới bằng tay
   saveStudent() {
     if (this.addStudentForm.invalid) return;
     const emailOrCode = this.addStudentForm.value.emailOrCode!;
@@ -111,7 +125,7 @@ export class InstructorClassDetail implements OnInit {
     });
   }
 
-  // 3. ĐUỔI HỌC (XÓA KHỎI LỚP)
+  // đuổi học sv
   removeStudent(studentId: string, name: string) {
     if (confirm(`Xóa sinh viên ${name} khỏi lớp sẽ mất toàn bộ điểm số. Bạn chắc chứ?`)) {
       this.classService.removeStudent(this.classId(), studentId).subscribe({
@@ -123,7 +137,7 @@ export class InstructorClassDetail implements OnInit {
     }
   }
 
-  // 4. UPLOAD EXCEL THẦN THÁNH
+  // upload excel để thêm nhiều sv
   onExcelImport(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
@@ -151,5 +165,36 @@ export class InstructorClassDetail implements OnInit {
         input.value = '';
       }
     });
+  }
+
+  // Chat functions
+  loadChat() {
+    this.chatService.getClassMessages(this.classId()).subscribe(msgs => {
+      this.messages.set(msgs);
+    });
+  }
+
+  ngAfterViewChecked() {
+    this.scrollToBottom();
+  }
+
+  scrollToBottom(): void {
+    try {
+      this.chatScrollContainer.nativeElement.scrollTop = this.chatScrollContainer.nativeElement.scrollHeight;
+    } catch(err) { }
+  }
+
+  sendMessage() {
+    if (!this.newMessage().trim()) return;
+    
+    this.chatService.sendMessage(
+      this.classId(),
+      this.currentUserId,
+      this.currentUserName,
+      this.currentUserRole,
+      this.newMessage().trim()
+    );
+    
+    this.newMessage.set(''); 
   }
 }

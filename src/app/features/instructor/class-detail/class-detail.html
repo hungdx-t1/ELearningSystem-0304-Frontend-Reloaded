@@ -1,50 +1,87 @@
 <div class="space-y-6 pb-20">
-  
   <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
-    <div class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
-    
-    <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div
+      class="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"
+    ></div>
+
+    <div
+      class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+    >
       <div class="flex items-center gap-4">
-        <button routerLink="/instructor/classes" class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition">
+        <button
+          routerLink="/instructor/classes"
+          class="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition"
+        >
           <span class="text-xl font-bold text-gray-600">←</span>
         </button>
         <div>
           <div class="flex items-center gap-2 mb-1">
-            <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-md">{{ classInfo()?.classCode }}</span>
-            <span class="text-sm font-bold text-gray-500 uppercase">{{ classInfo()?.academicYear }}</span>
+            <span class="px-2.5 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-md">{{
+              classInfo()?.classCode
+            }}</span>
+            <span class="text-sm font-bold text-gray-500 uppercase">{{
+              classInfo()?.academicYear
+            }}</span>
           </div>
           <h1 class="text-2xl font-bold text-gray-900">{{ classInfo()?.className }}</h1>
-          <p class="text-sm font-medium text-gray-500 mt-1">📚 Thuộc khóa: {{ classInfo()?.courseName }}</p>
+          <p class="text-sm font-medium text-gray-500 mt-1">
+            📚 Thuộc khóa: {{ classInfo()?.courseName }}
+          </p>
         </div>
       </div>
 
       <div class="flex flex-col gap-2 items-end">
         @if (classInfo()?.googleMeetLink) {
-          <div class="flex items-center gap-2 bg-green-50 border border-green-200 px-4 py-2 rounded-lg">
+          <div
+            class="flex items-center gap-2 bg-green-50 border border-green-200 px-4 py-2 rounded-lg"
+          >
             <span class="text-green-700 font-bold text-sm flex items-center gap-1">🎥 Meet:</span>
-            <a [href]="classInfo()?.googleMeetLink" target="_blank" class="text-sm text-green-600 hover:underline max-w-[150px] truncate">
+            <a
+              [href]="classInfo()?.googleMeetLink"
+              target="_blank"
+              class="text-sm text-green-600 hover:underline max-w-[150px] truncate"
+            >
               {{ classInfo()?.googleMeetLink }}
             </a>
-            <button (click)="copyMeetLink()" class="text-green-600 hover:text-green-800 ml-2" title="Copy Link">📋</button>
+            <button
+              (click)="copyMeetLink()"
+              class="text-green-600 hover:text-green-800 ml-2"
+              title="Copy Link"
+            >
+              📋
+            </button>
           </div>
         }
         <div class="text-sm text-gray-500 font-medium">
-          Mã chia sẻ: <span class="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{{ classId() | slice:0:8 }}...</span>
+          Mã chia sẻ:
+          <span class="font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded"
+            >{{ classId() | slice: 0 : 8 }}...</span
+          >
         </div>
       </div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    
     <div class="lg:col-span-2 space-y-4">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <h2 class="text-lg font-bold text-gray-800">Danh sách Sinh viên ({{ students().length }})</h2>
-        
+        <h2 class="text-lg font-bold text-gray-800">
+          Danh sách Sinh viên ({{ students().length }})
+        </h2>
+
         <div class="flex gap-3 w-full sm:w-auto">
           <div class="relative w-full sm:w-auto">
-            <input type="file" (change)="onExcelImport($event)" accept=".xlsx, .xls, .csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" [disabled]="isImporting()">
-            <button [disabled]="isImporting()" class="w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition">
+            <input
+              type="file"
+              (change)="onExcelImport($event)"
+              accept=".xlsx, .xls, .csv"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+              [disabled]="isImporting()"
+            />
+            <button
+              [disabled]="isImporting()"
+              class="w-full px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
+            >
               @if (isImporting()) {
                 <span>⏳ Đang xử lý...</span>
               } @else {
@@ -52,7 +89,10 @@
               }
             </button>
           </div>
-          <button (click)="openAddModal()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm flex items-center justify-center gap-2 transition">
+          <button
+            (click)="openAddModal()"
+            class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-sm flex items-center justify-center gap-2 transition"
+          >
             <span>➕ Thêm tay</span>
           </button>
         </div>
@@ -65,9 +105,15 @@
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Họ và Tên</th>
-                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Mã SV</th>
-                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Hành động</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                  Họ và Tên
+                </th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">
+                  Mã SV
+                </th>
+                <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase">
+                  Hành động
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200">
@@ -75,7 +121,9 @@
                 <tr class="hover:bg-gray-50 transition">
                   <td class="px-4 py-3">
                     <div class="flex items-center gap-3">
-                      <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                      <div
+                        class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold"
+                      >
                         {{ sv.fullName.charAt(0) }}
                       </div>
                       <div>
@@ -85,10 +133,15 @@
                     </div>
                   </td>
                   <td class="px-4 py-3">
-                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded font-medium text-xs">{{ sv.studentCode }}</span>
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded font-medium text-xs">{{
+                      sv.studentCode
+                    }}</span>
                   </td>
                   <td class="px-4 py-3 text-right">
-                    <button (click)="removeStudent(sv.id, sv.fullName)" class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition">
+                    <button
+                      (click)="removeStudent(sv.id, sv.fullName)"
+                      class="text-red-500 hover:text-red-700 font-bold text-xs bg-red-50 hover:bg-red-100 px-2 py-1 rounded-md transition"
+                    >
                       Đuổi
                     </button>
                   </td>
@@ -96,10 +149,12 @@
               }
             </tbody>
           </table>
-          
+
           @if (students().length === 0) {
             <div class="text-center py-12">
-              <p class="text-gray-500 font-medium text-sm">Lớp học hiện tại chưa có sinh viên nào.</p>
+              <p class="text-gray-500 font-medium text-sm">
+                Lớp học hiện tại chưa có sinh viên nào.
+              </p>
             </div>
           }
         </div>
@@ -107,7 +162,9 @@
     </div>
 
     <div class="lg:col-span-1">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[600px] sticky top-20">
+      <div
+        class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-[600px] sticky top-20"
+      >
         <div class="p-4 border-b border-gray-100 bg-gray-50 rounded-t-xl">
           <h3 class="font-bold text-gray-900 flex items-center gap-2">
             <span>💬</span> Thảo luận trực tiếp
@@ -124,91 +181,164 @@
           }
 
           @for (msg of messages(); track msg.id) {
-            <div class="flex flex-col" [class.items-end]="msg.senderId === currentUserId" [class.items-start]="msg.senderId !== currentUserId">
-              
+            <div
+              class="flex flex-col"
+              [class.items-end]="msg.senderId === currentUserId"
+              [class.items-start]="msg.senderId !== currentUserId"
+            >
               @if (msg.senderId !== currentUserId) {
                 <div class="flex items-baseline gap-1.5 mb-1 ml-1">
                   <span class="text-[11px] font-bold text-gray-700">{{ msg.senderName }}</span>
-                  <span class="text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"
-                        [class.bg-blue-100]="msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'"
-                        [class.text-blue-700]="msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'"
-                        [class.bg-gray-200]="msg.senderRole === 'Student'"
-                        [class.text-gray-600]="msg.senderRole === 'Student'">
-                    {{ msg.senderRole === 'Instructor' || msg.senderRole === 'Admin' ? 'GV' : 'SV' }}
+                  <span
+                    class="text-[9px] px-1.5 py-[1px] rounded font-bold uppercase"
+                    [class.bg-blue-100]="
+                      msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'
+                    "
+                    [class.text-blue-700]="
+                      msg.senderRole === 'Instructor' || msg.senderRole === 'Admin'
+                    "
+                    [class.bg-gray-200]="msg.senderRole === 'Student'"
+                    [class.text-gray-600]="msg.senderRole === 'Student'"
+                  >
+                    {{
+                      msg.senderRole === 'Instructor' || msg.senderRole === 'Admin' ? 'GV' : 'SV'
+                    }}
                   </span>
                 </div>
               }
 
-              <div class="max-w-[85%] px-3 py-2 rounded-xl shadow-sm relative group bg-white border border-gray-200">
-  
-  <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
-  
-  @if (msg.fileUrl) {
-    <a [href]="msg.fileUrl" target="_blank" class="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition">
-      <span class="text-2xl">📎</span>
-      <span class="text-sm font-bold text-blue-600 truncate max-w-[200px]">{{ msg.fileName }}</span>
-    </a>
-  }
+              <div
+                class="max-w-[85%] px-3 py-2 rounded-xl shadow-sm relative group bg-white border border-gray-200"
+              >
+                <p class="text-sm whitespace-pre-wrap">{{ msg.content }}</p>
 
-  <div class="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition bg-white shadow-md border rounded-full px-2 py-1 flex gap-1 z-10">
-    <button (click)="reactToMessage(msg.id!, '👍', msg.reactions)" class="hover:scale-125 transition">👍</button>
-    <button (click)="reactToMessage(msg.id!, '❤️', msg.reactions)" class="hover:scale-125 transition">❤️</button>
-    <button (click)="reactToMessage(msg.id!, '😂', msg.reactions)" class="hover:scale-125 transition">😂</button>
-    <button (click)="reactToMessage(msg.id!, '😢', msg.reactions)" class="hover:scale-125 transition">😢</button>
-  </div>
+                @if (msg.fileUrl) {
+                  <a
+                    [href]="msg.fileUrl"
+                    target="_blank"
+                    class="mt-2 flex items-center gap-2 p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition"
+                  >
+                    <span class="text-2xl">📎</span>
+                    <span class="text-sm font-bold text-blue-600 truncate max-w-[200px]">{{
+                      msg.fileName
+                    }}</span>
+                  </a>
+                }
 
-  @if (msg.reactions && getReactionSummary(msg.reactions).length > 0) {
-    <div class="absolute -bottom-3 right-2 flex gap-1 bg-white shadow-sm border rounded-full px-1.5 py-0.5 text-[10px]">
-      @for (react of getReactionSummary(msg.reactions); track react.icon) {
-        <span class="flex items-center gap-0.5">
-          {{ react.icon }} <span class="font-bold text-gray-500">{{ react.count }}</span>
-        </span>
-      }
-    </div>
-  }
-</div>
+                <div
+                  class="absolute -top-3 -right-2 opacity-0 group-hover:opacity-100 transition bg-white shadow-md border rounded-full px-2 py-1 flex gap-1 z-10"
+                >
+                  <button
+                    (click)="reactToMessage(msg.id!, '👍', msg.reactions)"
+                    class="hover:scale-125 transition"
+                  >
+                    👍
+                  </button>
+                  <button
+                    (click)="reactToMessage(msg.id!, '❤️', msg.reactions)"
+                    class="hover:scale-125 transition"
+                  >
+                    ❤️
+                  </button>
+                  <button
+                    (click)="reactToMessage(msg.id!, '😂', msg.reactions)"
+                    class="hover:scale-125 transition"
+                  >
+                    😂
+                  </button>
+                  <button
+                    (click)="reactToMessage(msg.id!, '😢', msg.reactions)"
+                    class="hover:scale-125 transition"
+                  >
+                    😢
+                  </button>
+                </div>
+
+                @if (msg.reactions && getReactionSummary(msg.reactions).length > 0) {
+                  <div
+                    class="absolute -bottom-3 right-2 flex gap-1 bg-white shadow-sm border rounded-full px-1.5 py-0.5 text-[10px]"
+                  >
+                    @for (react of getReactionSummary(msg.reactions); track react.icon) {
+                      <span class="flex items-center gap-0.5">
+                        {{ react.icon }}
+                        <span class="font-bold text-gray-500">{{ react.count }}</span>
+                      </span>
+                    }
+                  </div>
+                }
+              </div>
             </div>
           }
         </div>
 
         <div class="p-3 bg-white border-t border-gray-100 rounded-b-xl">
           <form (ngSubmit)="sendMessage()" class="flex flex-col gap-2 relative">
-  
-  @if (selectedFile()) {
-    <div class="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
-      <span class="text-sm font-bold text-blue-700 truncate">📎 {{ selectedFile()?.name }}</span>
-      <button type="button" (click)="selectedFile.set(null)" class="text-red-500 hover:text-red-700 font-bold">&times;</button>
-    </div>
-  }
+            @if (selectedFile()) {
+              <div
+                class="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg border border-blue-100"
+              >
+                <span class="text-sm font-bold text-blue-700 truncate"
+                  >📎 {{ selectedFile()?.name }}</span
+                >
+                <button
+                  type="button"
+                  (click)="selectedFile.set(null)"
+                  class="text-red-500 hover:text-red-700 font-bold"
+                >
+                  &times;
+                </button>
+              </div>
+            }
 
-  <div class="flex items-end gap-2">
-    <div class="relative shrink-0">
-      <input type="file" (change)="onChatFileSelected($event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" [disabled]="isUploadingFile()">
-      <button type="button" class="p-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition disabled:opacity-50">
-        📎
-      </button>
-    </div>
+            <div class="flex items-end gap-2">
+              <div class="relative shrink-0">
+                <input
+                  type="file"
+                  (change)="onChatFileSelected($event)"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  [disabled]="isUploadingFile()"
+                />
+                <button
+                  type="button"
+                  class="p-2.5 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
+                >
+                  📎
+                </button>
+              </div>
 
-    <textarea [(ngModel)]="newMessage" name="msgInput" rows="1" 
-              class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-3 py-2.5 text-sm resize-none outline-none transition"
-              placeholder="Nhập tin nhắn..."></textarea>
-    
-    <button type="submit" [disabled]="(!newMessage().trim() && !selectedFile()) || isUploadingFile()" 
-            class="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center">
-      @if (isUploadingFile()) {
-        <span class="animate-pulse">⏳</span>
-      } @else {
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4">
-          <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
-        </svg>
-      }
-    </button>
-  </div>
-</form>
+              <textarea
+                [(ngModel)]="newMessage"
+                name="msgInput"
+                rows="1"
+                class="w-full bg-gray-100 border-transparent focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 rounded-lg px-3 py-2.5 text-sm resize-none outline-none transition"
+                placeholder="Nhập tin nhắn..."
+              ></textarea>
+
+              <button
+                type="submit"
+                [disabled]="(!newMessage().trim() && !selectedFile()) || isUploadingFile()"
+                class="shrink-0 p-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center"
+              >
+                @if (isUploadingFile()) {
+                  <span class="animate-pulse">⏳</span>
+                } @else {
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    class="w-4 h-4"
+                  >
+                    <path
+                      d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z"
+                    />
+                  </svg>
+                }
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -218,12 +348,31 @@
       <h3 class="font-bold text-xl mb-4">Thêm Sinh viên vào lớp</h3>
       <form [formGroup]="addStudentForm" (ngSubmit)="saveStudent()" class="space-y-4">
         <div>
-          <label class="block font-bold text-gray-700 mb-2">Email hoặc Mã Sinh Viên <span class="text-red-500">*</span></label>
-          <input type="text" formControlName="emailOrCode" placeholder="Nhập mã SV (VD: SV001)..." class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+          <label class="block font-bold text-gray-700 mb-2"
+            >Email hoặc Mã Sinh Viên <span class="text-red-500">*</span></label
+          >
+          <input
+            type="text"
+            formControlName="emailOrCode"
+            placeholder="Nhập mã SV (VD: SV001)..."
+            class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+          />
         </div>
         <div class="flex justify-end gap-3 mt-6">
-          <button type="button" (click)="isAddModalOpen.set(false)" class="px-5 py-2 bg-gray-100 rounded-lg font-bold hover:bg-gray-200">Hủy</button>
-          <button type="submit" [disabled]="addStudentForm.invalid" class="px-5 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50">Thêm ngay</button>
+          <button
+            type="button"
+            (click)="isAddModalOpen.set(false)"
+            class="px-5 py-2 bg-gray-100 rounded-lg font-bold hover:bg-gray-200"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            [disabled]="addStudentForm.invalid"
+            class="px-5 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50"
+          >
+            Thêm ngay
+          </button>
         </div>
       </form>
     </div>

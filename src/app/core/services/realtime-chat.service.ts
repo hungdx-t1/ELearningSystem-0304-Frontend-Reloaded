@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, Injector, inject, runInInjectionContext } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, query, orderBy, serverTimestamp } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, query, orderBy, serverTimestamp, onSnapshot } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
 
 export interface ChatMessage {
@@ -19,28 +19,41 @@ export class RealtimeChatService {
   private firestore = inject(Firestore);
   private platformId = inject(PLATFORM_ID);
 
-  private injector = inject(Injector); // temp 
-
   /**
    * Lắng nghe tin nhắn của một Lớp học (Real-time)
    * Bất kỳ ai nhắn tin, hàm này sẽ tự động cập nhật mảng dữ liệu mà không cần F5
    */
   getClassMessages(classId: string): Observable<ChatMessage[]> {
-    // chặn liền nếu chạy trên Node.js (Server-side rendering) để khỏi bị lỗi "window is not defined"
-    if (!isPlatformBrowser(this.platformId)) {
-      return of([]); // Trả về mảng rỗng để Node.js khỏi bị "ngáo"
-    }
-
-    // Bọc hàm của Firebase vào trong Injection Context để lách luật Angular
-    return runInInjectionContext(this.injector, () => {
-      // Trỏ tới đúng folder tin nhắn của lớp đó trên Firebase
-      const messagesRef = collection(this.firestore, `class_chats/${classId}/messages`);
+    // Tự tay tạo một luồng Observable để kiểm soát hoàn toàn
+    return new Observable<ChatMessage[]>(observer => {
       
-      // Sắp xếp tin nhắn theo TG (cũ nhất ở trên, mới nhất ở dưới)
+      // Nếu là Node.js (SSR lúc F5) thì bỏ qua, không làm gì cả
+      if (!isPlatformBrowser(this.platformId)) {
+        observer.next([]);
+        observer.complete();
+        return;
+      }
+
+      const messagesRef = collection(this.firestore, `class_chats/${classId}/messages`);
       const q = query(messagesRef, orderBy('timestamp', 'asc'));
       
-      // Trả về luồng dữ liệu (Kèm theo cái ID của document)
-      return collectionData(q, { idField: 'id' }) as Observable<ChatMessage[]>;
+      // Dùng onSnapshot gốc của Firebase (Bỏ qua hoàn toàn collectionData)
+      const unsubscribe = onSnapshot(q, 
+        (snapshot) => {
+          // Firebase trả về dữ liệu, ta bóc tách nó ra
+          const messages = snapshot.docs.map(doc => {
+            return { id: doc.id, ...doc.data() } as ChatMessage;
+          });
+          observer.next(messages); // Đẩy dữ liệu lên giao diện
+        }, 
+        (error) => {
+          console.error("Lỗi lắng nghe tin nhắn Firebase:", error);
+          observer.error(error);
+        }
+      );
+
+      // Khi Angular hủy Component (chuyển trang), tự động ngắt kết nối Firebase để chống tràn RAM
+      return () => unsubscribe();
     });
   }
 

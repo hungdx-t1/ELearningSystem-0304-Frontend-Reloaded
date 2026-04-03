@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { Firestore, collection, addDoc, collectionData, query, orderBy, serverTimestamp } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 export interface ChatMessage {
   id?: string;
@@ -17,11 +18,19 @@ export interface ChatMessage {
 export class RealtimeChatService {
   private firestore = inject(Firestore);
 
+  // Tiêm "Máy dò môi trường" vào đây
+  private platformId = inject(PLATFORM_ID);
+
   /**
    * Lắng nghe tin nhắn của một Lớp học (Real-time)
    * Bất kỳ ai nhắn tin, hàm này sẽ tự động cập nhật mảng dữ liệu mà không cần F5
    */
   getClassMessages(classId: string): Observable<ChatMessage[]> {
+    // chặn liền nếu chạy trên Node.js (Server-side rendering) để khỏi bị lỗi "window is not defined"
+    if (!isPlatformBrowser(this.platformId)) {
+      return of([]); // Trả về mảng rỗng để Node.js khỏi bị "ngáo"
+    }
+
     // Trỏ tới đúng folder tin nhắn của lớp đó trên Firebase
     const messagesRef = collection(this.firestore, `class_chats/${classId}/messages`);
     
@@ -36,6 +45,8 @@ export class RealtimeChatService {
    * Gửi tin nhắn mới lên Firebase
    */
   async sendMessage(classId: string, senderId: string, senderName: string, senderRole: string, content: string) {
+    if (!isPlatformBrowser(this.platformId)) return null;
+    
     const messagesRef = collection(this.firestore, `class_chats/${classId}/messages`);
     
     // Đẩy dữ liệu lên Firebase. serverTimestamp() giúp đồng bộ thời gian chuẩn xác nhất.

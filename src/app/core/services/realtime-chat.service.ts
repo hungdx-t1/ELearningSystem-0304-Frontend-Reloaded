@@ -1,6 +1,6 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Injectable, PLATFORM_ID, Injector, inject, runInInjectionContext } from '@angular/core';
-import { Firestore, collection, addDoc, collectionData, query, orderBy, serverTimestamp, onSnapshot } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, query, orderBy, serverTimestamp, onSnapshot, doc, updateDoc } from '@angular/fire/firestore';
 import { Observable, of } from 'rxjs';
 
 export interface ChatMessage {
@@ -10,6 +10,9 @@ export interface ChatMessage {
   senderRole: string; // Để tô màu phân biệt Giảng viên và Sinh viên
   content: string;
   timestamp: any;     // Thời gian thực từ server Firebase
+  fileUrl?: string;     // Link file (Cloudinary)
+  fileName?: string;    // Tên file để hiển thị
+  reactions?: { [userId: string]: string }; // Dạng { "id_cua_sv_A": "❤️", "id_cua_gv": "👍" }
 }
 
 @Injectable({
@@ -60,18 +63,38 @@ export class RealtimeChatService {
   /**
    * Gửi tin nhắn mới lên Firebase
    */
-  async sendMessage(classId: string, senderId: string, senderName: string, senderRole: string, content: string) {
+  async sendMessage(classId: string, senderId: string, senderName: string, senderRole: string, content: string, fileUrl?: string, fileName?: string) {
     if (!isPlatformBrowser(this.platformId)) return null;
     
     const messagesRef = collection(this.firestore, `class_chats/${classId}/messages`);
     
-    // Đẩy dữ liệu lên Firebase. serverTimestamp() giúp đồng bộ thời gian chuẩn xác nhất.
     return addDoc(messagesRef, {
       senderId,
       senderName,
       senderRole,
       content,
+      fileUrl: fileUrl || null,
+      fileName: fileName || null,
+      reactions: {}, // Mặc định chưa có ai react
       timestamp: serverTimestamp()
     });
+  }
+
+  async toggleReaction(classId: string, messageId: string, userId: string, reactionType: string, currentReactions: any = {}) {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    // Trỏ đích danh vào cái tin nhắn đó
+    const msgRef = doc(this.firestore, `class_chats/${classId}/messages/${messageId}`);
+    const newReactions = { ...currentReactions };
+
+    // Nếu bấm lại đúng icon cũ -> Hủy react. Nếu bấm icon khác -> Đè lên.
+    if (newReactions[userId] === reactionType) {
+      delete newReactions[userId]; 
+    } else {
+      newReactions[userId] = reactionType; 
+    }
+
+    // Cập nhật lại vào Firebase
+    return updateDoc(msgRef, { reactions: newReactions });
   }
 }

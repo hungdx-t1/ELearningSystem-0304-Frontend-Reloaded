@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs'; // async/await với Observable
+import { firstValueFrom, of } from 'rxjs'; // async/await với Observable
+import { isPlatformBrowser } from '@angular/common';
 
 export interface Course {
   id: string;
@@ -36,9 +37,14 @@ export interface Chapter {
 })
 export class CourseService {
   private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
+  
   private apiUrl = 'http://localhost:5189/api';
 
   getAllCourses() {
+    if (!isPlatformBrowser(this.platformId)) { // Nếu không phải trên trình duyệt, trả về một Observable rỗng hoặc dữ liệu giả
+      return of([]); 
+    }
     return this.http.get<Course[]>(`${this.apiUrl}/courses`);
   }
 

@@ -14,7 +14,14 @@ export class ChatService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:5189/api/ai/chat';
 
-  sendMessage(message: string) {
-    return this.http.post<{ reply: string }>(this.apiUrl, { prompt: message });
+  sendMessage(message: string, file?: File | null) {
+    const formData = new FormData();
+    formData.append('prompt', message);
+    
+    if (file) {
+      formData.append('file', file);
+    }
+
+    return this.http.post<{ reply: string }>(this.apiUrl, formData);
   }
 }

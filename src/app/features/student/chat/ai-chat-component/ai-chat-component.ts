@@ -13,6 +13,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class AiChatComponent implements AfterViewChecked {
   private chatService = inject(ChatService);
   private sanitizer = inject(DomSanitizer);
+
+  selectedFile = signal<File | null>(null);
   
   // Lấy cái khung cuộn màn hình từ HTML
   @ViewChild('chatContainer') private chatContainer!: ElementRef;
@@ -35,21 +37,36 @@ export class AiChatComponent implements AfterViewChecked {
     } catch(err) { }
   }
 
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.selectedFile.set(input.files[0]);
+    }
+  }
+
   sendMessage() {
     const userMsg = this.chatInput().trim();
+    const file = this.selectedFile();
+    
     if (!userMsg) return;
     
+    // Gắn nhãn file vào tin nhắn để hiển thị lên UI cho đẹp
+    let displayMsg = userMsg;
+    if (file) {
+      displayMsg += `\n\n*(Đính kèm tài liệu: 📎 ${file.name})*`;
+    }
+
     // 1. Gắn tin nhắn user lên màn hình
-    this.messages.update(msgs => [...msgs, { role: 'user', content: userMsg }]);
+    this.messages.update(msgs => [...msgs, { role: 'user', content: displayMsg }]);
     this.chatInput.set('');
+    this.selectedFile.set(null); // Reset file sau khi gửi
     
     // 2. Bật hiệu ứng "AI đang gõ..."
     this.isTyping.set(true);
 
-    // 3. Gọi Service
-    this.chatService.sendMessage(userMsg).subscribe({
+    // 3. Gọi Service truyền cả text và file
+    this.chatService.sendMessage(userMsg, file).subscribe({
       next: (res) => {
-        // Tắt hiệu ứng, in câu trả lời ra
         this.isTyping.set(false);
         this.messages.update(msgs => [...msgs, { role: 'ai', content: res.reply }]);
       },

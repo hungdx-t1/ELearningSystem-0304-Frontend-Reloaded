@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface User {
   id: string;
@@ -15,10 +16,14 @@ export interface User {
 })
 export class UserService {
   private http = inject(HttpClient);
+  private platformId = inject(PLATFORM_ID);
   private apiUrl = 'http://localhost:5189/api/admin/users'; 
 
   // 1. Lấy danh sách toàn bộ User
   getAllUsers(): Observable<User[]> {
+    if (!isPlatformBrowser(this.platformId)) { // Nếu không phải trên trình duyệt, trả về một Observable rỗng hoặc dữ liệu giả
+      return of([]); 
+    }
     return this.http.get<User[]>(this.apiUrl);
   }
 

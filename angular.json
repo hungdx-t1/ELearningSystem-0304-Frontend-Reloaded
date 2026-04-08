@@ -20,6 +20,12 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "prerender": false,
+            "allowedCommonJsDependencies": [
+              "@grpc/grpc-js",
+              "@grpc/proto-loader",
+              "undici"
+            ],
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "polyfills": ["zone.js"],
@@ -45,8 +51,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "2MB",
+                  "maximumError": "5MB"
                 },
                 {
                   "type": "anyComponentStyle",

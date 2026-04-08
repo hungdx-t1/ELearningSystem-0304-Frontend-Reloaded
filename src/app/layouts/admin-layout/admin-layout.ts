@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SlicePipe } from '@angular/common';
@@ -13,13 +13,21 @@ export class AdminLayout {
   public authService = inject(AuthService);
   private router = inject(Router);
 
+  isSidebarOpen = signal<boolean>(false);
+
   menuItems = [
     { path: '/admin/dashboard', icon: '📊', label: 'Tổng quan hệ thống' },
     { path: '/admin/users', icon: '👥', label: 'Quản lý Người dùng' },
-    { path: '/admin/courses', icon: '🏫', label: 'Quản lý Khóa học' },
-    { path: '/admin/classes', icon: '🏛️', label: 'Quản lý Lớp học' },
     { path: '/admin/settings', icon: '⚙️', label: 'Cài đặt hệ thống' }
   ];
+
+  toggleSidebar() {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen.set(false);
+  }
 
   logout() {
     this.authService.logout();

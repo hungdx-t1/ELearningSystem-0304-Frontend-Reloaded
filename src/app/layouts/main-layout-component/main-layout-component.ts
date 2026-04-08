@@ -1,29 +1,35 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SlicePipe } from '@angular/common';
 
 @Component({
   selector: 'app-main-layout',
+  standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, SlicePipe], 
   templateUrl: './main-layout-component.html',
   styleUrl: './main-layout-component.scss',
 })
 export class MainLayoutComponent {
   authService = inject(AuthService);
-
   private router = inject(Router);
 
-  // Danh sách menu bên trái (sau này bạn thêm bớt tùy ý)
+  isSidebarOpen = signal<boolean>(false);
+
   menuItems = [
-    { path: '/dashboard', icon: '🏠', label: 'Trang chủ' },
-    { path: '/courses', icon: '📚', label: 'Khóa học' },
-    { path: '/classes', icon: '🏫', label: 'Lớp học' },
-    { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }, 
-    // { path: '/instructor/courses', icon: '👨‍🏫', label: 'Quản lý khóa học' },
-    // { path: '/instructor/classes', icon: '👨‍🏫', label: 'Quản lý lớp học' },  // tạm thời
-    // { path: '/instructor/assignments', icon: '👨‍🏫', label: 'Chấm điểm bài tập' },  // tạm thời
+    { path: '/dashboard', icon: '🏠', label: 'Bảng điều khiển' },
+    { path: '/courses', icon: '📚', label: 'Khóa học tự do' },
+    { path: '/classes', icon: '🏫', label: 'Lớp học của tôi' },
+    { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }
   ];
+
+  toggleSidebar() {
+    this.isSidebarOpen.set(!this.isSidebarOpen());
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen.set(false);
+  }
 
   logout() {
     this.authService.logout();

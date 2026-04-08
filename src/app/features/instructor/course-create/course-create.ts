@@ -20,7 +20,8 @@ export class CourseCreate {
   courseForm = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.minLength(5)]],
     description: ['', [Validators.required, Validators.minLength(10)]],
-    thumbnailUrl: [''] // Link ảnh thì không bắt buộc
+    thumbnailUrl: [''], // Link ảnh thì không bắt buộc
+    isPublic: [false]
   });
 
   isLoading = signal<boolean>(false);

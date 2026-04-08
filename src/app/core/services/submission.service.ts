@@ -13,7 +13,7 @@ export interface Submission {
   score?: number;
   feedback?: string;
   
-  // có thể nhờ C# trả thêm tên Sinh Viên, nếu không có thì lát mình sẽ tự ghép
+  // todo backend trả về thêm thông tin sinh viên (có thể dùng join fetch hoặc gọi thêm api lấy thông tin sinh viên)
   studentName?: string; 
   studentCode?: string;
 }

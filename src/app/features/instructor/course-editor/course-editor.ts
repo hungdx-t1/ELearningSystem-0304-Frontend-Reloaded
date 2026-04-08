@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angu
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter, Lesson } from '../../../core/services/course.service';
 import { NotificationService } from '../../../../v2/app/core/services/notification.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-instructor-course-editor',
@@ -15,8 +16,11 @@ export class CourseEditor implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private courseService = inject(CourseService);
-
+  private authService = inject(AuthService);  
   private notiService = inject(NotificationService);
+
+  currentUserId = this.authService.getCurrentUserId();
+  isOwner = signal<boolean>(false);
 
   courseId = signal<string>('');
   courseInfo = signal<Course | null>(null);
@@ -66,6 +70,8 @@ export class CourseEditor implements OnInit {
       // 1. Kéo thông tin khóa học
       const course = await this.courseService.getCourseById(id);
       this.courseInfo.set(course);
+
+      this.isOwner.set(course.creatorId === this.currentUserId);
 
       // 2. Kéo danh sách các Chương
       const chapterList = await this.courseService.getChaptersByCourseId(id);

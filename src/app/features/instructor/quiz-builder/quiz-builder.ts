@@ -4,6 +4,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Question, QuestionService } from '../../../core/services/question.service';
 import { AiService } from '../../../core/services/ai.service';
 import { NotificationService } from '../../../../v2/app/core/services/notification.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { CourseService } from '../../../core/services/course.service';
 
 @Component({
   selector: 'app-quiz-builder',
@@ -20,6 +22,11 @@ export class QuizBuilder implements OnInit {
 
   private questionService = inject(QuestionService);
   private aiService = inject(AiService);
+  private courseService = inject(CourseService);
+  private authService = inject(AuthService);
+
+  isOwner = signal<boolean>(false);
+  currentUserId = this.authService.getCurrentUserId();
 
   courseId = signal<string>('');
   lessonId = signal<string>('');
@@ -58,6 +65,11 @@ export class QuizBuilder implements OnInit {
     if (cId && lId) {
       this.courseId.set(cId);
       this.lessonId.set(lId);
+
+      this.courseService.getCourseById(cId).then(course => {
+        this.isOwner.set(course.creatorId === this.currentUserId);
+      });
+      
       this.loadQuestions();
     }
   }

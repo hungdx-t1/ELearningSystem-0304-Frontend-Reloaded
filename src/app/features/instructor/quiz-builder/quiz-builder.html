@@ -10,15 +10,16 @@
       </div>
     </div>
     
-    <div class="flex items-center gap-3">
-      <button (click)="openAiModal()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 shadow-sm disabled:opacity-50 flex items-center gap-2 border border-indigo-200 transition">
-        <span>✨</span> Tạo bằng AI
-      </button>
-      
-      <button (click)="openAddForm()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 shadow-sm disabled:opacity-50 transition">
-        + Thêm thủ công
-      </button>
-    </div>
+    @if (isOwner()) {
+      <div class="flex items-center gap-3">
+        <button (click)="openAiModal()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 shadow-sm disabled:opacity-50 flex items-center gap-2 border border-indigo-200 transition">
+          <span>✨</span> Tạo bằng AI
+        </button>
+        <button (click)="openAddForm()" [disabled]="isFormOpen()" class="px-5 py-2.5 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 shadow-sm disabled:opacity-50 transition">
+          + Thêm thủ công
+        </button>
+      </div>
+    }
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

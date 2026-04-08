@@ -10,6 +10,9 @@ export interface Course {
   instructorId?: string;
   thumbnailUrl?: string;
   createdAt: string;
+  creatorId?: string;
+  creatorName?: string;
+  isPublic: boolean; 
 }
 
 export interface Lesson {
@@ -61,28 +64,8 @@ export class CourseService {
   }
 
   //gửi dữ liệu tạo khóa học mới xuống BE
-  createCourse(courseData: { title: string; description: string; thumbnailUrl: string }) {
+  createCourse(courseData: { title: string; description: string; thumbnailUrl: string; isPublic: boolean }) {
     return this.http.post<Course>(`${this.apiUrl}/courses`, courseData);
-  }
-
-  // Gửi lệnh tạo Chương mới
-  createChapter(chapterData: { courseId: string; title: string; sortOrder: number }) {
-    return this.http.post<Chapter>(`${this.apiUrl}/chapters`, chapterData);
-  }
-
-  // Gửi lệnh tạo Bài học mới
-  // createLesson(lessonData: { chapterId: string; title: string; type: number; videoUrl?: string; sortOrder: number }) {
-  //   return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
-  // }
-  createLesson(lessonData: { 
-    chapterId: string; 
-    title: string; 
-    type: number; 
-    videoUrl?: string | null;       // Cho phép null
-    documentUrl?: string | null;    // Bổ sung thêm documentUrl
-    sortOrder: number 
-  }) {
-    return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
   }
 
   // Cập nhật khóa học
@@ -95,7 +78,15 @@ export class CourseService {
     return this.http.delete(`${this.apiUrl}/courses/${id}`);
   }
 
-  // --- API CHO CHƯƠNG (CHAPTER) ---
+  copyCourse(id: string) {
+    return this.http.post<{ message: string; data: Course }>(`${this.apiUrl}/courses/${id}/copy`, {});
+  }
+
+  // Gửi lệnh tạo Chương mới
+  createChapter(chapterData: { courseId: string; title: string; sortOrder: number }) {
+    return this.http.post<Chapter>(`${this.apiUrl}/chapters`, chapterData);
+  }
+  
   updateChapter(id: string, chapterData: any) {
     return this.http.put(`${this.apiUrl}/chapters/${id}`, chapterData);
   }
@@ -104,7 +95,17 @@ export class CourseService {
     return this.http.delete(`${this.apiUrl}/chapters/${id}`);
   }
 
-  // --- API CHO BÀI HỌC (LESSON) ---
+  createLesson(lessonData: { 
+    chapterId: string; 
+    title: string; 
+    type: number; 
+    videoUrl?: string | null;       // Cho phép null
+    documentUrl?: string | null;    // Bổ sung thêm documentUrl
+    sortOrder: number 
+  }) {
+    return this.http.post<Lesson>(`${this.apiUrl}/lessons`, lessonData);
+  }
+
   updateLesson(id: string, lessonData: any) {
     return this.http.put(`${this.apiUrl}/lessons/${id}`, lessonData);
   }

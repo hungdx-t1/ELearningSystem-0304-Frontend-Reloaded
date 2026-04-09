@@ -86,6 +86,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'courses', pathMatch: 'full' },
       { path: 'courses', component: CourseManagement },
       { path: 'courses/create', component: CourseCreate },
+      { path: 'courses/:id/edit', component: CourseCreate },
       { path: 'courses/:id/manage', component: CourseEditor },
       { path: 'classes', component: ClassManagement },
       { path: 'classes/:id', component: InstructorClassDetail },

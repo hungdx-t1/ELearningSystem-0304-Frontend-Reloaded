@@ -78,9 +78,10 @@
                 
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   @if (course.creatorId === currentUserId) {
-                    <button [routerLink]="['/instructor/courses', course.id, 'manage']" class="text-blue-600 hover:text-blue-900 mr-4 font-semibold">Sửa nội dung</button>
+                    <button [routerLink]="['/instructor/courses', course.id, 'edit']" class="text-emerald-600 hover:text-emerald-900 mr-4 font-semibold">Sửa thông tin</button>
+                    <button [routerLink]="['/instructor/courses', course.id, 'manage']" class="text-blue-600 hover:text-blue-900 mr-4 font-semibold">Sửa bài giảng</button>
                     <button (click)="deleteCourse(course.id)" class="text-red-600 hover:text-red-900 font-semibold">Xóa</button>
-                  } 
+                  }
                   @else {
                     <button [routerLink]="['/instructor/courses', course.id, 'manage']" class="text-gray-600 hover:text-gray-900 mr-4 font-semibold">Xem giáo trình</button>
                     <button (click)="copyCourse(course.id)" class="text-indigo-600 hover:text-indigo-900 font-bold bg-indigo-50 px-3 py-1 rounded-lg">📥 Sao chép</button>

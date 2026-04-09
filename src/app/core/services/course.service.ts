@@ -21,6 +21,7 @@ export interface Lesson {
   title: string;
   type: number; // 0: Video, 1: Document, 2: Quiz, 3: Assignment
   videoUrl?: string | null; 
+  isExam: boolean;
   documentUrl?: string | null;
   duration?: number;
   sortOrder: number;

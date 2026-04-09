@@ -180,6 +180,18 @@
           />
         </div>
 
+        @if (lessonForm.get('type')?.value == 2 || lessonForm.get('type')?.value == 3) {
+          <div class="bg-red-50 p-4 rounded-xl border border-red-200 flex items-start gap-3 mt-4">
+            <div class="flex items-center h-5 mt-1">
+              <input type="checkbox" formControlName="isExam" class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer">
+            </div>
+            <div>
+              <label class="font-bold text-red-900 block cursor-pointer">🛡️ Đánh dấu là bài thi</label>
+              <p class="text-sm text-red-700 mt-0.5">Chặn sinh viên copy, chuyển Tab, thoát toàn màn hình và cảnh báo gian lận.</p>
+            </div>
+          </div>
+        }
+
         @if (lessonForm.get('type')?.value == 0 || lessonForm.get('type')?.value == 1 || lessonForm.get('type')?.value == 3) {
           <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <label class="block font-bold text-blue-900 mb-2">

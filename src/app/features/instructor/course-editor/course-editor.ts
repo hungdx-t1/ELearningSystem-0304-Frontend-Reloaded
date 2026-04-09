@@ -50,7 +50,8 @@ export class CourseEditor implements OnInit {
     title: ['', Validators.required],
     type: [0, Validators.required], // 0: Video, 1: Document, 2: Quiz
     videoUrl: [''],
-    sortOrder: [1, Validators.required]
+    sortOrder: [1, Validators.required],
+    isExam: [false]
   });
 
   ngOnInit() {
@@ -174,7 +175,8 @@ export class CourseEditor implements OnInit {
       type: lesson.type,
       // Phân làn khi sửa: Nếu là Tài liệu thì lấy documentUrl đắp lên form, ngược lại lấy videoUrl
       videoUrl: lesson.type === 1 ? lesson.documentUrl : lesson.videoUrl,
-      sortOrder: lesson.sortOrder
+      sortOrder: lesson.sortOrder,
+      isExam: lesson.isExam || false
     });
     this.isLessonModalOpen.set(true);
   }
@@ -193,7 +195,8 @@ export class CourseEditor implements OnInit {
       videoUrl: (typeNum === 0 || typeNum === 3) ? formVal.videoUrl : undefined,
       // Nếu là Tài liệu (1) thì nhét link vào documentUrl để C# không chửi
       documentUrl: typeNum === 1 ? formVal.videoUrl : undefined,
-      sortOrder: formVal.sortOrder!
+      sortOrder: formVal.sortOrder!,
+      isExam: formVal.isExam || false
     };
 
     if (this.lessonModalMode() === 'add') {

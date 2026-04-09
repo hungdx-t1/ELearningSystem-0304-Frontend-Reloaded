@@ -162,6 +162,16 @@ export class LessonPlayerComponent implements OnInit {
             next: (sub) => {
               if (sub && sub.score != null) {
                 this.quizScore.set(sub.score ?? null); 
+
+                // dịch ngược đáp án đã chọn (nếu có) để hiển thị lại trên UI
+                if (sub.quizAnswersJson) {
+                  try {
+                    const parsedAnswers = JSON.parse(sub.quizAnswersJson);
+                    this.quizAnswers.set(parsedAnswers);
+                  } catch (e) {
+                    console.error("Lỗi dịch ngược đáp án:", e);
+                  }
+                }
               } else {
                 this.quizScore.set(null); 
                 this.quizAnswers.set({});
@@ -219,8 +229,11 @@ export class LessonPlayerComponent implements OnInit {
         lessonId: this.lessonId(),
         classId: this.classId(),
         studentId: this.realStudentId,
-        submissionUrl: this.submissionForm.value.submissionUrl,
-        score: finalScore
+        score: finalScore,
+        quizAnswersJson: JSON.stringify(myAnswers),
+        cheatWarnings: 0,
+        isSubmitted: true
+        // submissionUrl: this.submissionForm.value.submissionUrl,
       };
 
       this.submissionService.submitQuiz(payload).subscribe({

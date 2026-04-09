@@ -12,6 +12,10 @@ export interface Submission {
   submittedAt: string;
   score?: number;
   feedback?: string;
+
+  quizAnswersJson?: string;
+  cheatWarnings?: number;
+  isSubmitted?: boolean;
   
   // todo backend trả về thêm thông tin sinh viên (có thể dùng join fetch hoặc gọi thêm api lấy thông tin sinh viên)
   studentName?: string; 

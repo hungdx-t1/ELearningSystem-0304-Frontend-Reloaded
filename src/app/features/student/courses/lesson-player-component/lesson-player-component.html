@@ -42,6 +42,16 @@
 
       @if (currentLesson()?.type === 2) {
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
+
+          @if (currentLesson()?.isExam && quizScore() === null) {
+            <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-lg flex items-start gap-3 animate-pulse">
+              <span class="text-2xl">🚨</span>
+              <div>
+                <h3 class="text-red-800 font-black">CHẾ ĐỘ THI ĐANG BẬT</h3>
+                <p class="text-red-700 text-sm mt-1 font-medium">Bạn tuyệt đối không được chuyển Tab, mở cửa sổ khác hoặc Copy dữ liệu. Vi phạm 3 lần bài thi sẽ tự động nộp!</p>
+              </div>
+            </div>
+          }
           <div class="flex justify-between items-center mb-6 border-b pb-4">
             <h2 class="text-2xl font-bold text-gray-900">📝 Bài tập trắc nghiệm</h2>
             @if (quizScore() !== null) {

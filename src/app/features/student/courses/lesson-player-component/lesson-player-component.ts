@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CourseService, Course, Chapter, Lesson } from '../../../../core/services/course.service';
@@ -30,6 +30,10 @@ export class LessonPlayerComponent implements OnInit {
   // Tiêm DomSanitizer vào
   private sanitizer = inject(DomSanitizer);
 
+  // anti-cheat variables
+  cheatWarnings = signal<number>(0);
+  maxWarnings = 3;
+
   courseId = signal<string>('');
   lessonId = signal<string>('');
   
@@ -40,6 +44,13 @@ export class LessonPlayerComponent implements OnInit {
   // Dữ liệu Bài học hiện tại
   currentLesson = signal<Lesson | null>(null);
   isLoading = signal<boolean>(true);
+
+  // kiểm tra: khỉ bắt gian lận nếu là Bài Thi và Chưa Nộp Bài
+  isDoingExam(): boolean {
+    const lesson = this.currentLesson();
+    // Nếu là bài thi (isExam = true) VÀ điểm đang null (chưa nộp bài/chưa chấm)
+    return !!lesson?.isExam && this.quizScore() === null && this.mySubmission()?.score === null;
+  }
 
   // 1. Kiểm tra xem link có phải của YouTube không
   isYouTubeVideo = computed(() => {
@@ -231,8 +242,8 @@ export class LessonPlayerComponent implements OnInit {
         studentId: this.realStudentId,
         score: finalScore,
         quizAnswersJson: JSON.stringify(myAnswers),
-        cheatWarnings: 0,
-        isSubmitted: true
+        isSubmitted: true,
+        cheatWarnings: this.cheatWarnings()
         // submissionUrl: this.submissionForm.value.submissionUrl,
       };
 
@@ -271,7 +282,8 @@ export class LessonPlayerComponent implements OnInit {
       classId: this.classId(),
       studentId: this.realStudentId, // Dùng ID Thật
       submissionUrl: this.submissionForm.value.submissionUrl,
-      studentNote: this.submissionForm.value.studentNote
+      studentNote: this.submissionForm.value.studentNote,
+      cheatWarnings: this.cheatWarnings()
     };
 
     this.submissionService.submitWork(payload).subscribe({
@@ -281,5 +293,59 @@ export class LessonPlayerComponent implements OnInit {
       },
       error: (err) => this.notiService.error('Lỗi nộp bài: ' + (err.error?.message || err.message))
     });
+  }
+
+  // xử lý gian lận
+  handleCheatAttempt(message: string) {
+    this.cheatWarnings.update(w => w + 1);
+    
+    // Nếu vi phạm 3 lần -> Ép nộp bài
+    if (this.cheatWarnings() >= this.maxWarnings) {
+      alert('🚫 BẠN ĐÃ VI PHẠM QUY CHẾ THI QUÁ 3 LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP!');
+      
+      // Chạy hàm nộp bài tương ứng
+      if (this.currentLesson()?.type === 2) this.submitQuiz();
+      if (this.currentLesson()?.type === 3) this.submitAssignment();
+      
+    } else {
+      alert(`⚠️ CẢNH BÁO GIAN LẬN (${this.cheatWarnings()}/${this.maxWarnings}):\n${message}`);
+    }
+  }
+
+  // sự kiện 1: chuyển tab hoặc ẩn trình duyệt đi khi đang làm bài thi
+  @HostListener('document:visibilitychange')
+  onVisibilityChange() {
+    if (document.hidden && this.isDoingExam()) {
+      this.handleCheatAttempt('Hệ thống phát hiện bạn vừa chuyển Tab hoặc rời khỏi màn hình làm bài!');
+    }
+  }
+
+  // sự kiện 2: mở app khác khi đang làm bài thi
+  @HostListener('window:blur')
+  onWindowBlur() {
+    if (this.isDoingExam()) {
+      this.handleCheatAttempt('Bạn đang mất tập trung (chuyển sang ứng dụng khác). Vui lòng quay lại bài thi!');
+    }
+  }
+
+  // sự kiện 3: chuột phải khi đang làm bài thi
+  @HostListener('contextmenu', ['$event'])
+  onRightClick(event: Event) {
+    if (this.isDoingExam()) event.preventDefault();
+  }
+
+  // sự kiện 4: chặn phím Ctrl+C, Ctrl+V khi đang làm bài thi
+  @HostListener('window:keydown', ['$event'])
+  onKeyPress(event: KeyboardEvent) {
+    if (this.isDoingExam() && (event.ctrlKey || event.metaKey) && (event.key === 'c' || event.key === 'C' || event.key === 'v' || event.key === 'V')) {
+      event.preventDefault();
+      this.notiService.warning('Chức năng Copy/Paste đã bị vô hiệu hóa trong bài thi!');
+    }
+  }
+
+  // sự kiện 5: copy trực tiếp
+  @HostListener('copy', ['$event'])
+  onCopy(event: ClipboardEvent) {
+    if (this.isDoingExam()) event.preventDefault();
   }
 }

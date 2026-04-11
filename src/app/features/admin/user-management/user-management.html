@@ -23,8 +23,11 @@
   </div>
 
   <div class="flex gap-4 mb-4">
-    <input type="text" [(ngModel)]="searchQuery" placeholder="Tìm kiếm tên, email..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-    <select [(ngModel)]="roleFilter" class="px-4 py-2 border border-gray-300 rounded-lg bg-white outline-none">
+    <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event); onFilterChange()" 
+           placeholder="Tìm kiếm tên, email..." class="flex-1 px-4 py-2 border border-gray-300 rounded-lg outline-none">
+    
+    <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event); onFilterChange()" 
+            class="px-4 py-2 border border-gray-300 rounded-lg bg-white outline-none">
       <option value="">Tất cả Vai trò</option>
       <option value="Admin">Quản trị viên</option>
       <option value="Instructor">Giảng viên</option>
@@ -44,7 +47,7 @@
       </thead>
       <tbody class="divide-y divide-gray-200 bg-white">
         
-        @for (user of filteredUsers(); track user.id) {
+        @for (user of users(); track user.id) {
           <tr class="hover:bg-gray-50 transition-colors" [class.opacity-60]="user.status === 'Khóa'">
             <td class="px-6 py-4">
               <div class="flex items-center">
@@ -87,6 +90,32 @@
         }
       </tbody>
     </table>
+
+    @if (!isLoading() && totalItems() > 0) {
+      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+        <span class="text-sm text-gray-600 font-medium">
+          Hiển thị từ <span class="font-bold">{{ (currentPage() - 1) * pageSize() + 1 }}</span> đến 
+          <span class="font-bold">{{ currentPage() * pageSize() > totalItems() ? totalItems() : currentPage() * pageSize() }}</span> 
+          trong tổng số <span class="font-bold">{{ totalItems() }}</span> tài khoản
+        </span>
+        
+        <div class="flex gap-2">
+          <button (click)="changePage(currentPage() - 1)" [disabled]="currentPage() === 1" 
+                  class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition">
+            Trước
+          </button>
+          
+          <span class="px-4 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200 text-sm">
+            Trang {{ currentPage() }} / {{ totalPages() }}
+          </span>
+
+          <button (click)="changePage(currentPage() + 1)" [disabled]="currentPage() === totalPages()" 
+                  class="px-3 py-1.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition">
+            Tiếp
+          </button>
+        </div>
+      </div>
+    }
   </div>
 </div>
 

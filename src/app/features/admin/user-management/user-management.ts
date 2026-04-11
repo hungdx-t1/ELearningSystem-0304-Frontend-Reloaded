@@ -25,6 +25,14 @@ export class UserManagement implements OnInit {
   // 1. DỮ LIỆU NGƯỜI DÙNG (Giờ khởi tạo mảng rỗng chờ API)
   users = signal<User[]>([]);
 
+  // 2.0
+  searchQuery = signal<string>('');
+  roleFilter = signal<string>('');
+  currentPage = signal<number>(1);
+  pageSize = signal<number>(10);
+  totalItems = signal<number>(0);
+  totalPages = signal<number>(0);
+
   // Vừa vào trang là gọi API lấy danh sách luôn
   ngOnInit() {
     this.loadUsers();
@@ -32,37 +40,48 @@ export class UserManagement implements OnInit {
 
   loadUsers() {
     this.isLoading.set(true);
-    this.userService.getAllUsers().subscribe({
-      next: (data: any[]) => {
-        
-        // HÀM TỪ ĐIỂN: Dịch số C# thành Chữ Angular
+    this.userService.getAllUsers(this.searchQuery(), this.roleFilter(), this.currentPage(), this.pageSize()).subscribe({
+      next: (response: any) => {
         const mapRoleToString = (roleValue: any) => {
           if (roleValue === 0 || roleValue === 'Admin') return 'Admin';
           if (roleValue === 1 || roleValue === 'Instructor') return 'Instructor';
-          return 'Student'; // Mặc định là 2
+          return 'Student';
         };
 
-        const mappedUsers: User[] = data.map(u => ({
+        // Lấy danh sách từ response.items
+        const mappedUsers: User[] = response.items.map((u: any) => ({
           id: u.id,
           fullName: u.fullName || 'Chưa cập nhật',
           email: u.email || '',
-          role: mapRoleToString(u.role), // Đưa qua hàm dịch để biến thành chữ chuẩn
+          role: mapRoleToString(u.role),
           status: u.isActive === false ? 'Khóa' : 'Hoạt động'
         }));
         
         this.users.set(mappedUsers);
+        this.totalItems.set(response.totalCount);
+        this.totalPages.set(response.totalPages);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Lỗi khi tải danh sách user:', err);
+        this.notiService.error('Lỗi tải dữ liệu!');
         this.isLoading.set(false);
-      },
+      }
     });
   }
 
-  // 2. LOGIC TÌM KIẾM & LỌC (Giữ nguyên - Rất mượt vì chạy trên RAM Frontend)
-  searchQuery = signal<string>('');
-  roleFilter = signal<string>('');
+  // kích hoạt khi search hoặc filter
+  onFilterChange() {
+    this.currentPage.set(1); // Đưa về trang 1
+    this.loadUsers();
+  }
+
+  // đổi trang
+  changePage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadUsers();
+    }
+  }
 
   filteredUsers = computed(() => {
     const query = this.searchQuery().toLowerCase();
@@ -272,7 +291,7 @@ export class UserManagement implements OnInit {
   exportExcel() {
     this.isExporting.set(true);
 
-    // QUAN TRỌNG: Phải set responseType là 'blob' để trình duyệt hiểu đây là file (dữ liệu nhị phân)
+    // set responseType là 'blob' để trình duyệt hiểu đây là file (dữ liệu nhị phân)
     this.http
       .get('http://localhost:5189/api/admin/users/export', { responseType: 'blob' })
       .subscribe({

@@ -14,6 +14,10 @@
         tuyến
       </p>
     </div>
+
+    <a routerLink="/chat-history" class="px-4 py-2 bg-white text-sm text-gray-600 font-bold rounded-lg border shadow-sm hover:bg-gray-50 transition flex items-center gap-2">
+      🕒 Lịch sử
+    </a>
   </div>
 
   <div #chatContainer class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 scroll-smooth">
@@ -54,39 +58,6 @@
       </div>
     }
   </div>
-
-  <!-- <div class="p-4 bg-white border-t border-gray-200">
-    <div class="flex items-center gap-2">
-      <input
-        type="text"
-        [(ngModel)]="chatInput"
-        (keyup.enter)="sendMessage()"
-        [disabled]="isTyping()"
-        placeholder="Hỏi AI về bài học, tài liệu..."
-        class="flex-1 appearance-none rounded-full px-5 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed transition-colors"
-      />
-
-      <button
-        (click)="sendMessage()"
-        [disabled]="isTyping() || !chatInput().trim()"
-        class="w-11 h-11 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 disabled:bg-blue-300 transition shadow-sm"
-      >
-        <svg
-          class="w-5 h-5 ml-1 transform rotate-90"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-          ></path>
-        </svg>
-      </button>
-    </div>
-  </div> -->
 
   @if (selectedFile()) {
     <div class="px-4 py-2 bg-gray-50 border-t border-gray-200 flex items-center justify-between">

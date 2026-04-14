@@ -3,6 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { ChatService, ChatMessage } from '../../../../core/services/chat.service';
 import { marked } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
+import { AuthService } from '../../../../core/services/auth.service';
+import { AiChatLogService } from '../../../../core/services/aichatlog.service';
 
 @Component({
   selector: 'app-ai-chat',
@@ -13,6 +15,8 @@ import { DomSanitizer } from '@angular/platform-browser';
 export class AiChatComponent implements AfterViewChecked {
   private chatService = inject(ChatService);
   private sanitizer = inject(DomSanitizer);
+  private aiChatLogService = inject(AiChatLogService);
+  private authService = inject(AuthService);
 
   selectedFile = signal<File | null>(null);
   
@@ -69,6 +73,22 @@ export class AiChatComponent implements AfterViewChecked {
       next: (res) => {
         this.isTyping.set(false);
         this.messages.update(msgs => [...msgs, { role: 'ai', content: res.reply }]);
+
+        // lưu lịch sử chat vào database (có cả câu hỏi và câu trả lời)
+        const userId = this.authService.getCurrentUserId();
+        if (userId) {
+          const logPayload = {
+            userId: userId,
+            message: displayMsg, // Câu hỏi của Sinh viên (Có kèm tên file nếu có)
+            response: res.reply  // Câu trả lời của AI
+            // Timestamp Backend đã tự tạo bằng DateTime.UtcNow rồi nên không cần gửi
+          };
+
+          // Gọi hàm lưu chạy ngầm 
+          this.aiChatLogService.saveChatLog(logPayload).subscribe({
+            error: (err) => console.error("Không thể lưu lịch sử chat: ", err)
+          });
+        }
       },
       error: (err) => {
         this.isTyping.set(false);

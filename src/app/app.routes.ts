@@ -24,6 +24,7 @@ import { AssignmentGrading } from './features/instructor/assignment-grading/assi
 import { InstructorClassDetail } from './features/instructor/class-detail/class-detail';
 import { InstructorLayout } from './layouts/instructor-layout/instructor-layout';
 import { rootRedirectGuard } from './core/guards/root-redirect.guard';
+import { AiChatHistoryComponent } from './features/student/chat/ai-chat-history-component/ai-chat-history-component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -73,6 +74,12 @@ export const routes: Routes = [
         canActivate: [roleGuard],
         data: { roles: ['Student'] },
       },
+      {
+        path: 'chat-history',
+        component: AiChatHistoryComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] }
+      }
     ],
   },
 

@@ -48,8 +48,18 @@ export class LessonPlayerComponent implements OnInit {
   // kiểm tra: khỉ bắt gian lận nếu là Bài Thi và Chưa Nộp Bài
   isDoingExam(): boolean {
     const lesson = this.currentLesson();
-    // Nếu là bài thi (isExam = true) VÀ điểm đang null (chưa nộp bài/chưa chấm)
-    return !!lesson?.isExam && this.quizScore() === null && this.mySubmission()?.score === null;
+    // Nếu không phải bài thi thì tắt Anti-cheat
+    if (!lesson || !lesson.isExam) return false;
+
+    if (lesson.type === 2) {
+      // Trắc nghiệm: Bật Anti-cheat nếu chưa nộp bài (điểm null)
+      return this.quizScore() === null;
+    } else if (lesson.type === 3) {
+      // Tự luận: Bật Anti-cheat nếu chưa nộp (!mySubmission) hoặc nộp rồi nhưng điểm null (chưa chấm)
+      return !this.mySubmission() || this.mySubmission()?.score == null;
+    }
+    
+    return false;
   }
 
   // 1. Kiểm tra xem link có phải của YouTube không
@@ -329,13 +339,13 @@ export class LessonPlayerComponent implements OnInit {
   }
 
   // sự kiện 3: chuột phải khi đang làm bài thi
-  @HostListener('contextmenu', ['$event'])
+  @HostListener('document:contextmenu', ['$event'])
   onRightClick(event: Event) {
     if (this.isDoingExam()) event.preventDefault();
   }
 
   // sự kiện 4: chặn phím Ctrl+C, Ctrl+V khi đang làm bài thi
-  @HostListener('window:keydown', ['$event'])
+  @HostListener('document:keydown', ['$event'])
   onKeyPress(event: KeyboardEvent) {
     if (this.isDoingExam() && (event.ctrlKey || event.metaKey) && (event.key === 'c' || event.key === 'C' || event.key === 'v' || event.key === 'V')) {
       event.preventDefault();
@@ -344,7 +354,7 @@ export class LessonPlayerComponent implements OnInit {
   }
 
   // sự kiện 5: copy trực tiếp
-  @HostListener('copy', ['$event'])
+  @HostListener('document:copy', ['$event'])
   onCopy(event: ClipboardEvent) {
     if (this.isDoingExam()) event.preventDefault();
   }

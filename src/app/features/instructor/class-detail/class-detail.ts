@@ -12,7 +12,7 @@ import { CourseService } from '../../../core/services/course.service';
 @Component({
   selector: 'app-instructor-class-detail',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterModule, SlicePipe, DatePipe],
+  imports: [ReactiveFormsModule, FormsModule, RouterModule, SlicePipe],
   templateUrl: './class-detail.html'
 })
 export class InstructorClassDetail implements OnInit, AfterViewChecked {
@@ -128,9 +128,11 @@ export class InstructorClassDetail implements OnInit, AfterViewChecked {
     
     // Cần gọi API tìm userId trước (hoặc nhờ BE C# viết 1 API EnrollByEmail cho lẹ)
     // Tạm thời mình dùng API lấy tất cả user rồi filter bên Frontend cho nhanh
-    this.userService.getAllUsers().subscribe({
-      next: (users) => {
-        const student = users.find(u => u.email === emailOrCode || u.fullName.includes(emailOrCode)); // Note: Chỗ u.UserCode tùy thuộc DTO của bạn
+    this.userService.getAllUsers('', '', 1, 1000).subscribe({
+      next: (res: any) => {
+        const users = res.items || [];
+
+        const student = users.find((u: any) => u.email === emailOrCode || u.fullName.includes(emailOrCode)); // Note: Chỗ u.UserCode tùy thuộc DTO của bạn
         
         if (!student) {
           this.notiService.error('Không tìm thấy Sinh viên này trong hệ thống!');

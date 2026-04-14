@@ -63,10 +63,14 @@ export class AdminClassManagement implements OnInit {
     });
 
     // Kéo danh sách User, nhưng chỉ lọc lấy Giảng viên (Role = 1 hoặc 'Instructor')
-    this.userService.getAllUsers().subscribe({
-      next: (users) => {
-        const instList = users.filter((u) => {
-          const roleVal = String(u.role); // ép kiểu
+    this.userService.getAllUsers('', '', 1, 1000).subscribe({
+      next: (res: any) => {
+        // Vì API giờ trả về phân trang { items, totalCount... } nên ta phải chui vào .items
+        const userList = res.items || []; 
+        
+        // 🌟 Sửa lỗi TS7006: Thêm chữ ": any" vào biến u
+        const instList = userList.filter((u: any) => {
+          const roleVal = String(u.role); 
           return roleVal === '1' || roleVal === '0' || roleVal === 'Instructor' || roleVal === 'Admin';
         });
         

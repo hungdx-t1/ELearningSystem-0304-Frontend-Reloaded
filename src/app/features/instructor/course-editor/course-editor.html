@@ -14,9 +14,14 @@
         <h1 class="text-2xl font-bold text-gray-900">{{ courseInfo()?.title || 'Đang tải...' }}</h1>
       </div>
     </div>
+    
     @if (isOwner()) {
       <button (click)="openChapterModal()" class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-sm flex items-center gap-2">
         <span>📁</span> Thêm Chương Mới
+      </button>
+    } @else {
+      <button (click)="copyCourse()" class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 border border-indigo-200 shadow-sm flex items-center gap-2 transition">
+        <span>📥</span> Sao chép khóa học
       </button>
     }
   </div>
@@ -63,6 +68,13 @@
                   </div>
                   
                   <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2">
+                    @if (lesson.type === 0 || lesson.type === 1 || lesson.type === 3) {
+                      <button (click)="viewLesson(lesson, $event)" 
+                              class="text-xs text-white bg-blue-500 hover:bg-blue-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1">
+                        👀 Xem 
+                      </button>
+                    }
+                    
                     @if (lesson.type === 2) {
                       <button [routerLink]="['/instructor/courses', courseId(), 'quizzes', lesson.id]" 
                               class="text-xs text-white bg-orange-500 hover:bg-orange-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1">

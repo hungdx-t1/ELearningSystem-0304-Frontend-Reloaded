@@ -279,4 +279,30 @@ export class CourseEditor implements OnInit {
       }
     });
   }
+
+  copyCourse() {
+    if (confirm('Bạn có muốn sao chép toàn bộ khóa học này về thư viện của mình không?')) {
+      this.courseService.copyCourse(this.courseId()).subscribe({
+        next: () => {
+          this.notiService.success('🎉 Sao chép thành công!');
+          // Đá về trang danh sách khóa học của họ sau khi copy xong
+          this.router.navigate(['/instructor/courses']);
+        },
+        error: (err) => this.notiService.error('Lỗi sao chép: ' + (err.error?.message || err.message))
+      });
+    }
+  }
+
+  viewLesson(lesson: Lesson, event: Event) {
+    event.stopPropagation(); // Ngăn việc click làm mở/đóng accordion của chương
+    
+    // Nếu là tài liệu (1) thì lấy documentUrl, nếu là video (0) hoặc tự luận (3) thì lấy videoUrl
+    const url = lesson.type === 1 ? lesson.documentUrl : lesson.videoUrl;
+    
+    if (url) {
+      window.open(url, '_blank'); // Mở link trong tab mới
+    } else {
+      this.notiService.warning('Bài học này chưa được đính kèm file hoặc đường dẫn!');
+    }
+  }
 }

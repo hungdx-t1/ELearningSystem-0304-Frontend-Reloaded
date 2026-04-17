@@ -5,11 +5,12 @@ import { marked } from 'marked';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AiChatLogService } from '../../../../core/services/aichatlog.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-ai-chat',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './ai-chat-component.html'
 })
 export class AiChatComponent implements AfterViewChecked {

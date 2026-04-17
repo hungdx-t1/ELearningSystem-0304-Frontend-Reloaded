@@ -115,6 +115,10 @@ export class CourseService {
     return this.http.delete(`${this.apiUrl}/lessons/${id}`);
   }
 
+  updateLessonOrders(lessonOrders: { id: string, sortOrder: number }[]) {
+    return this.http.put(`${this.apiUrl}/lessons/update-order`, lessonOrders);
+  }
+
   // --- API Upload --
   uploadFile(file: File) {
     const formData = new FormData();

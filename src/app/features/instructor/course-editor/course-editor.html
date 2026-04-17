@@ -14,13 +14,19 @@
         <h1 class="text-2xl font-bold text-gray-900">{{ courseInfo()?.title || 'Đang tải...' }}</h1>
       </div>
     </div>
-    
+
     @if (isOwner()) {
-      <button (click)="openChapterModal()" class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-sm flex items-center gap-2">
+      <button
+        (click)="openChapterModal()"
+        class="px-5 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black shadow-sm flex items-center gap-2"
+      >
         <span>📁</span> Thêm Chương Mới
       </button>
     } @else {
-      <button (click)="copyCourse()" class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 border border-indigo-200 shadow-sm flex items-center gap-2 transition">
+      <button
+        (click)="copyCourse()"
+        class="px-5 py-2.5 bg-indigo-50 text-indigo-700 font-bold rounded-lg hover:bg-indigo-100 border border-indigo-200 shadow-sm flex items-center gap-2 transition"
+      >
         <span>📥</span> Sao chép khóa học
       </button>
     }
@@ -32,19 +38,41 @@
     <div class="space-y-4">
       @for (chapter of chapters(); track chapter.id) {
         <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-          <div class="bg-gray-50 border-b border-gray-200 p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
-               (click)="toggleChapter(chapter)">
+          <div
+            class="bg-gray-50 border-b border-gray-200 p-4 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition"
+            (click)="toggleChapter(chapter)"
+          >
             <div class="flex items-center gap-3">
-              <span class="text-gray-400 font-bold w-6 text-center">{{ chapter.isExpanded ? '🔽' : '▶️' }}</span>
-              <span class="font-bold text-gray-900 text-lg">Chương {{ chapter.sortOrder }}: {{ chapter.title }}</span>
+              <span class="text-gray-400 font-bold w-6 text-center">{{
+                chapter.isExpanded ? '🔽' : '▶️'
+              }}</span>
+              <span class="font-bold text-gray-900 text-lg"
+                >Chương {{ chapter.sortOrder }}: {{ chapter.title }}</span
+              >
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-xs font-bold text-gray-500 bg-white px-3 py-1 border rounded-full shadow-sm">{{ chapter.lessons?.length || 0 }} Bài học</span>
-              
+              <span
+                class="text-xs font-bold text-gray-500 bg-white px-3 py-1 border rounded-full shadow-sm"
+                >{{ chapter.lessons?.length || 0 }} Bài học</span
+              >
+
               @if (isOwner()) {
-                <button (click)="openEditChapterModal(chapter, $event)" class="text-gray-400 hover:text-blue-600 px-2">✏️</button>
-                <button (click)="deleteChapter(chapter, $event)" class="text-gray-400 hover:text-red-600 px-2">🗑️</button>
-                <button (click)="openLessonModal(chapter.id, $event)" class="text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition">
+                <button
+                  (click)="openEditChapterModal(chapter, $event)"
+                  class="text-gray-400 hover:text-blue-600 px-2"
+                >
+                  ✏️
+                </button>
+                <button
+                  (click)="deleteChapter(chapter, $event)"
+                  class="text-gray-400 hover:text-red-600 px-2"
+                >
+                  🗑️
+                </button>
+                <button
+                  (click)="openLessonModal(chapter.id, $event)"
+                  class="text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition"
+                >
                   + Thêm Bài học
                 </button>
               }
@@ -53,7 +81,7 @@
 
           @if (chapter.isExpanded) {
             <div class="p-2 space-y-2 bg-gray-50/50">
-              @for (lesson of chapter.lessons; track lesson.id) {
+              <!-- @for (lesson of chapter.lessons; track lesson.id) {
                 <div class="flex items-center justify-between bg-white border border-gray-100 p-3 rounded-lg hover:shadow-sm hover:border-blue-200 transition group cursor-move">
                   <div class="flex items-center gap-3">
                     <span class="text-gray-300">⣿</span>
@@ -89,6 +117,93 @@
                       <div class="w-px h-4 bg-gray-300 mx-1"></div> 
                       <button (click)="openEditLessonModal(lesson, chapter.id, $event)" class="text-xs text-gray-500 hover:text-blue-600 font-bold">Sửa</button>
                       <button (click)="deleteLesson(lesson, $event)" class="text-xs text-gray-500 hover:text-red-600 font-bold">Xóa</button>
+                    }
+                  </div>
+                </div>
+              } -->
+
+              @for (lesson of chapter.lessons; track lesson.id) {
+                <div
+                  cdkDrag
+                  class="flex items-center justify-between bg-white border border-gray-100 p-3 rounded-lg hover:shadow-sm hover:border-blue-200 transition group"
+                >
+                  <div class="flex items-center gap-3">
+                    <span
+                      cdkDragHandle
+                      class="text-gray-300 hover:text-blue-500 cursor-grab active:cursor-grabbing px-2 transition"
+                    >
+                      ⣿
+                    </span>
+
+                    <div
+                      class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                      [class.bg-blue-100]="lesson.type === 0"
+                      [class.text-blue-700]="lesson.type === 0"
+                      [class.bg-orange-100]="lesson.type === 1"
+                      [class.text-orange-700]="lesson.type === 1"
+                      [class.bg-purple-100]="lesson.type === 2"
+                      [class.text-purple-700]="lesson.type === 2"
+                      [class.bg-pink-100]="lesson.type === 3"
+                      [class.text-pink-700]="lesson.type === 3"
+                    >
+                      {{
+                        lesson.type === 0
+                          ? '▶'
+                          : lesson.type === 1
+                            ? '📄'
+                            : lesson.type === 2
+                              ? '📝'
+                              : '✍️'
+                      }}
+                    </div>
+                    <span class="font-semibold text-gray-800"
+                      >Bài {{ lesson.sortOrder }}: {{ lesson.title }}</span
+                    >
+                  </div>
+
+                  <div
+                    class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2"
+                  >
+                    @if (lesson.type === 0 || lesson.type === 1 || lesson.type === 3) {
+                      <button
+                        (click)="viewLesson(lesson, $event)"
+                        class="text-xs text-white bg-blue-500 hover:bg-blue-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1"
+                      >
+                        👀 Xem
+                      </button>
+                    }
+
+                    @if (lesson.type === 2) {
+                      <button
+                        [routerLink]="['/instructor/courses', courseId(), 'quizzes', lesson.id]"
+                        class="text-xs text-white bg-orange-500 hover:bg-orange-600 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1"
+                      >
+                        📝 {{ isOwner() ? 'Soạn câu hỏi' : 'Xem câu hỏi' }}
+                      </button>
+                    }
+
+                    @if (isOwner()) {
+                      @if (lesson.type === 2 || lesson.type === 3) {
+                        <button
+                          (click)="exportExcel(lesson.id, lesson.title, $event)"
+                          class="text-xs text-white bg-green-600 hover:bg-green-700 font-bold px-3 py-1.5 rounded-md shadow-sm transition flex items-center gap-1"
+                        >
+                          📊 Xuất bảng điểm
+                        </button>
+                      }
+                      <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                      <button
+                        (click)="openEditLessonModal(lesson, chapter.id, $event)"
+                        class="text-xs text-gray-500 hover:text-blue-600 font-bold"
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        (click)="deleteLesson(lesson, $event)"
+                        class="text-xs text-gray-500 hover:text-red-600 font-bold"
+                      >
+                        Xóa
+                      </button>
                     }
                   </div>
                 </div>
@@ -195,34 +310,79 @@
         @if (lessonForm.get('type')?.value == 2 || lessonForm.get('type')?.value == 3) {
           <div class="bg-red-50 p-4 rounded-xl border border-red-200 flex items-start gap-3 mt-4">
             <div class="flex items-center h-5 mt-1">
-              <input type="checkbox" formControlName="isExam" class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer">
+              <input
+                type="checkbox"
+                formControlName="isExam"
+                class="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500 cursor-pointer"
+              />
             </div>
             <div>
-              <label class="font-bold text-red-900 block cursor-pointer">🛡️ Đánh dấu là bài thi</label>
-              <p class="text-sm text-red-700 mt-0.5">Chặn sinh viên copy, chuyển Tab, thoát toàn màn hình và cảnh báo gian lận.</p>
+              <label class="font-bold text-red-900 block cursor-pointer"
+                >🛡️ Đánh dấu là bài thi</label
+              >
+              <p class="text-sm text-red-700 mt-0.5">
+                Chặn sinh viên copy, chuyển Tab, thoát toàn màn hình và cảnh báo gian lận.
+              </p>
             </div>
           </div>
         }
 
-        @if (lessonForm.get('type')?.value == 0 || lessonForm.get('type')?.value == 1 || lessonForm.get('type')?.value == 3) {
+        @if (
+          lessonForm.get('type')?.value == 0 ||
+          lessonForm.get('type')?.value == 1 ||
+          lessonForm.get('type')?.value == 3
+        ) {
           <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
             <label class="block font-bold text-blue-900 mb-2">
-              Nguồn dữ liệu {{ lessonForm.get('type')?.value == 0 ? 'Video' : (lessonForm.get('type')?.value == 1 ? 'Tài liệu' : 'Đề bài đính kèm (PDF)') }}
+              Nguồn dữ liệu
+              {{
+                lessonForm.get('type')?.value == 0
+                  ? 'Video'
+                  : lessonForm.get('type')?.value == 1
+                    ? 'Tài liệu'
+                    : 'Đề bài đính kèm (PDF)'
+              }}
             </label>
-            
+
             <div class="flex flex-col gap-3">
               <div class="relative">
-                <input type="file" (change)="onFileSelected($event)" 
-                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                       [disabled]="isUploading()"
-                       [accept]="lessonForm.get('type')?.value == 0 ? 'video/mp4,video/x-m4v,video/*' : '.pdf,.doc,.docx'">
-                
-                <div class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border-2 border-dashed border-blue-300 rounded-lg text-blue-600 font-bold hover:bg-blue-100 transition"
-                     [class.bg-gray-100]="isUploading()" [class.text-gray-400]="isUploading()">
+                <input
+                  type="file"
+                  (change)="onFileSelected($event)"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  [disabled]="isUploading()"
+                  [accept]="
+                    lessonForm.get('type')?.value == 0
+                      ? 'video/mp4,video/x-m4v,video/*'
+                      : '.pdf,.doc,.docx'
+                  "
+                />
+
+                <div
+                  class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-white border-2 border-dashed border-blue-300 rounded-lg text-blue-600 font-bold hover:bg-blue-100 transition"
+                  [class.bg-gray-100]="isUploading()"
+                  [class.text-gray-400]="isUploading()"
+                >
                   @if (isUploading()) {
-                    <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      class="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        class="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                      ></circle>
+                      <path
+                        class="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Đang tải lên Cloudinary...
                   } @else {
@@ -233,9 +393,12 @@
 
               <div class="text-center text-sm font-bold text-blue-300">HOẶC</div>
 
-              <input type="url" formControlName="videoUrl" 
-                     placeholder="Dán link Youtube / Google Drive vào đây..." 
-                     class="w-full border px-4 py-2.5 rounded-lg outline-none text-blue-700 focus:ring-2 focus:ring-blue-500 shadow-sm" />
+              <input
+                type="url"
+                formControlName="videoUrl"
+                placeholder="Dán link Youtube / Google Drive vào đây..."
+                class="w-full border px-4 py-2.5 rounded-lg outline-none text-blue-700 focus:ring-2 focus:ring-blue-500 shadow-sm"
+              />
             </div>
           </div>
         }
@@ -250,8 +413,16 @@
         </div>
 
         <div class="flex justify-end gap-3 mt-6">
-          <button type="button" (click)="isLessonModalOpen.set(false)" class="px-5 py-2 bg-gray-100 rounded-lg font-bold">Hủy</button>
-          <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-lg font-bold">Lưu Bài Học</button>
+          <button
+            type="button"
+            (click)="isLessonModalOpen.set(false)"
+            class="px-5 py-2 bg-gray-100 rounded-lg font-bold"
+          >
+            Hủy
+          </button>
+          <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-lg font-bold">
+            Lưu Bài Học
+          </button>
         </div>
       </form>
     </div>

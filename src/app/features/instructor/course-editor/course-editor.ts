@@ -4,11 +4,12 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CourseService, Course, Chapter, Lesson } from '../../../core/services/course.service';
 import { NotificationService } from '../../../../v2/app/core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-instructor-course-editor',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink, DragDropModule],
   templateUrl: './course-editor.html'
 })
 export class CourseEditor implements OnInit {
@@ -304,5 +305,27 @@ export class CourseEditor implements OnInit {
     } else {
       this.notiService.warning('Bài học này chưa được đính kèm file hoặc đường dẫn!');
     }
+  }
+
+  dropLesson(event: CdkDragDrop<Lesson[]>, chapter: Chapter) {
+    if (event.previousIndex === event.currentIndex || !chapter.lessons) return;
+
+    moveItemInArray(chapter.lessons, event.previousIndex, event.currentIndex);
+
+    // Tính toán lại thuộc tính SortOrder cho mượt UI
+    chapter.lessons.forEach((lesson, index) => {
+      lesson.sortOrder = index + 1;
+    });
+
+    const payload = chapter.lessons.map(l => ({ id: l.id, sortOrder: l.sortOrder }));
+    
+    this.courseService.updateLessonOrders(payload).subscribe({
+      next: () => {
+        this.notiService.success('Đã lưu thứ tự bài giảng mới!');
+      },
+      error: (err) => {
+        this.notiService.error('Lỗi khi lưu thứ tự: ' + (err.error?.message || err.message));
+      }
+    });
   }
 }

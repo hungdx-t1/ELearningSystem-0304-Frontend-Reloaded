@@ -41,7 +41,7 @@ export class MainLayoutComponent implements OnInit {
 
   menuItems = [
     { path: '/dashboard', icon: '🏠', label: 'Bảng điều khiển' },
-    { path: '/courses', icon: '📚', label: 'Khóa học tự do' },
+  //  { path: '/courses', icon: '📚', label: 'Khóa học tự do' },
     { path: '/classes', icon: '🏫', label: 'Lớp học của tôi' },
     { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }
   ];

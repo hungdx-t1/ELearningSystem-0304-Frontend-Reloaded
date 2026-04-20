@@ -64,7 +64,8 @@ export class LessonPlayerComponent implements OnInit {
 
   // 1. Kiểm tra xem link có phải của YouTube không
   isYouTubeVideo = computed(() => {
-    const url = this.currentLesson()?.videoUrl;
+    const lesson = this.currentLesson();
+    const url = lesson?.videoUrl || lesson?.documentUrl;
     return url ? (url.includes('youtube.com') || url.includes('youtu.be')) : false;
   });
 
@@ -82,15 +83,26 @@ export class LessonPlayerComponent implements OnInit {
   // 3. Tạo link an toàn cho iframe (Cân cả YouTube lẫn PDF Cloudinary)
   safeResourceUrl = computed(() => {
     const lesson = this.currentLesson();
-    if (!lesson || !lesson.videoUrl) return null;
+    if (!lesson) return null;
+    
+    // Hỗ trợ cả 2 trường url tuỳ theo cách bạn lưu trong DB
+    const url = lesson.videoUrl || lesson.documentUrl;
+    if (!url) return null;
 
     if (this.isYouTubeVideo()) {
-      const embedUrl = this.getYouTubeEmbedUrl(lesson.videoUrl);
+      const embedUrl = this.getYouTubeEmbedUrl(url);
       return embedUrl ? this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl) : null;
     }
 
-    // Nếu không phải YouTube thì trả về link gốc (PDF, mp4 của Cloudinary...)
-    return this.sanitizer.bypassSecurityTrustResourceUrl(lesson.videoUrl);
+    // MẸO VI DIỆU: Dùng Google Docs Viewer để nhúng PDF trực tiếp vào màn hình 
+    // Tránh bị trình duyệt chặn hoặc tự tải file về máy
+    if (url.toLowerCase().endsWith('.pdf') || url.includes('/raw/upload/')) {
+      const docsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+      return this.sanitizer.bypassSecurityTrustResourceUrl(docsUrl);
+    }
+
+    // Nếu không phải YouTube thì trả về link gốc (mp4 của Cloudinary...)
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
 
   // --- DỮ LIỆU RIÊNG CHO LOẠI 2: TRẮC NGHIỆM (QUIZ) ---

@@ -136,4 +136,9 @@ export class CourseService {
       responseType: 'blob' 
     });
   }
+
+  // api cho schedule
+  getClassLessonSchedule(classId: string, lessonId: string) {
+    return this.http.get<any>(`${this.apiUrl}/classlessonschedules/class/${classId}/lesson/${lessonId}`);
+  }
 }

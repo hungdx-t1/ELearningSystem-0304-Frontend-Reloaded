@@ -53,4 +53,9 @@ export class SubmissionService {
   submitQuiz(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/submit-quiz`, data);
   }
+
+  startExam(classId: string, lessonId: string) {
+    return this.http.post<any>(`${this.apiUrl}/submissions/class/${classId}/lesson/${lessonId}/start-exam`, {});
+  }
+
 }

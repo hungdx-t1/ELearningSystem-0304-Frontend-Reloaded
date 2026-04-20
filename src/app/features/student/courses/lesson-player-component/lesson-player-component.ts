@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed, HostListener } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { CourseService, Course, Chapter, Lesson } from '../../../../core/services/course.service';
@@ -15,7 +15,7 @@ import { NotificationService } from '../../../../../v2/app/core/services/notific
   templateUrl: './lesson-player-component.html',
   styleUrl: './lesson-player-component.scss',
 })
-export class LessonPlayerComponent implements OnInit {
+export class LessonPlayerComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
 
@@ -114,6 +114,21 @@ export class LessonPlayerComponent implements OnInit {
   mySubmission = signal<any>(null); // Lưu thông tin bài đã nộp
   isUploading = signal<boolean>(false);
   
+  // --- TIMER CHO BÀI THI TỪ SERVER ---
+  timeLeft = signal<number | null>(null);
+  timerDisplay = computed(() => {
+    const t = this.timeLeft();
+    if (t === null) return '';
+    const m = Math.floor(t / 60).toString().padStart(2, '0');
+    const s = (t % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  });
+  private timerInterval: any;
+
+  ngOnDestroy() {
+    this.clearTimer();
+  }
+  
   submissionForm = this.fb.group({
     studentNote: [''],
     submissionUrl: ['']
@@ -184,56 +199,119 @@ export class LessonPlayerComponent implements OnInit {
 
   // --- XỬ LÝ LOGIC THEO LOẠI BÀI HỌC ---
   handleSpecificLessonLogic(lesson: any) {
-    // NẾU LÀ QUIZ (2): Kéo câu hỏi và Điểm cũ về
     if (lesson.type === 2) {
+      // 1. Nếu là Quiz, phải Load list câu hỏi trước đã
       this.questionService.getQuestionsByLessonId(lesson.id).subscribe({
         next: (data) => {
           this.questions.set(data);
-          
-          // Kiểm tra xem đã làm bài này chưa bằng ID Thật
-          this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
-            next: (sub) => {
-              if (sub && sub.score != null) {
-                this.quizScore.set(sub.score ?? null); 
-
-                // dịch ngược đáp án đã chọn (nếu có) để hiển thị lại trên UI
-                if (sub.quizAnswersJson) {
-                  try {
-                    const parsedAnswers = JSON.parse(sub.quizAnswersJson);
-                    this.quizAnswers.set(parsedAnswers);
-                  } catch (e) {
-                    console.error("Lỗi dịch ngược đáp án:", e);
-                  }
-                }
-              } else {
-                this.quizScore.set(null); 
-                this.quizAnswers.set({});
-              }
-            },
-            error: () => {
-              this.quizScore.set(null);
-              this.quizAnswers.set({});
-            }
-          });
+          this.initializeExamSession(lesson);
         }
       });
     }
 
-    // NẾU LÀ TỰ LUẬN (3): (Giữ nguyên như cũ)
     if (lesson.type === 3) {
-      this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
-        next: (sub) => {
-          if (sub) {
-            this.mySubmission.set(sub);
-            this.submissionForm.patchValue({ studentNote: sub.studentNote, submissionUrl: sub.submissionUrl });
-          } else {
-            this.mySubmission.set(null);
-            this.submissionForm.reset();
-          }
-        },
-        error: () => this.mySubmission.set(null) 
-      });
+      // Tự luận thì gọi thẳng luồng kiểm tra Server
+      this.initializeExamSession(lesson);
     }
+  }
+
+  // Khởi tạo phiên thi, lấy cấu hình thời gian và gọi API Start Exam
+  initializeExamSession(lesson: any) {
+    // 1. Kéo cấu hình thi từ Server
+    this.courseService.getClassLessonSchedule(this.classId(), lesson.id).subscribe({
+      next: (schedule) => {
+        // 2. Chặn thi nếu ngoài giờ quy định (Tính năng DueDate/StartTime)
+        const now = new Date().getTime();
+        if (schedule?.startTime && now < new Date(schedule.startTime).getTime()) {
+           alert('🛑 Chưa đến giờ làm bài theo cấu hình của Lớp quy định!');
+           // Optionally redirect back or hide exam area
+        }
+        if (schedule?.dueDate && now > new Date(schedule.dueDate).getTime()) {
+           alert('⏳ Đã qua khoảng thời gian cho phép làm bài!');
+        }
+
+        // 3. Kéo/Bắt đầu Session hiện tại của sinh viên
+        this.submissionService.startExam(this.classId(), lesson.id).subscribe({
+          next: (sub) => {
+            // Load state nếu đã nộp tự luận
+            if (lesson.type === 3) {
+              if (sub && sub.isSubmitted) {
+                this.mySubmission.set(sub);
+                this.submissionForm.patchValue({ studentNote: sub.studentNote, submissionUrl: sub.submissionUrl });
+              } else {
+                this.mySubmission.set(null);
+                this.submissionForm.reset();
+              }
+            }
+
+            // Load state nếu đã nộp trắc nghiệm
+            if (lesson.type === 2) {
+              if (sub && sub.score != null) {
+                this.quizScore.set(sub.score ?? null); 
+                if (sub.quizAnswersJson) {
+                  try {
+                    const parsedAnswers = JSON.parse(sub.quizAnswersJson);
+                    this.quizAnswers.set(parsedAnswers);
+                  } catch (e) {}
+                }
+              } else {
+                this.quizScore.set(null);
+                this.quizAnswers.set({});
+              }
+            }
+
+            // 4. Nếu chưa nộp thì bắt đầu đếm ngược mốc thời gian Server trả về
+            if (this.isDoingExam()) {
+              const currentDuration = schedule?.overrideDuration || lesson.duration;
+              this.calculateBackendTimer(lesson, sub.startedAt, currentDuration);
+            }
+          }
+        });
+      }
+    });
+  }
+
+  // HÀM TÍNH TOÁN ĐẾM LÙI TỪ BACKEND
+  calculateBackendTimer(lesson: any, startedAt: string, durationInMinutes: number) {
+     this.clearTimer();
+     if (!startedAt || !durationInMinutes) return;
+     
+     // Thêm 'Z' nếu server BE trả chuỗi chưa định dạng UTC, cần cẩn thận múi giờ
+     const startString = startedAt.endsWith('Z') ? startedAt : startedAt + 'Z';
+     const start = new Date(startString).getTime(); 
+     const durationSec = durationInMinutes * 60;
+     
+     // Cập nhật ngay lần đầu
+     this.processTick(lesson, start, durationSec);
+
+     // Đếm xuống mỗi giây
+     this.timerInterval = setInterval(() => {
+        this.processTick(lesson, start, durationSec);
+     }, 1000);
+  }
+
+  processTick(lesson: any, startTime: number, durationSec: number) {
+     const now = new Date().getTime();
+     const elapsedSec = Math.floor((now - startTime) / 1000);
+     const remaining = durationSec - elapsedSec;
+
+     if (remaining <= 0) {
+        this.clearTimer();
+        this.forceSubmit(lesson, 'đã hết giờ làm bài');
+     } else {
+        this.timeLeft.set(remaining);
+     }
+  }
+
+  clearTimer() {
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timeLeft.set(null);
+  }
+
+  forceSubmit(lesson: any, reason: string) {
+    alert(`⏳ HỆ THỐNG ĐÃ TRỰC TIẾP NỘP BÀI THI VÌ ${reason.toUpperCase()}!`);
+    if (lesson.type === 2) this.submitQuiz(true); // Ép nộp không xuất Confirm
+    if (lesson.type === 3) this.submitAssignment();
   }
 
   // --- LOGIC CHO QUIZ (TRẮC NGHIỆM) ---
@@ -243,8 +321,8 @@ export class LessonPlayerComponent implements OnInit {
   }
 
   // --- LOGIC KHI BẤM NÚT NỘP BÀI QUIZ ---
-  submitQuiz() {
-    if (confirm('Bạn chắc chắn muốn nộp bài trắc nghiệm này?')) {
+  submitQuiz(skipConfirm = false) {
+    if (skipConfirm || confirm('Bạn chắc chắn muốn nộp bài trắc nghiệm này?')) {
       const qList = this.questions();
       let correct = 0;
       const myAnswers = this.quizAnswers();
@@ -272,6 +350,7 @@ export class LessonPlayerComponent implements OnInit {
       this.submissionService.submitQuiz(payload).subscribe({
         next: () => {
           this.notiService.success(`Đã nộp bài! Điểm của bạn là: ${finalScore}/10`);
+          this.clearTimer();
         },
         error: (err) => this.notiService.error('Lỗi khi lưu điểm: ' + (err.error?.message || err.message))
       });
@@ -312,6 +391,7 @@ export class LessonPlayerComponent implements OnInit {
       next: (res) => {
         this.notiService.success('Đã nộp bài thành công!');
         this.mySubmission.set(res); // Cập nhật UI sang trạng thái "Đã nộp"
+        this.clearTimer();
       },
       error: (err) => this.notiService.error('Lỗi nộp bài: ' + (err.error?.message || err.message))
     });
@@ -326,7 +406,7 @@ export class LessonPlayerComponent implements OnInit {
       alert('🚫 BẠN ĐÃ VI PHẠM QUY CHẾ THI QUÁ 3 LẦN. BÀI THI SẼ TỰ ĐỘNG NỘP!');
       
       // Chạy hàm nộp bài tương ứng
-      if (this.currentLesson()?.type === 2) this.submitQuiz();
+      if (this.currentLesson()?.type === 2) this.submitQuiz(true);
       if (this.currentLesson()?.type === 3) this.submitAssignment();
       
     } else {
@@ -370,4 +450,5 @@ export class LessonPlayerComponent implements OnInit {
   onCopy(event: ClipboardEvent) {
     if (this.isDoingExam()) event.preventDefault();
   }
+
 }

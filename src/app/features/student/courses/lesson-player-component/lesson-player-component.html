@@ -83,15 +83,38 @@
               </div>
             </div>
           }
-          <div class="flex justify-between items-center mb-6 border-b pb-4">
+          <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 gap-4"
+          >
             <h2 class="text-2xl font-bold text-gray-900">📝 Bài tập trắc nghiệm</h2>
-            @if (quizScore() !== null) {
-              <div
-                class="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-bold text-lg border border-green-200"
-              >
-                Điểm của bạn: {{ quizScore() }}/10
-              </div>
-            }
+
+            <div class="flex items-center gap-3">
+              @if (isDoingExam() && timeLeft() !== null) {
+                <div
+                  class="px-5 py-2 border-2 rounded-xl shadow-sm flex items-center gap-2 bg-white transition-colors"
+                  [class.border-red-500]="timeLeft()! <= 60"
+                  [class.bg-red-50]="timeLeft()! <= 60"
+                  [class.animate-pulse]="timeLeft()! <= 60"
+                >
+                  <span class="text-xl">⏱️</span>
+                  <span
+                    class="text-xl font-black tabular-nums"
+                    [class.text-red-700]="timeLeft()! <= 60"
+                    [class.text-gray-800]="timeLeft()! > 60"
+                  >
+                    {{ timerDisplay() }}
+                  </span>
+                </div>
+              }
+
+              @if (quizScore() !== null) {
+                <div
+                  class="px-4 py-2 bg-green-100 text-green-800 rounded-lg font-bold text-lg border border-green-200"
+                >
+                  Điểm của bạn: {{ quizScore() }}/10
+                </div>
+              }
+            </div>
           </div>
 
           <div class="space-y-8">
@@ -215,7 +238,30 @@
 
       @if (currentLesson()?.type === 3) {
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-2">✍️ Nộp bài tự luận</h2>
+          <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4"
+          >
+            <h2 class="text-2xl font-bold text-gray-900">✍️ Nộp bài tự luận</h2>
+
+            @if (isDoingExam() && !mySubmission() && timeLeft() !== null) {
+              <div
+                class="px-5 py-2 border-2 rounded-xl shadow-sm flex items-center gap-2 bg-white transition-colors"
+                [class.border-red-500]="timeLeft()! <= 60"
+                [class.bg-red-50]="timeLeft()! <= 60"
+                [class.animate-pulse]="timeLeft()! <= 60"
+              >
+                <span class="text-xl">⏱️</span>
+                <span
+                  class="text-xl font-black tabular-nums"
+                  [class.text-red-700]="timeLeft()! <= 60"
+                  [class.text-gray-800]="timeLeft()! > 60"
+                >
+                  {{ timerDisplay() }}
+                </span>
+              </div>
+            }
+          </div>
+
           <p class="text-gray-600 mb-6 pb-4 border-b">
             Hãy đọc kỹ yêu cầu bài tập và đính kèm file (nếu có) trước khi nộp.
           </p>

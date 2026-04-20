@@ -56,7 +56,7 @@ export class SubmissionService {
   }
 
   startExam(classId: string, lessonId: string) {
-    return this.http.post<any>(`${this.apiUrl}/submissions/class/${classId}/lesson/${lessonId}/start-exam`, {});
+    return this.http.post<any>(`${this.apiUrl}/class/${classId}/lesson/${lessonId}/start-exam`, {});
   }
 
 }

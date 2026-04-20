@@ -117,121 +117,176 @@
             </div>
           </div>
 
-          <div class="space-y-8">
-            @for (q of questions(); track q.id; let i = $index) {
-              <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <p class="font-bold text-gray-800 mb-4 text-lg">Câu {{ i + 1 }}: {{ q.content }}</p>
+          @if (!hasStartedExam()) {
+            <div
+              class="bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300 shadow-inner p-10 text-center max-w-2xl mx-auto my-12 animate-fade-in"
+            >
+              <div class="mb-6 flex justify-center text-7xl drop-shadow-md">🕰️</div>
+              <h3 class="text-3xl font-extrabold text-gray-900 mb-3 tracking-tight">
+                Cổng thông tin Bài kiểm tra
+              </h3>
+              <p class="text-gray-600 mb-6 text-lg">
+                Bạn chuẩn bị bước vào bài kiểm tra quan trọng. Vui lòng đọc kỹ thông tin:
+              </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  @for (opt of ['A', 'B', 'C', 'D']; track opt) {
-                    <label
-                      class="flex items-center p-3 border rounded-lg cursor-pointer transition"
-                      [class.hover:bg-gray-50]="quizScore() === null"
-                      [class.border-blue-500]="quizScore() === null && quizAnswers()[q.id!] === opt"
-                      [class.bg-blue-50]="quizScore() === null && quizAnswers()[q.id!] === opt"
-                      [class.opacity-60]="
-                        quizScore() !== null &&
-                        q.correctOption !== opt &&
-                        quizAnswers()[q.id!] !== opt
-                      "
-                      [class.border-green-500]="quizScore() !== null && q.correctOption === opt"
-                      [class.bg-green-50]="quizScore() !== null && q.correctOption === opt"
-                      [class.border-red-500]="
-                        quizScore() !== null &&
-                        quizAnswers()[q.id!] === opt &&
-                        q.correctOption !== opt
-                      "
-                      [class.bg-red-50]="
-                        quizScore() !== null &&
-                        quizAnswers()[q.id!] === opt &&
-                        q.correctOption !== opt
-                      "
-                    >
-                      <input
-                        type="radio"
-                        [name]="'q_' + q.id"
-                        [value]="opt"
-                        [disabled]="quizScore() !== null"
-                        (change)="selectAnswer(q.id!, opt)"
-                        [checked]="quizAnswers()[q.id!] === opt"
-                        class="w-4 h-4 border-gray-300 focus:ring-blue-500 disabled:opacity-50"
-                        [class.text-blue-600]="quizScore() === null"
-                        [class.text-green-600]="quizScore() !== null && q.correctOption === opt"
-                        [class.text-red-600]="
+              <ul
+                class="text-left text-sm text-gray-700 font-medium space-y-3 mb-8 bg-white border shadow-sm p-6 rounded-xl list-disc list-inside"
+              >
+                <li>
+                  Thời gian làm bài:
+                  <b class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded"
+                    >{{
+                      classLessonSchedule()?.overrideDuration ||
+                        currentLesson()?.duration ||
+                        'Không giới hạn'
+                    }}
+                    phút</b
+                  >.
+                </li>
+                <li>
+                  Hệ thống chạy <b>tính năng Chống Gian Lận</b>: Đóng băng Copy/Paste, Mở App Khác,
+                  Chuyển Tab.
+                </li>
+                <li>
+                  Nếu vi phạm quy chế quá
+                  <b class="text-red-600 bg-red-50 px-2 py-0.5 rounded">3 lần</b>, bài thi của bạn
+                  tự động nộp ngay lập tức.
+                </li>
+                <li>
+                  Đồng hồ sẽ đếm lùi nghiêm ngặt ngay khi bạn chọn
+                  <span class="font-bold">Bắt đầu</span>. Máy có tắt hay rớt mạng, khoá giờ vẫn chạy
+                  trên Server.
+                </li>
+              </ul>
+
+              <button
+                (click)="startExamNow()"
+                class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-lg px-12 py-4 rounded-xl shadow-lg transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-3 w-full sm:w-auto mx-auto"
+              >
+                <span>🚀</span> BẮT ĐẦU LÀM BÀI NGAY
+              </button>
+            </div>
+          } @else {
+            <div class="space-y-8 animate-slide-up">
+              @for (q of questions(); track q.id; let i = $index) {
+                <div class="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                  <p class="font-bold text-gray-800 mb-4 text-lg">
+                    Câu {{ i + 1 }}: {{ q.content }}
+                  </p>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    @for (opt of ['A', 'B', 'C', 'D']; track opt) {
+                      <label
+                        class="flex items-center p-3 border rounded-lg cursor-pointer transition"
+                        [class.hover:bg-gray-50]="quizScore() === null"
+                        [class.border-blue-500]="
+                          quizScore() === null && quizAnswers()[q.id!] === opt
+                        "
+                        [class.bg-blue-50]="quizScore() === null && quizAnswers()[q.id!] === opt"
+                        [class.opacity-60]="
+                          quizScore() !== null &&
+                          q.correctOption !== opt &&
+                          quizAnswers()[q.id!] !== opt
+                        "
+                        [class.border-green-500]="quizScore() !== null && q.correctOption === opt"
+                        [class.bg-green-50]="quizScore() !== null && q.correctOption === opt"
+                        [class.border-red-500]="
                           quizScore() !== null &&
                           quizAnswers()[q.id!] === opt &&
                           q.correctOption !== opt
                         "
-                      />
-
-                      <span
-                        class="ml-3 font-medium"
-                        [class.text-gray-700]="
-                          quizScore() === null ||
-                          (quizScore() !== null &&
-                            q.correctOption !== opt &&
-                            quizAnswers()[q.id!] !== opt)
-                        "
-                        [class.text-green-800]="quizScore() !== null && q.correctOption === opt"
-                        [class.text-red-800]="
+                        [class.bg-red-50]="
                           quizScore() !== null &&
                           quizAnswers()[q.id!] === opt &&
                           q.correctOption !== opt
                         "
                       >
-                        <span
-                          class="font-bold mr-1"
-                          [class.text-gray-500]="quizScore() === null"
-                          [class.text-green-700]="quizScore() !== null && q.correctOption === opt"
-                          [class.text-red-700]="
+                        <input
+                          type="radio"
+                          [name]="'q_' + q.id"
+                          [value]="opt"
+                          [disabled]="quizScore() !== null"
+                          (change)="selectAnswer(q.id!, opt)"
+                          [checked]="quizAnswers()[q.id!] === opt"
+                          class="w-4 h-4 border-gray-300 focus:ring-blue-500 disabled:opacity-50"
+                          [class.text-blue-600]="quizScore() === null"
+                          [class.text-green-600]="quizScore() !== null && q.correctOption === opt"
+                          [class.text-red-600]="
                             quizScore() !== null &&
                             quizAnswers()[q.id!] === opt &&
                             q.correctOption !== opt
                           "
-                          >{{ opt }}.</span
-                        >
-                        {{
-                          opt === 'A'
-                            ? q.optionA
-                            : opt === 'B'
-                              ? q.optionB
-                              : opt === 'C'
-                                ? q.optionC
-                                : q.optionD
-                        }}
-                      </span>
+                        />
 
-                      @if (quizScore() !== null) {
-                        @if (q.correctOption === opt) {
-                          <span class="ml-auto text-green-500 font-bold text-lg">✔️</span>
-                        } @else if (quizAnswers()[q.id!] === opt) {
-                          <span class="ml-auto text-red-500 font-bold text-lg">❌</span>
+                        <span
+                          class="ml-3 font-medium"
+                          [class.text-gray-700]="
+                            quizScore() === null ||
+                            (quizScore() !== null &&
+                              q.correctOption !== opt &&
+                              quizAnswers()[q.id!] !== opt)
+                          "
+                          [class.text-green-800]="quizScore() !== null && q.correctOption === opt"
+                          [class.text-red-800]="
+                            quizScore() !== null &&
+                            quizAnswers()[q.id!] === opt &&
+                            q.correctOption !== opt
+                          "
+                        >
+                          <span
+                            class="font-bold mr-1"
+                            [class.text-gray-500]="quizScore() === null"
+                            [class.text-green-700]="quizScore() !== null && q.correctOption === opt"
+                            [class.text-red-700]="
+                              quizScore() !== null &&
+                              quizAnswers()[q.id!] === opt &&
+                              q.correctOption !== opt
+                            "
+                            >{{ opt }}.</span
+                          >
+                          {{
+                            opt === 'A'
+                              ? q.optionA
+                              : opt === 'B'
+                                ? q.optionB
+                                : opt === 'C'
+                                  ? q.optionC
+                                  : q.optionD
+                          }}
+                        </span>
+
+                        @if (quizScore() !== null) {
+                          @if (q.correctOption === opt) {
+                            <span class="ml-auto text-green-500 font-bold text-lg">✔️</span>
+                          } @else if (quizAnswers()[q.id!] === opt) {
+                            <span class="ml-auto text-red-500 font-bold text-lg">❌</span>
+                          }
                         }
-                      }
-                    </label>
+                      </label>
+                    }
+                  </div>
+
+                  @if (quizScore() !== null && q.explanation) {
+                    <div
+                      class="mt-4 p-3 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200"
+                    >
+                      <span class="font-bold">💡 Giải thích:</span> {{ q.explanation }}
+                    </div>
                   }
                 </div>
+              }
+            </div>
 
-                @if (quizScore() !== null && q.explanation) {
-                  <div
-                    class="mt-4 p-3 bg-yellow-50 text-yellow-800 text-sm rounded-lg border border-yellow-200"
-                  >
-                    <span class="font-bold">💡 Giải thích:</span> {{ q.explanation }}
-                  </div>
-                }
+            @if (quizScore() === null && questions().length > 0) {
+              <div class="mt-8 flex justify-end pt-4 border-t">
+                <button
+                  (click)="submitQuiz()"
+                  class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition"
+                >
+                  Nộp bài trắc nghiệm
+                </button>
               </div>
             }
-          </div>
-
-          @if (quizScore() === null && questions().length > 0) {
-            <div class="mt-8 flex justify-end pt-4 border-t">
-              <button
-                (click)="submitQuiz()"
-                class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition"
-              >
-                Nộp bài trắc nghiệm
-              </button>
-            </div>
           }
         </div>
       }
@@ -243,7 +298,7 @@
           >
             <h2 class="text-2xl font-bold text-gray-900">✍️ Nộp bài tự luận</h2>
 
-            @if (isDoingExam() && !mySubmission() && timeLeft() !== null) {
+            @if (isDoingExam() && timeLeft() !== null) {
               <div
                 class="px-5 py-2 border-2 rounded-xl shadow-sm flex items-center gap-2 bg-white transition-colors"
                 [class.border-red-500]="timeLeft()! <= 60"
@@ -266,143 +321,183 @@
             Hãy đọc kỹ yêu cầu bài tập và đính kèm file (nếu có) trước khi nộp.
           </p>
 
-          @if (currentLesson()?.videoUrl) {
-            @if (isYouTubeVideo() && safeResourceUrl()) {
-              <div class="mb-8">
-                <h4 class="font-bold text-gray-800 mb-2">🎥 Video hướng dẫn / Đề bài:</h4>
-                <div
-                  class="rounded-xl overflow-hidden shadow-sm aspect-video border border-gray-200"
-                >
-                  <iframe
-                    [src]="safeResourceUrl()"
-                    class="w-full h-full border-0"
-                    allowfullscreen
-                  ></iframe>
-                </div>
-              </div>
-            } @else {
-              <div
-                class="mb-8 bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          @if (isDoingExam() && !hasStartedExam()) {
+            <div
+              class="text-center py-10 bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl my-6"
+            >
+              <div class="mb-4 text-7xl">🔒</div>
+              <h3 class="font-bold text-2xl text-gray-800 mb-3">
+                Bạn đã sẵn sàng làm bài Tự luận?
+              </h3>
+              <ul
+                class="text-left text-sm text-gray-700 font-medium space-y-3 mb-8 bg-white shadow-sm p-6 rounded-xl list-disc list-inside max-w-xl mx-auto"
               >
-                <div class="flex items-start gap-4">
-                  <div
-                    class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-2xl shrink-0"
-                  >
-                    📥
+                <li>
+                  Thời gian làm bài:
+                  <b class="text-blue-700 bg-blue-50 px-2 py-0.5 rounded"
+                    >{{
+                      classLessonSchedule()?.overrideDuration ||
+                        currentLesson()?.duration ||
+                        'Không giới hạn'
+                    }}
+                    phút</b
+                  >.
+                </li>
+                <li>
+                  Nếu vi phạm quy chế thoát màn hình quá
+                  <b class="text-red-600 bg-red-50 px-2 py-0.5 rounded">3 lần</b>, bài tự động nộp.
+                </li>
+                <li>Đề bài sẽ được hiển thị ngay khi bạn bấm nút Bắt đầu.</li>
+              </ul>
+              <button
+                (click)="startExamNow()"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-3.5 rounded-xl font-bold shadow-lg transition transform hover:-translate-y-0.5 text-lg"
+              >
+                🚀 BẤM LẤY ĐỀ THI & BẮT ĐẦU ĐẾM GIỜ
+              </button>
+            </div>
+          } @else {
+            <div class="animate-slide-up">
+              @if (currentLesson()?.videoUrl) {
+                @if (isYouTubeVideo() && safeResourceUrl()) {
+                  <div class="mb-8">
+                    <h4 class="font-bold text-gray-800 mb-2">🎥 Video hướng dẫn / Đề bài:</h4>
+                    <div
+                      class="rounded-xl overflow-hidden shadow-sm aspect-video border border-gray-200"
+                    >
+                      <iframe
+                        [src]="safeResourceUrl()"
+                        class="w-full h-full border-0"
+                        allowfullscreen
+                      ></iframe>
+                    </div>
                   </div>
-                  <div>
-                    <h4 class="font-bold text-indigo-900 text-lg">Đề bài đính kèm</h4>
-                    <p class="text-sm text-indigo-700 mt-0.5">
-                      Giảng viên đã đính kèm tệp đề bài. Vui lòng xem hoặc tải về để làm bài.
+                } @else {
+                  <div
+                    class="mb-8 bg-indigo-50 border border-indigo-100 rounded-xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                  >
+                    <div class="flex items-start gap-4">
+                      <div
+                        class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm text-2xl shrink-0"
+                      >
+                        📥
+                      </div>
+                      <div>
+                        <h4 class="font-bold text-indigo-900 text-lg">Đề bài đính kèm</h4>
+                        <p class="text-sm text-indigo-700 mt-0.5">
+                          Giảng viên đã đính kèm tệp đề bài. Vui lòng xem hoặc tải về để làm bài.
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      [href]="currentLesson()?.documentUrl || currentLesson()?.videoUrl"
+                      target="_blank"
+                      class="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition flex items-center gap-2"
+                    >
+                      <span>👀</span> Xem / Tải Đề Bài
+                    </a>
+                  </div>
+                }
+              }
+
+              <div
+                class="mb-6 p-4 rounded-xl border"
+                [class.bg-gray-50]="!mySubmission()"
+                [class.border-gray-200]="!mySubmission()"
+                [class.bg-blue-50]="mySubmission() && mySubmission().score === null"
+                [class.border-blue-200]="mySubmission() && mySubmission().score === null"
+                [class.bg-green-50]="mySubmission() && mySubmission().score !== null"
+                [class.border-green-200]="mySubmission() && mySubmission().score !== null"
+              >
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-gray-700">Trạng thái:</span>
+                  @if (!mySubmission()) {
+                    <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold"
+                      >Chưa nộp bài</span
+                    >
+                  } @else if (mySubmission()?.score === null) {
+                    <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-bold"
+                      >Đã nộp - Đang chờ chấm</span
+                    >
+                  } @else {
+                    <span
+                      class="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-bold"
+                      >Đã chấm điểm</span
+                    >
+                  }
+                </div>
+
+                @if (mySubmission()?.score !== null) {
+                  <div class="mt-4 pt-4 border-t border-green-200">
+                    <p class="font-bold text-green-800 text-lg mb-1">
+                      Điểm: {{ mySubmission()?.score }}/10
+                    </p>
+                    <p class="text-sm text-green-700">
+                      <span class="font-bold">Nhận xét:</span> {{ mySubmission()?.feedback }}
                     </p>
                   </div>
-                </div>
-                <a
-                  [href]="currentLesson()?.documentUrl || currentLesson()?.videoUrl"
-                  target="_blank"
-                  class="shrink-0 px-6 py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow-sm hover:bg-indigo-700 transition flex items-center gap-2"
-                >
-                  <span>👀</span> Xem / Tải Đề Bài
-                </a>
-              </div>
-            }
-          }
-
-          <div
-            class="mb-6 p-4 rounded-xl border"
-            [class.bg-gray-50]="!mySubmission()"
-            [class.border-gray-200]="!mySubmission()"
-            [class.bg-blue-50]="mySubmission() && mySubmission().score === null"
-            [class.border-blue-200]="mySubmission() && mySubmission().score === null"
-            [class.bg-green-50]="mySubmission() && mySubmission().score !== null"
-            [class.border-green-200]="mySubmission() && mySubmission().score !== null"
-          >
-            <div class="flex items-center justify-between">
-              <span class="font-bold text-gray-700">Trạng thái:</span>
-              @if (!mySubmission()) {
-                <span class="bg-gray-200 text-gray-800 px-3 py-1 rounded-full text-sm font-bold"
-                  >Chưa nộp bài</span
-                >
-              } @else if (mySubmission()?.score === null) {
-                <span class="bg-blue-200 text-blue-800 px-3 py-1 rounded-full text-sm font-bold"
-                  >Đã nộp - Đang chờ chấm</span
-                >
-              } @else {
-                <span class="bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm font-bold"
-                  >Đã chấm điểm</span
-                >
-              }
-            </div>
-
-            @if (mySubmission()?.score !== null) {
-              <div class="mt-4 pt-4 border-t border-green-200">
-                <p class="font-bold text-green-800 text-lg mb-1">
-                  Điểm: {{ mySubmission()?.score }}/10
-                </p>
-                <p class="text-sm text-green-700">
-                  <span class="font-bold">Nhận xét:</span> {{ mySubmission()?.feedback }}
-                </p>
-              </div>
-            }
-          </div>
-
-          <form [formGroup]="submissionForm" (ngSubmit)="submitAssignment()" class="space-y-5">
-            <div>
-              <label class="block font-bold text-gray-700 mb-2"
-                >Câu trả lời bằng chữ (Tùy chọn)</label
-              >
-              <textarea
-                formControlName="studentNote"
-                rows="4"
-                placeholder="Nhập link Github, Drive hoặc câu trả lời trực tiếp vào đây..."
-                class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
-                [readonly]="mySubmission()?.score !== null"
-              ></textarea>
-            </div>
-
-            <div>
-              <label class="block font-bold text-gray-700 mb-2"
-                >File đính kèm (Zip, PDF, Word...)</label
-              >
-              <div class="flex gap-4 items-center">
-                <input
-                  type="file"
-                  (change)="onFileUpload($event)"
-                  [disabled]="isUploading() || mySubmission()?.score !== null"
-                  class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition disabled:opacity-50"
-                />
-                @if (isUploading()) {
-                  <span class="text-sm font-bold text-blue-600 whitespace-nowrap animate-pulse"
-                    >⏳ Đang tải...</span
-                  >
                 }
               </div>
 
-              @if (submissionForm.get('submissionUrl')?.value) {
-                <p class="mt-3 text-sm">
-                  <span class="text-gray-500">File đã tải lên: </span>
-                  <a
-                    [href]="submissionForm.get('submissionUrl')?.value"
-                    target="_blank"
-                    class="text-blue-600 font-bold hover:underline break-all"
-                    >Xem File</a
+              <form [formGroup]="submissionForm" (ngSubmit)="submitAssignment()" class="space-y-5">
+                <div>
+                  <label class="block font-bold text-gray-700 mb-2"
+                    >Câu trả lời bằng chữ (Tùy chọn)</label
                   >
-                </p>
-              }
-            </div>
+                  <textarea
+                    formControlName="studentNote"
+                    rows="4"
+                    placeholder="Nhập link Github, Drive hoặc câu trả lời trực tiếp vào đây..."
+                    class="w-full border px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                    [readonly]="mySubmission()?.score !== null"
+                  ></textarea>
+                </div>
 
-            @if (mySubmission()?.score === null) {
-              <div class="flex justify-end pt-4 border-t">
-                <button
-                  type="submit"
-                  [disabled]="isUploading()"
-                  class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50 transition"
-                >
-                  {{ mySubmission() ? 'Cập nhật bài nộp' : 'Gửi bài làm' }}
-                </button>
-              </div>
-            }
-          </form>
+                <div>
+                  <label class="block font-bold text-gray-700 mb-2"
+                    >File đính kèm (Zip, PDF, Word...)</label
+                  >
+                  <div class="flex gap-4 items-center">
+                    <input
+                      type="file"
+                      (change)="onFileUpload($event)"
+                      [disabled]="isUploading() || mySubmission()?.score !== null"
+                      class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition disabled:opacity-50"
+                    />
+                    @if (isUploading()) {
+                      <span class="text-sm font-bold text-blue-600 whitespace-nowrap animate-pulse"
+                        >⏳ Đang tải...</span
+                      >
+                    }
+                  </div>
+
+                  @if (submissionForm.get('submissionUrl')?.value) {
+                    <p class="mt-3 text-sm">
+                      <span class="text-gray-500">File đã tải lên: </span>
+                      <a
+                        [href]="submissionForm.get('submissionUrl')?.value"
+                        target="_blank"
+                        class="text-blue-600 font-bold hover:underline break-all"
+                        >Xem File</a
+                      >
+                    </p>
+                  }
+                </div>
+
+                @if (mySubmission()?.score === null) {
+                  <div class="flex justify-end pt-4 border-t">
+                    <button
+                      type="submit"
+                      [disabled]="isUploading()"
+                      class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50 transition"
+                    >
+                      {{ mySubmission() ? 'Cập nhật bài nộp' : 'Gửi bài làm' }}
+                    </button>
+                  </div>
+                }
+              </form>
+            </div>
+          }
         </div>
       }
 

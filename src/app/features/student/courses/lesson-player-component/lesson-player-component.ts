@@ -115,6 +115,9 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   isUploading = signal<boolean>(false);
   
   // --- TIMER CHO BÀI THI TỪ SERVER ---
+  hasStartedExam = signal<boolean>(false);
+  classLessonSchedule = signal<any>(null);
+
   timeLeft = signal<number | null>(null);
   timerDisplay = computed(() => {
     const t = this.timeLeft();
@@ -204,71 +207,123 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
       this.questionService.getQuestionsByLessonId(lesson.id).subscribe({
         next: (data) => {
           this.questions.set(data);
-          this.initializeExamSession(lesson);
+          this.checkExamState(lesson);
         }
       });
     }
 
     if (lesson.type === 3) {
       // Tự luận thì gọi thẳng luồng kiểm tra Server
-      this.initializeExamSession(lesson);
+      this.checkExamState(lesson);
     }
   }
 
-  // Khởi tạo phiên thi, lấy cấu hình thời gian và gọi API Start Exam
-  initializeExamSession(lesson: any) {
-    // 1. Kéo cấu hình thi từ Server
+  // 1. Kiểm tra trạng thái Bài thi (Xem đã bấm Bắt đầu chưa)
+  checkExamState(lesson: any) {
+    if (!lesson.isExam) {
+       this.hasStartedExam.set(true); // Không phải bài thi => Mặc định hiện LUÔN nội dung
+       
+       // Vẫn load lại bài đã nộp nếu có để hiển thị ckeck mark xanh...
+       this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
+        next: (sub) => this.applySubmissionState(lesson, sub, null),
+        error: () => this.applySubmissionState(lesson, null, null)
+       });
+       return;
+    }
+
+    // Nếu là BÀI THI => Cần check cấu hình từ ClassLessonSchedule
     this.courseService.getClassLessonSchedule(this.classId(), lesson.id).subscribe({
       next: (schedule) => {
-        // 2. Chặn thi nếu ngoài giờ quy định (Tính năng DueDate/StartTime)
-        const now = new Date().getTime();
-        if (schedule?.startTime && now < new Date(schedule.startTime).getTime()) {
-           alert('🛑 Chưa đến giờ làm bài theo cấu hình của Lớp quy định!');
-           // Optionally redirect back or hide exam area
-        }
-        if (schedule?.dueDate && now > new Date(schedule.dueDate).getTime()) {
-           alert('⏳ Đã qua khoảng thời gian cho phép làm bài!');
-        }
-
-        // 3. Kéo/Bắt đầu Session hiện tại của sinh viên
-        this.submissionService.startExam(this.classId(), lesson.id).subscribe({
-          next: (sub) => {
-            // Load state nếu đã nộp tự luận
-            if (lesson.type === 3) {
-              if (sub && sub.isSubmitted) {
-                this.mySubmission.set(sub);
-                this.submissionForm.patchValue({ studentNote: sub.studentNote, submissionUrl: sub.submissionUrl });
+        this.classLessonSchedule.set(schedule);
+        
+        // 2. Kéo State của Sinh viên xem đã từng click Bắt đầu chưa
+        this.submissionService.getSubmissionAsync(this.classId(), lesson.id, this.realStudentId).subscribe({
+           next: (sub) => {
+              if (sub && sub.startedAt) {
+                 this.hasStartedExam.set(true);
+                 this.applySubmissionState(lesson, sub, schedule); // Đã bấm => Hiển thị đề, tính h
               } else {
-                this.mySubmission.set(null);
-                this.submissionForm.reset();
+                 this.hasStartedExam.set(false);
+                 this.applySubmissionState(lesson, null, schedule); // Chưa bấm => Hiện nút Bắt đầu
               }
-            }
-
-            // Load state nếu đã nộp trắc nghiệm
-            if (lesson.type === 2) {
-              if (sub && sub.score != null) {
-                this.quizScore.set(sub.score ?? null); 
-                if (sub.quizAnswersJson) {
-                  try {
-                    const parsedAnswers = JSON.parse(sub.quizAnswersJson);
-                    this.quizAnswers.set(parsedAnswers);
-                  } catch (e) {}
-                }
-              } else {
-                this.quizScore.set(null);
-                this.quizAnswers.set({});
-              }
-            }
-
-            // 4. Nếu chưa nộp thì bắt đầu đếm ngược mốc thời gian Server trả về
-            if (this.isDoingExam()) {
-              const currentDuration = schedule?.overrideDuration || lesson.duration;
-              this.calculateBackendTimer(lesson, sub.startedAt, currentDuration);
-            }
-          }
+           },
+           error: () => {
+              this.hasStartedExam.set(false);
+              this.applySubmissionState(lesson, null, schedule);
+           }
         });
       }
     });
+  }
+
+  // 2. Hàm kích hoạt khi Sinh viên bấm "Bắt Đầu Làm Bài" trên màn hình Gate
+  startExamNow() {
+    const lesson = this.currentLesson();
+    if (!lesson) return;
+
+    const schedule = this.classLessonSchedule();
+    const now = new Date().getTime();
+    
+    // Check nếu bấm ngoài giờ
+    if (schedule?.startTime && now < new Date(schedule.startTime).getTime()) {
+        alert('🛑 Chưa đến giờ mở đề theo cấu hình của Giảng viên quy định!');
+        return;
+    }
+    if (schedule?.dueDate && now > new Date(schedule.dueDate).getTime()) {
+        alert('⏳ Rất tiếc, bài kiểm tra này đã khóa lại!');
+        return;
+    }
+
+    this.isLoading.set(true);
+    // Ghi nhận giây sinh viên đọc đề
+    this.submissionService.startExam(this.classId(), lesson.id).subscribe({
+        next: (sub) => {
+            this.isLoading.set(false);
+            this.hasStartedExam.set(true);
+            this.applySubmissionState(lesson, sub, schedule);
+        },
+        error: (err) => {
+           this.isLoading.set(false);
+           this.notiService.error("Lỗi tải đề thi, vui lòng thử lại sau!");
+        }
+    });
+  }
+
+  // 3. Render dữ liệu và kích hoạt Đếm Ngược
+  applySubmissionState(lesson: any, sub: any, schedule: any) {
+    // Load state nếu đã nộp tự luận
+    if (lesson.type === 3) {
+      if (sub && sub.isSubmitted) {
+        this.mySubmission.set(sub);
+        this.submissionForm.patchValue({ studentNote: sub.studentNote, submissionUrl: sub.submissionUrl });
+      } else {
+        this.mySubmission.set(null);
+        this.submissionForm.reset();
+      }
+    }
+
+    // Load state nếu đã nộp trắc nghiệm
+    if (lesson.type === 2) {
+      if (sub && sub.score != null) {
+        this.quizScore.set(sub.score ?? null); 
+        if (sub.quizAnswersJson) {
+          try {
+            const parsedAnswers = JSON.parse(sub.quizAnswersJson);
+            this.quizAnswers.set(parsedAnswers);
+          } catch (e) {}
+        }
+      } else {
+        this.quizScore.set(null);
+        this.quizAnswers.set({});
+      }
+    }
+
+    // Nếu đã BẮT ĐẦU và CHƯA NỘP -> Cho đếm lùi
+    if (this.hasStartedExam() && this.isDoingExam() && sub?.startedAt) {
+      const currentDuration = schedule?.overrideDuration || lesson.duration;
+      // Chạy bộ đếm từ Backend Time (tránh cheat)
+      this.calculateBackendTimer(lesson, sub.startedAt, currentDuration);
+    }
   }
 
   // HÀM TÍNH TOÁN ĐẾM LÙI TỪ BACKEND

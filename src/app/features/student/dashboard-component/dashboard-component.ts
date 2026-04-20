@@ -1,7 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { trigger, transition, style, animate, query, stagger } from '@angular/animations';
-
 // Import Services
 import { CourseService, Course } from '../../../core/services/course.service';
 import { ClassService } from '../../../core/services/class.service';
@@ -12,19 +10,7 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [RouterLink],
   templateUrl: './dashboard-component.html',
-  styleUrl: './dashboard-component.scss',
-  animations: [
-    trigger('listAnimation', [
-      transition('* <=> *', [
-        query(':enter', [
-          style({ opacity: 0, transform: 'translateY(-20px)' }),
-          stagger('50ms', [
-            animate('300ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
-          ])
-        ], { optional: true })
-      ])
-    ])
-  ]
+  styleUrl: './dashboard-component.scss'
 })
 export class DashboardComponent implements OnInit {
   

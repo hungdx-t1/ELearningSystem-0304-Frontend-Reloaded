@@ -472,7 +472,7 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   // sự kiện 1: chuyển tab hoặc ẩn trình duyệt đi khi đang làm bài thi
   @HostListener('document:visibilitychange')
   onVisibilityChange() {
-    if (document.hidden && this.isDoingExam()) {
+    if (document.hidden && this.isDoingExam() && this.hasStartedExam()) {
       this.handleCheatAttempt('Hệ thống phát hiện bạn vừa chuyển Tab hoặc rời khỏi màn hình làm bài!');
     }
   }
@@ -480,7 +480,7 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   // sự kiện 2: mở app khác khi đang làm bài thi
   @HostListener('window:blur')
   onWindowBlur() {
-    if (this.isDoingExam()) {
+    if (this.isDoingExam() && this.hasStartedExam()) {
       this.handleCheatAttempt('Bạn đang mất tập trung (chuyển sang ứng dụng khác). Vui lòng quay lại bài thi!');
     }
   }
@@ -488,13 +488,13 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   // sự kiện 3: chuột phải khi đang làm bài thi
   @HostListener('document:contextmenu', ['$event'])
   onRightClick(event: Event) {
-    if (this.isDoingExam()) event.preventDefault();
+    if (this.isDoingExam() && this.hasStartedExam()) event.preventDefault();
   }
 
   // sự kiện 4: chặn phím Ctrl+C, Ctrl+V khi đang làm bài thi
   @HostListener('document:keydown', ['$event'])
   onKeyPress(event: KeyboardEvent) {
-    if (this.isDoingExam() && (event.ctrlKey || event.metaKey) && (event.key === 'c' || event.key === 'C' || event.key === 'v' || event.key === 'V')) {
+    if (this.isDoingExam() && this.hasStartedExam() && (event.ctrlKey || event.metaKey) && (event.key === 'c' || event.key === 'C' || event.key === 'v' || event.key === 'V')) {
       event.preventDefault();
       this.notiService.warning('Chức năng Copy/Paste đã bị vô hiệu hóa trong bài thi!');
     }
@@ -503,7 +503,7 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   // sự kiện 5: copy trực tiếp
   @HostListener('document:copy', ['$event'])
   onCopy(event: ClipboardEvent) {
-    if (this.isDoingExam()) event.preventDefault();
+    if (this.isDoingExam() && this.hasStartedExam()) event.preventDefault();
   }
 
 }

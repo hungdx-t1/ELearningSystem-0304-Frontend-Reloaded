@@ -1,2 +1,5 @@
 @use 'tailwindcss';
 // @plugin "@tailwindcss/typography";
+
+// Cấu hình Dark Mode qua Custom Variant (Tailwind V4)
+@custom-variant dark (&:where(.dark, .dark *));

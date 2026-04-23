@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../../../v2/app/core/services/notification.service';
@@ -22,15 +22,53 @@ export class Login { // LoginComponent
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  // Dùng Signal để quản lý trạng thái hiển thị lỗi và loading
+  // Signal quản lý trạng thái hiển thị lỗi, thành công và chế độ View
   errorMessage = signal<string>('');
+  successMessage = signal<string>('');
   isLoading = signal<boolean>(false);
+  viewMode = signal<'LOGIN' | 'FORGOT_PASS' | 'VERIFY_OTP' | 'RESET_PASS'>('LOGIN');
+
+  // Lưu tạm thông tin khi chạy OTP Flow
+  resetEmail = '';
+  resetToken = '';
+
+  forgotPassForm = this.fb.nonNullable.group({
+    email: ['', [Validators.required, Validators.email]]
+  });
+
+  verifyOtpForm = this.fb.nonNullable.group({
+    otpCode: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6)]]
+  });
+
+  resetPassForm = this.fb.nonNullable.group({
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]]
+  }, { validators: this.passwordMatchValidator });
+
+  passwordMatchValidator(g: AbstractControl): ValidationErrors | null {
+    const newPass = g.get('newPassword')?.value;
+    const confirmPass = g.get('confirmPassword')?.value;
+    return newPass === confirmPass ? null : { mismatch: true };
+  }
+
+  // Chuyển đổi giao diện Đăng nhập / Quên mật khẩu
+  switchMode(mode: 'LOGIN' | 'FORGOT_PASS') {
+    this.viewMode.set(mode);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+    this.forgotPassForm.reset();
+    this.verifyOtpForm.reset();
+    this.resetPassForm.reset();
+  }
+
+  // --- API Handlers ---
 
   onSubmit() {
     if (this.loginForm.invalid) return;
 
     this.isLoading.set(true);
     this.errorMessage.set('');
+    this.successMessage.set('');
 
     this.authService.login(this.loginForm.getRawValue()).subscribe({
       next: () => {
@@ -50,6 +88,71 @@ export class Login { // LoginComponent
         this.isLoading.set(false);
         this.errorMessage.set('Sai email hoặc mật khẩu. Vui lòng thử lại!');
         console.error(err);
+      }
+    });
+  }
+
+  onForgotPassSubmit() {
+    if (this.forgotPassForm.invalid) return;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const email = this.forgotPassForm.getRawValue().email;
+    this.authService.forgotPassword(email).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.resetEmail = email;
+        this.viewMode.set('VERIFY_OTP');
+        this.successMessage.set('Nếu email hợp lệ, một mã OTP đã được gửi đến hộp thư của bạn.');
+      },
+      error: () => {
+        this.isLoading.set(false);
+        // Security: Fake success anyway
+        this.resetEmail = email;
+        this.viewMode.set('VERIFY_OTP');
+        this.successMessage.set('Nếu email hợp lệ, một mã OTP đã được gửi đến hộp thư của bạn.');
+      }
+    });
+  }
+
+  onVerifyOtpSubmit() {
+    if (this.verifyOtpForm.invalid) return;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.successMessage.set('');
+
+    const otpCode = this.verifyOtpForm.getRawValue().otpCode;
+    this.authService.verifyOtp(this.resetEmail, otpCode).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.resetToken = res.resetToken;
+        this.viewMode.set('RESET_PASS');
+        this.successMessage.set('Xác minh thành công. Mời bạn đặt mật khẩu mới.');
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Mã OTP không chính xác hoặc đã hết hạn.');
+      }
+    });
+  }
+
+  onResetPassSubmit() {
+    if (this.resetPassForm.invalid) return;
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+
+    const np = this.resetPassForm.getRawValue().newPassword;
+    this.authService.resetPassword(this.resetToken, np).subscribe({
+      next: (res) => {
+        this.isLoading.set(false);
+        this.switchMode('LOGIN');
+        this.successMessage.set('Đổi mật khẩu thành công! Giờ bạn có thể đăng nhập.');
+      },
+      error: () => {
+        this.isLoading.set(false);
+        this.errorMessage.set('Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn.');
+        this.switchMode('LOGIN');
       }
     });
   }

@@ -1,50 +1,165 @@
 <!-- src/app/features/auth/login/login.html -->
 <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-    <div>
-      <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">
-        Đăng nhập LMS
-      </h2>
-      <p class="mt-2 text-center text-sm text-gray-600">
-        Hệ thống học tập trực tuyến
-      </p>
-    </div>
-
-    <form class="mt-8 space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      @if (errorMessage()) {
-        <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
-          <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+    @switch (viewMode()) {
+      
+      @case ('LOGIN') {
+        <div>
+          <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">
+            Đăng nhập LMS
+          </h2>
+          <p class="mt-2 text-center text-sm text-gray-600">
+            Hệ thống học tập trực tuyến
+          </p>
         </div>
+
+        <form class="mt-8 space-y-6" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          @if (errorMessage()) {
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+              <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+            </div>
+          }
+          @if (successMessage()) {
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+              <p class="text-sm text-green-700">{{ successMessage() }}</p>
+            </div>
+          }
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Email</label>
+              <input formControlName="email" type="email" autocomplete="email" required
+                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
+              <input formControlName="password" type="password" autocomplete="current-password" required
+                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end">
+            <button type="button" (click)="switchMode('FORGOT_PASS')" class="text-sm font-medium text-blue-600 hover:text-blue-500">
+              Quên mật khẩu?
+            </button>
+          </div>
+
+          <div>
+            <button type="submit" [disabled]="loginForm.invalid || isLoading()"
+              class="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200">
+              @if (isLoading()) {
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Đang xử lý...
+              } @else {
+                Đăng nhập
+              }
+            </button>
+          </div>
+        </form>
       }
 
-      <div class="space-y-4">
+      @case ('FORGOT_PASS') {
         <div>
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input formControlName="email" type="email" autocomplete="email" required
-            class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1">
+          <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">Khôi phục mật khẩu</h2>
+          <p class="mt-2 text-center text-sm text-gray-600">Nhập email của bạn, chúng tôi sẽ gửi mã OTP.</p>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">Mật khẩu</label>
-          <input formControlName="password" type="password" autocomplete="current-password" required
-            class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm mt-1">
-        </div>
-      </div>
 
-      <div>
-        <button type="submit" [disabled]="loginForm.invalid || isLoading()"
-          class="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors duration-200">
-          
-          @if (isLoading()) {
-            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Đang xử lý...
-          } @else {
-            Đăng nhập
+        <form class="mt-8 space-y-6" [formGroup]="forgotPassForm" (ngSubmit)="onForgotPassSubmit()">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email đã đăng ký</label>
+            <input formControlName="email" type="email" required
+              class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-blue-500 mt-1">
+          </div>
+          <div>
+            <button type="submit" [disabled]="forgotPassForm.invalid || isLoading()"
+              class="w-full flex justify-center py-2.5 px-4 border text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400">
+              {{ isLoading() ? 'Đang gửi...' : 'Nhận mã OTP' }}
+            </button>
+            <button type="button" (click)="switchMode('LOGIN')" class="mt-4 w-full text-center text-sm text-blue-600 hover:text-blue-500 font-medium">
+              Quay lại Đăng nhập
+            </button>
+          </div>
+        </form>
+      }
+
+      @case ('VERIFY_OTP') {
+        <div>
+          <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">Xác minh OTP</h2>
+          <p class="mt-2 text-center text-sm text-gray-600">Mã gồm 6 chữ số đã được gửi đến email của bạn.</p>
+        </div>
+
+        <form class="mt-8 space-y-6" [formGroup]="verifyOtpForm" (ngSubmit)="onVerifyOtpSubmit()">
+          @if (errorMessage()) {
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+              <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+            </div>
           }
-        </button>
-      </div>
-    </form>
+          @if (successMessage()) {
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+              <p class="text-sm text-green-700">{{ successMessage() }}</p>
+            </div>
+          }
+          <div>
+            <label class="block text-sm font-medium text-gray-700 text-center">Mã xác thực (6 số)</label>
+            <input formControlName="otpCode" type="text" maxlength="6" required
+              class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 text-center text-2xl tracking-[0.5em] font-bold text-gray-900 focus:outline-none focus:ring-blue-500 mt-1">
+          </div>
+          <div>
+            <button type="submit" [disabled]="verifyOtpForm.invalid || isLoading()"
+              class="w-full flex justify-center py-2.5 px-4 border text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400">
+              {{ isLoading() ? 'Đang xác minh...' : 'Xác minh' }}
+            </button>
+            <button type="button" (click)="switchMode('LOGIN')" class="mt-4 w-full text-center text-sm text-gray-500 hover:text-gray-900">
+              Hủy
+            </button>
+          </div>
+        </form>
+      }
+
+      @case ('RESET_PASS') {
+        <div>
+          <h2 class="mt-2 text-center text-3xl font-extrabold text-gray-900">Tạo mật khẩu mới</h2>
+          <p class="mt-2 text-center text-sm text-gray-600">Tuyệt vời! Bây giờ hãy thiết lập mật khẩu mới.</p>
+        </div>
+
+        <form class="mt-8 space-y-6" [formGroup]="resetPassForm" (ngSubmit)="onResetPassSubmit()">
+          @if (errorMessage()) {
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+              <p class="text-sm text-red-700">{{ errorMessage() }}</p>
+            </div>
+          }
+          @if (successMessage()) {
+            <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+              <p class="text-sm text-green-700">{{ successMessage() }}</p>
+            </div>
+          }
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Mật khẩu mới (Tối thiểu 6 ký tự)</label>
+              <input formControlName="newPassword" type="password" required
+                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 mt-1">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Nhập lại mật khẩu</label>
+              <input formControlName="confirmPassword" type="password" required
+                class="appearance-none rounded-lg relative block w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 mt-1">
+              @if (resetPassForm.hasError('mismatch') && resetPassForm.get('confirmPassword')?.touched) {
+                <p class="text-xs text-red-600 mt-1">Mật khẩu nhập lại không khớp!</p>
+              }
+            </div>
+          </div>
+          <div>
+            <button type="submit" [disabled]="resetPassForm.invalid || isLoading()"
+              class="w-full flex justify-center py-2.5 px-4 border text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400">
+              {{ isLoading() ? 'Đang lưu...' : 'Lưu mật khẩu & Đăng nhập' }}
+            </button>
+          </div>
+        </form>
+      }
+    }
   </div>
 </div>

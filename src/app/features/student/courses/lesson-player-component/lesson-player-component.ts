@@ -505,5 +505,4 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   onCopy(event: ClipboardEvent) {
     if (this.isDoingExam() && this.hasStartedExam()) event.preventDefault();
   }
-
 }

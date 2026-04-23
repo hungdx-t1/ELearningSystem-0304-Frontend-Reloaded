@@ -67,6 +67,19 @@ export class AuthService {
     this.userProfile.set(null);
   }
 
+  // --- OTP & Reset Password APIs ---
+  forgotPassword(email: string) {
+    return this.http.post<any>(`${this.apiUrl}/forgot-password`, { email });
+  }
+
+  verifyOtp(email: string, otpCode: string) {
+    return this.http.post<any>(`${this.apiUrl}/verify-otp`, { email, otpCode });
+  }
+
+  resetPassword(resetToken: string, newPassword: string) {
+    return this.http.post<any>(`${this.apiUrl}/reset-password`, { resetToken, newPassword });
+  }
+
   // Hàm giải mã Token để lấy Role an toàn
   getUserRole(): string {
     if (typeof window === 'undefined') {

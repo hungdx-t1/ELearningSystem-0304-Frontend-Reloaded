@@ -453,7 +453,14 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   }
 
   // xử lý gian lận
+  private lastCheatTime: number = 0;
+
   handleCheatAttempt(message: string) {
+    const now = Date.now();
+    // Chống trigger đúp: Nếu 2 sự kiện (như blur và visibilitychange) bắn ra cách nhau chưa tới 2s thì tính là 1 lần vi phạm thôi
+    if (now - this.lastCheatTime < 2000) return;
+    this.lastCheatTime = now;
+
     this.cheatWarnings.update(w => w + 1);
     
     // Nếu vi phạm 3 lần -> Ép nộp bài

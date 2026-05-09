@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { delay, of } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface ChatMessage {
   role: 'user' | 'ai';
@@ -12,7 +13,7 @@ export interface ChatMessage {
 })
 export class ChatService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5189/api/ai/chat';
+  private apiUrl = `${environment.apiUrl}/ai/chat`;
 
   sendMessage(message: string, file?: File | null) {
     const formData = new FormData();

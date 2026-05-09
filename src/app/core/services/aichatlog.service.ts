@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface AiChatLog {
   id?: string;
@@ -15,7 +16,7 @@ export interface AiChatLog {
 })
 export class AiChatLogService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5189/api/aichatlogs'; 
+  private apiUrl = `${environment.apiUrl}/aichatlogs`; 
 
   // api lưu lịch sử tương tác AI
   saveChatLog(log: AiChatLog): Observable<any> {

@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
@@ -13,6 +14,6 @@ export class DashboardService {
   private http = inject(HttpClient);
   
   getAdminDashboard(): Observable<DashboardData> {
-    return this.http.get<DashboardData>('http://localhost:5189/api/admin/dashboard');
+    return this.http.get<DashboardData>(`${environment.apiUrl}/admin/dashboard`);
   }
 }

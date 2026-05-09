@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Submission {
   id: string;
@@ -28,7 +29,7 @@ export interface Submission {
 })
 export class SubmissionService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:5189/api/submissions';
+  private apiUrl = `${environment.apiUrl}/submissions`;
 
   // Lấy danh sách bài nộp
   getSubmissions(classId: string, lessonId: string): Observable<Submission[]> {

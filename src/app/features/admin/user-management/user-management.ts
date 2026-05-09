@@ -1,5 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
 import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { UserService, User } from '../../../core/services/user.service'; // Import Service
 import { SlicePipe } from '@angular/common';
@@ -271,7 +272,7 @@ export class UserManagement implements OnInit {
       const formData = new FormData();
       formData.append('file', file);
 
-      this.http.post<any>('http://localhost:5189/api/admin/users/import', formData).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/admin/users/import`, formData).subscribe({
         next: (res) => {
           this.isUploading.set(false);
           this.notiService.success(res.message); // Báo thành công
@@ -293,7 +294,7 @@ export class UserManagement implements OnInit {
 
     // set responseType là 'blob' để trình duyệt hiểu đây là file (dữ liệu nhị phân)
     this.http
-      .get('http://localhost:5189/api/admin/users/export', { responseType: 'blob' })
+      .get(`${environment.apiUrl}/admin/users/export`, { responseType: 'blob' })
       .subscribe({
         next: (blob) => {
           // Tạo một đường link ảo

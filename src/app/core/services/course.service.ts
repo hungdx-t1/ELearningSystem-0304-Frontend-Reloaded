@@ -2,6 +2,7 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom, of } from 'rxjs'; // async/await với Observable
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../../environments/environment';
 
 export interface Course {
   id: string;
@@ -42,8 +43,7 @@ export interface Chapter {
 export class CourseService {
   private http = inject(HttpClient);
   private platformId = inject(PLATFORM_ID);
-  
-  private apiUrl = 'http://localhost:5189/api';
+  private apiUrl = environment.apiUrl;
 
   getAllCourses() {
     if (!isPlatformBrowser(this.platformId)) { // Nếu không phải trên trình duyệt, trả về một Observable rỗng hoặc dữ liệu giả

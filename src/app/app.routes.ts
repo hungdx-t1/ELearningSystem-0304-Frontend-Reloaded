@@ -5,6 +5,7 @@ import { DashboardComponent } from './features/student/dashboard-component/dashb
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { NotFoundComponent } from './features/not-found-component/not-found-component';
+import { ComingSoonComponent } from './features/coming-soon/coming-soon.component';
 import { NoPermissionComponent } from './features/no-permission/no-permission';
 import { CourseDetail } from './features/student/courses/course-detail-component/course-detail-component';
 import { ClassListComponent } from './features/student/classes/class-list-component/class-list-component';
@@ -114,6 +115,7 @@ export const routes: Routes = [
       { path: 'users', component: UserManagement },
       { path: 'classes', component: AdminClassManagement },
       { path: 'courses', component: AdminCourseManagement },
+      { path: 'settings', component: ComingSoonComponent },
     ],
   },
 

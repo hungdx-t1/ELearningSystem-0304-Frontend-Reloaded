@@ -186,7 +186,13 @@ export class UserManagement implements OnInit {
           this.closeModal();
         },
         error: (err) => {
-          const backendError = err.error?.message || JSON.stringify(err.error?.errors) || err.message;
+          let backendError = err.error?.message;
+          if (!backendError && err.error?.errors) {
+            // Trích xuất chuỗi lỗi đầu tiên từ object errors của .NET
+            backendError = Object.values(err.error.errors).flat()[0] as string;
+          }
+          if (!backendError) backendError = err.message || 'Lỗi không xác định';
+
           this.notiService.error('Backend từ chối Thêm mới vì: ' + backendError);
         }
       });

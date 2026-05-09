@@ -262,7 +262,10 @@ export class UserManagement implements OnInit {
           // Xóa thẳng khỏi màn hình
           this.users.update((list) => list.filter((u) => u.id !== user.id));
         },
-        error: (err) => this.notiService.error('Lỗi khi xóa tài khoản: ' + err.message),
+        error: (err) => {
+          const errMsg = err.error?.message || err.message || 'Lỗi không xác định';
+          this.notiService.error('Lỗi khi xóa tài khoản: ' + errMsg);
+        }
       });
     }
   }

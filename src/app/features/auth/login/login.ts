@@ -74,6 +74,13 @@ export class Login { // LoginComponent
       next: () => {
         this.isLoading.set(false);
 
+        const user = this.authService.userProfile();
+        if (user && user.isActive === false) {
+          this.authService.logout(); // Xóa sạch dữ liệu vừa lưu
+          this.errorMessage.set('Tài khoản của bạn đã bị khóa, vui lòng liên hệ Ban quản trị');
+          return;
+        }
+
         const role = this.authService.getUserRole();
 
         if (role === 'Admin') {

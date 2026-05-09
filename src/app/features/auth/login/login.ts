@@ -77,7 +77,7 @@ export class Login { // LoginComponent
         const user = this.authService.userProfile();
         if (user && user.isActive === false) {
           this.authService.logout(); // Xóa sạch dữ liệu vừa lưu
-          this.errorMessage.set('Tài khoản của bạn đã bị khóa, vui lòng liên hệ Ban quản trị');
+          this.errorMessage.set('Tài khoản của bạn đã bị khóa, vui lòng liên hệ Ban quản trị.');
           return;
         }
 

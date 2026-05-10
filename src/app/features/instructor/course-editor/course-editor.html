@@ -281,7 +281,7 @@
 
 @if (isLessonModalOpen()) {
   <div class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl w-full max-w-lg p-6 animate-slide-up">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
       <h3 class="font-bold text-xl mb-4">Thêm Bài Học Mới</h3>
       <form [formGroup]="lessonForm" (ngSubmit)="saveLesson()" class="space-y-4">
         <div>

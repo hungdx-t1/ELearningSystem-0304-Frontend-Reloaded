@@ -133,7 +133,13 @@ export class InstructorClassDetail implements OnInit, AfterViewChecked {
         this.loadClassData(this.classId()); // Tải lại danh sách
         this.isAddModalOpen.set(false);
       },
-      error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message))
+      error: (err) => {
+        if (err.status === 404) {
+          this.notiService.error('Email hoặc Mã Sinh Viên này không tồn tại trong hệ thống!');
+        } else {
+          this.notiService.error('Lỗi: ' + (err.error?.message || err.message));
+        }
+      }
     });
   }
 

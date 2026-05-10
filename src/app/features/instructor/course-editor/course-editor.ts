@@ -226,7 +226,10 @@ export class CourseEditor implements OnInit {
     event.stopPropagation();
     if (confirm(`Bạn có chắc muốn xóa bài học "${lesson.title}" không?`)) {
       this.courseService.deleteLesson(lesson.id).subscribe({
-        next: () => this.loadCourseContent(this.courseId()),
+        next: () => {
+          this.notiService.success('Xóa bài học thành công!');
+          this.loadCourseContent(this.courseId());
+        },
         error: (err) => this.notiService.error('Lỗi xóa Bài học: ' + (err.error?.message || err.message))
       });
     }

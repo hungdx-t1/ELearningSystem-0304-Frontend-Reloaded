@@ -98,7 +98,12 @@ export class AssignmentGrading implements OnInit {
       next: (data) => {
         const mappedData = data.map((s: any) => ({
             ...s,
-            // studentName và studentCode đã có sẵn trong 's' nên không cần gán lại
+            // 🌟 LỚP BẢO HIỂM: 
+            // Bắt cả camelCase (studentName), PascalCase (StudentName) và chuỗi rỗng ("")
+            studentName: s.studentName || s.StudentName || 'Sinh viên ẩn danh',
+            
+            studentCode: s.studentCode || s.StudentCode || (s.studentId ? String(s.studentId).substring(0, 8) : 'Không xác định'),
+            
             content: s.studentNote, 
             fileUrl: s.submissionUrl,
             status: s.score !== null ? 'Graded' : 'Pending'
@@ -109,6 +114,7 @@ export class AssignmentGrading implements OnInit {
       },
       error: (err) => {
         console.error('Lỗi lấy bài nộp', err);
+        this.notiService.error('Không thể tải danh sách bài nộp.');
         this.isLoading.set(false);
       }
     });

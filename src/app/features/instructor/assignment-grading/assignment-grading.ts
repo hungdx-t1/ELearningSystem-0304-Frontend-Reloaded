@@ -137,6 +137,7 @@ export class AssignmentGrading implements OnInit {
   submitGrade() {
     if (this.gradingForm.invalid) {
       this.gradingForm.markAllAsTouched();
+      this.notiService.error('Vui lòng kiểm tra lại điểm số hoặc nhận xét hợp lệ!');
       return;
     }
 

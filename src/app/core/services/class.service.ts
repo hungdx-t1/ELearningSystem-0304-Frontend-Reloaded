@@ -33,6 +33,11 @@ export class ClassService {
     return this.http.post(`${this.apiUrl}/${classId}/enroll`, { studentId: studentId });
   }
 
+  // Thêm sinh viên bằng Email hoặc Mã Sinh Viên (Backend API mới)
+  enrollStudentByEmail(classId: string, emailOrCode: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${classId}/enroll-by-email`, { emailOrCode });
+  }
+
   // Lấy danh sách lớp của một Sinh viên
   getStudentClasses(studentId: string): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/student/${studentId}`);

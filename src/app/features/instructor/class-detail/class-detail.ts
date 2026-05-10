@@ -126,29 +126,14 @@ export class InstructorClassDetail implements OnInit, AfterViewChecked {
     if (this.addStudentForm.invalid) return;
     const emailOrCode = this.addStudentForm.value.emailOrCode!;
     
-    // Cần gọi API tìm userId trước (hoặc nhờ BE C# viết 1 API EnrollByEmail cho lẹ)
-    // Tạm thời mình dùng API lấy tất cả user rồi filter bên Frontend cho nhanh
-    this.userService.getAllUsers('', '', 1, 1000).subscribe({
-      next: (res: any) => {
-        const users = res.items || [];
-
-        const student = users.find((u: any) => u.email === emailOrCode || u.fullName.includes(emailOrCode)); // Note: Chỗ u.UserCode tùy thuộc DTO của bạn
-        
-        if (!student) {
-          this.notiService.error('Không tìm thấy Sinh viên này trong hệ thống!');
-          return;
-        }
-
-        // Tìm thấy ID rồi thì đẩy vô Lớp
-        this.classService.enrollStudent(this.classId(), student.id).subscribe({
-          next: () => {
-            this.notiService.success(`Đã thêm thành công!`);
-            this.loadClassData(this.classId()); // Tải lại danh sách
-            this.isAddModalOpen.set(false);
-          },
-          error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message))
-        });
-      }
+    // Gọi thẳng API mới viết để backend tự tìm và tự enroll
+    this.classService.enrollStudentByEmail(this.classId(), emailOrCode).subscribe({
+      next: () => {
+        this.notiService.success(`Đã thêm thành công!`);
+        this.loadClassData(this.classId()); // Tải lại danh sách
+        this.isAddModalOpen.set(false);
+      },
+      error: (err) => this.notiService.error('Lỗi: ' + (err.error?.message || err.message))
     });
   }
 

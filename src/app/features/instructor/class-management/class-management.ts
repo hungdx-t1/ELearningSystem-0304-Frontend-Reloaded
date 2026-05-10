@@ -14,7 +14,6 @@ import { NotificationService } from '../../../../v2/app/core/services/notificati
 export class ClassManagement implements OnInit {
   private fb = inject(FormBuilder);
   
-  // Tiêm 2 service vào
   private classService = inject(ClassService);
   private courseService = inject(CourseService);
   

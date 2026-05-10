@@ -113,15 +113,26 @@ export class AssignmentGrading implements OnInit {
 
         // MAP ID THÀNH TÊN THẬT
         const mappedData = data.map((s: any) => {
-          // Đi tìm sinh viên có cái ID khớp với cái bài nộp
-          const student = userList.find(u => u.id === s.studentId);
+          
+          // GIA CỐ HÀM TÌM KIẾM: Ép tất cả về chữ thường (toLowerCase) để so sánh chuẩn xác
+          const student = userList.find(u => 
+             u.id && s.studentId && 
+             String(u.id).toLowerCase() === String(s.studentId).toLowerCase()
+          );
 
           return {
             ...s,
-            // Nếu tìm thấy thì ghép Tên thật, không thì để 'Ẩn danh'
+            // GÁN TÊN: Nếu tìm thấy thì ghép Tên thật, không thì để 'Ẩn danh'
             studentName: student ? student.fullName : 'Sinh viên ẩn danh', 
-            // Nếu tìm thấy thì ghép Mã SV (hoặc Email nếu chưa có mã)
-            studentCode: student ? (student.userCode || student.email) : s.studentId.substring(0, 8),
+            
+            // GÁN MÃ
+            // Ưu tiên 1: Lấy userCode (VD: STU-0001)
+            // Ưu tiên 2: Nếu chưa có userCode thì lấy email
+            // Cuối cùng mới cắt chuỗi ID làm phương án dự phòng
+            studentCode: student 
+                           ? (student.userCode || student.email) 
+                           : String(s.studentId).substring(0, 8),
+                           
             content: s.studentNote, 
             fileUrl: s.submissionUrl,
             status: s.score !== null ? 'Graded' : 'Pending'

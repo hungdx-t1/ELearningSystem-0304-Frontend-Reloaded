@@ -78,22 +78,9 @@ export class AssignmentGrading implements OnInit {
   }
 
   async loadInitialData() {
-    // 1. Kéo danh sách Lớp học
     this.classService.getAllClasses().subscribe({
       next: (data) => this.classes.set(data)
     });
-
-    // 2. Kéo toàn bộ User về để dành (Để lát tra cứu tên Sinh viên)
-    this.userService.getAllUsers().subscribe({
-      next: (data) => this.users.set(data),
-      error: (err) => console.error('Lỗi tải danh sách users:', err)
-    });
-
-    try {
-       // TODO: Bổ sung getAllLessons nếu cần ở tương lai
-    } catch (error) {
-       console.log("Cần bổ sung API lấy tất cả Lessons");
-    }
   }
 
   loadSubmissions() {
@@ -109,35 +96,13 @@ export class AssignmentGrading implements OnInit {
     
     this.submissionService.getSubmissions(cId, lId).subscribe({
       next: (data) => {
-        const userList = this.users(); // Lấy danh sách user đã tải sẵn
-
-        // MAP ID THÀNH TÊN THẬT
-        const mappedData = data.map((s: any) => {
-          
-          // GIA CỐ HÀM TÌM KIẾM: Ép tất cả về chữ thường (toLowerCase) để so sánh chuẩn xác
-          const student = userList.find(u => 
-             u.id && s.studentId && 
-             String(u.id).toLowerCase() === String(s.studentId).toLowerCase()
-          );
-
-          return {
+        const mappedData = data.map((s: any) => ({
             ...s,
-            // GÁN TÊN: Nếu tìm thấy thì ghép Tên thật, không thì để 'Ẩn danh'
-            studentName: student ? student.fullName : 'Sinh viên ẩn danh', 
-            
-            // GÁN MÃ
-            // Ưu tiên 1: Lấy userCode (VD: STU-0001)
-            // Ưu tiên 2: Nếu chưa có userCode thì lấy email
-            // Cuối cùng mới cắt chuỗi ID làm phương án dự phòng
-            studentCode: student 
-                           ? (student.userCode || student.email) 
-                           : String(s.studentId).substring(0, 8),
-                           
+            // studentName và studentCode đã có sẵn trong 's' nên không cần gán lại
             content: s.studentNote, 
             fileUrl: s.submissionUrl,
             status: s.score !== null ? 'Graded' : 'Pending'
-          };
-        });
+        }));
 
         this.submissions.set(mappedData);
         this.isLoading.set(false);

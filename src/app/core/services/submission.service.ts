@@ -41,6 +41,11 @@ export class SubmissionService {
     return this.http.get<Submission>(`${this.apiUrl}/class/${classId}/lesson/${lessonId}/student/${studentId}`);
   }
 
+  // Lấy toàn bộ lịch sử bài nộp của Sinh viên đang đăng nhập
+  getStudentHistory(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/student/history`);
+  }
+
   // Sinh viên nộp bài
   submitWork(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/submit`, data);

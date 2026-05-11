@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { CourseService, Course } from '../../../core/services/course.service';
 import { ClassService } from '../../../core/services/class.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SubmissionService } from '../../../core/services/submission.service';
 
 @Component({
   selector: 'app-dashboard-component',
@@ -16,11 +17,13 @@ export class DashboardComponent implements OnInit {
   
   private courseService = inject(CourseService);
   private classService = inject(ClassService);
+  private submissionService = inject(SubmissionService);
   public authService = inject(AuthService); // Public để dùng ngoài HTML (ví dụ check role)
 
   // Signals quản lý dữ liệu
   allCourses = signal<Course[]>([]);
   myClasses = signal<any[]>([]); // Danh sách lớp đang học
+  completedCount = signal<number>(0);
   
   isLoadingCourses = signal<boolean>(true);
   isLoadingClasses = signal<boolean>(true);
@@ -57,6 +60,12 @@ export class DashboardComponent implements OnInit {
       error: (err) => {
         console.error('Lỗi tải lớp học của tôi', err);
         this.isLoadingClasses.set(false);
+      }
+    });
+
+    this.submissionService.getStudentHistory().subscribe({
+      next: (data) => {
+        this.completedCount.set(data.length);
       }
     });
   }

@@ -1,0 +1,66 @@
+<div class="max-w-7xl mx-auto space-y-8 pb-10">
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-gray-200 pb-6">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Lịch sử bài làm</h1>
+      <p class="text-gray-500 mt-2">Xem lại các bài tập, bài kiểm tra bạn đã nộp.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+  } @else if (submissions().length === 0) {
+    <div class="bg-white rounded-2xl shadow-sm border border-dashed border-gray-300 flex flex-col items-center justify-center p-12 text-center">
+      <span class="text-5xl mb-4 opacity-40">📝</span>
+      <h3 class="text-lg font-bold text-gray-900">Chưa có bài nộp nào</h3>
+      <p class="text-gray-500 mt-2 max-w-sm">Bạn chưa nộp bất kỳ bài tập hay bài kiểm tra nào.</p>
+    </div>
+  } @else {
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-4">Lớp học</th>
+              <th class="px-6 py-4">Bài học/Bài tập</th>
+              <th class="px-6 py-4">Ngày nộp</th>
+              <th class="px-6 py-4">Trạng thái</th>
+              <th class="px-6 py-4 text-right">Điểm số</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (sub of submissions(); track sub.id) {
+              <tr class="hover:bg-gray-50/50 transition">
+                <td class="px-6 py-4">
+                  <div class="font-semibold text-gray-900">{{ sub.className }}</div>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="text-gray-700">{{ sub.lessonTitle }}</div>
+                </td>
+                <td class="px-6 py-4 text-gray-500">
+                  {{ sub.submittedAt | date:'dd/MM/yyyy HH:mm' }}
+                </td>
+                <td class="px-6 py-4">
+                  @if (sub.isSubmitted) {
+                    <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-green-100 text-green-700">Đã nộp</span>
+                  } @else {
+                    <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-yellow-100 text-yellow-700">Đang làm</span>
+                  }
+                </td>
+                <td class="px-6 py-4 text-right">
+                  @if (sub.score !== null && sub.score !== undefined) {
+                    <span class="font-bold text-blue-600">{{ sub.score }}</span>
+                  } @else {
+                    <span class="text-gray-400 italic">Chưa chấm</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

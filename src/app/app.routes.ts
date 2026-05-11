@@ -26,6 +26,7 @@ import { InstructorClassDetail } from './features/instructor/class-detail/class-
 import { InstructorLayout } from './layouts/instructor-layout/instructor-layout';
 import { rootRedirectGuard } from './core/guards/root-redirect.guard';
 import { AiChatHistoryComponent } from './features/student/chat/ai-chat-history-component/ai-chat-history-component';
+import { SubmissionHistory } from './features/student/submission-history/submission-history';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -78,6 +79,12 @@ export const routes: Routes = [
       {
         path: 'chat-history',
         component: AiChatHistoryComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] }
+      },
+      {
+        path: 'submission-history',
+        component: SubmissionHistory,
         canActivate: [roleGuard],
         data: { roles: ['Student'] }
       }

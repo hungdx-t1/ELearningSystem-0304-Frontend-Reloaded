@@ -43,6 +43,7 @@ export class MainLayoutComponent implements OnInit {
     { path: '/dashboard', icon: '🏠', label: 'Bảng điều khiển' },
   //  { path: '/courses', icon: '📚', label: 'Khóa học tự do' },
     { path: '/classes', icon: '🏫', label: 'Lớp học của tôi' },
+    { path: '/submission-history', icon: '📝', label: 'Lịch sử bài làm' },
     { path: '/chat', icon: '🤖', label: 'Trợ lý AI' }
   ];
 

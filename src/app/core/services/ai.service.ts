@@ -3,6 +3,11 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+export interface ChatMessage {
+  role: 'user' | 'ai';
+  content: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -10,18 +15,34 @@ export class AiService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/ai`; 
 
-  // Gọi API sinh câu hỏi trắc nghiệm
-  generateQuiz(topic: string, questionCount: number): Observable<any[]> {
-    return this.http.post<any[]>(`${this.apiUrl}/generate-quiz`, { topic, questionCount });
+  sendMessage(prompt: string, lessonIds: string[], file: File | null): Observable<{ reply: string }> {
+    const formData = new FormData();
+    formData.append('prompt', prompt);
+    
+    if (file) {
+      formData.append('file', file);
+    }
+
+    if (lessonIds && lessonIds.length > 0) {
+      lessonIds.forEach(id => formData.append('lessonIds', id));
+    }
+
+    return this.http.post<{ reply: string }>(`${this.apiUrl}/chat`, formData);
   }
 
-  // Gọi API sinh câu hỏi từ File (Dùng FormData vì có đính kèm file vật lý)
-  generateQuizFromFile(file: File, topic: string, questionCount: number): Observable<any[]> {
+  generateQuiz(topic: string, questionCount: number, lessonIds: string[], file: File | null): Observable<any[]> {
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('topic', topic);
+    formData.append('topic', topic || ''); 
     formData.append('questionCount', questionCount.toString());
+
+    if (file) {
+      formData.append('file', file);
+    }
+
+    if (lessonIds && lessonIds.length > 0) {
+      lessonIds.forEach(id => formData.append('lessonIds', id)); // mảng id bài học
+    }
     
-    return this.http.post<any[]>(`${this.apiUrl}/generate-quiz-from-file`, formData);
+    return this.http.post<any[]>(`${this.apiUrl}/generate-quiz`, formData);
   }
 }

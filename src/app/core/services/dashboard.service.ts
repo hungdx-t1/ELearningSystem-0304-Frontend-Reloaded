@@ -16,4 +16,8 @@ export class DashboardService {
   getAdminDashboard(): Observable<DashboardData> {
     return this.http.get<DashboardData>(`${environment.apiUrl}/admin/dashboard`);
   }
+
+  getStudentDashboard(): Observable<any> {
+    return this.http.get<any>(`${environment.apiUrl}/admin/dashboard/student`);
+  }
 }

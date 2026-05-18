@@ -1,10 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-// Import Services
-import { CourseService, Course } from '../../../core/services/course.service';
-import { ClassService } from '../../../core/services/class.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { SubmissionService } from '../../../core/services/submission.service';
 
 @Component({
   selector: 'app-dashboard-component',
@@ -14,19 +11,16 @@ import { SubmissionService } from '../../../core/services/submission.service';
   styleUrl: './dashboard-component.scss'
 })
 export class DashboardComponent implements OnInit {
-  
-  private courseService = inject(CourseService);
-  private classService = inject(ClassService);
-  private submissionService = inject(SubmissionService);
+  private dashboardService = inject(DashboardService);
   public authService = inject(AuthService); // Public để dùng ngoài HTML (ví dụ check role)
 
   // Signals quản lý dữ liệu
-  allCourses = signal<Course[]>([]);
+  allCourses = signal<any[]>([]);
   myClasses = signal<any[]>([]); // Danh sách lớp đang học
   completedCount = signal<number>(0);
+  averageScore = signal<number>(0);
   
-  isLoadingCourses = signal<boolean>(true);
-  isLoadingClasses = signal<boolean>(true);
+  isLoading = signal<boolean>(true);
   errorMessage = signal<string>('');
 
   // Thông tin cá nhân
@@ -41,46 +35,23 @@ export class DashboardComponent implements OnInit {
     }
     this.realStudentId = this.authService.getCurrentUserId();
 
-    this.fetchMyClasses();
-    this.fetchAllCourses();
+    this.fetchDashboardData();
   }
 
-  // Kéo danh sách Lớp học mà SV này đang tham gia
-  fetchMyClasses() {
-    if (!this.realStudentId) {
-      this.isLoadingClasses.set(false);
-      return;
-    }
-    
-    this.classService.getStudentClasses(this.realStudentId).subscribe({
+  fetchDashboardData() {
+    this.isLoading.set(true);
+    this.dashboardService.getStudentDashboard().subscribe({
       next: (data) => {
-        this.myClasses.set(data);
-        this.isLoadingClasses.set(false);
+        this.myClasses.set(data.myClasses || []);
+        this.allCourses.set(data.allCourses || []);
+        this.completedCount.set(data.completedCount || 0);
+        this.averageScore.set(data.averageScore || 0);
+        this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Lỗi tải lớp học của tôi', err);
-        this.isLoadingClasses.set(false);
-      }
-    });
-
-    this.submissionService.getStudentHistory().subscribe({
-      next: (data) => {
-        this.completedCount.set(data.length);
-      }
-    });
-  }
-
-  // Kéo danh sách toàn bộ Khóa học trên hệ thống
-  fetchAllCourses() {
-    this.courseService.getAllCourses().subscribe({
-      next: (data) => {
-        this.allCourses.set(data);
-        this.isLoadingCourses.set(false);
-      },
-      error: (err) => {
-        this.errorMessage.set('Không thể kết nối đến máy chủ để tải khóa học!');
-        this.isLoadingCourses.set(false);
-        console.error(err);
+        console.error('Lỗi tải dashboard', err);
+        this.errorMessage.set('Không thể kết nối đến máy chủ để tải dữ liệu!');
+        this.isLoading.set(false);
       }
     });
   }

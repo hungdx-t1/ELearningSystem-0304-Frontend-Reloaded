@@ -62,7 +62,7 @@
       </div>
       <div>
         <p class="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Điểm trung bình</p>
-        <p class="text-3xl font-black text-gray-900">8.5</p>
+        <p class="text-3xl font-black text-gray-900">{{ averageScore() }}</p>
       </div>
     </div>
   </div>
@@ -78,7 +78,7 @@
       </a>
     </div>
 
-    @if (isLoadingClasses()) {
+    @if (isLoading()) {
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div class="bg-gray-100 rounded-2xl h-32 animate-pulse"></div>
         <div class="bg-gray-100 rounded-2xl h-32 animate-pulse hidden lg:block"></div>
@@ -132,7 +132,7 @@
       <p class="text-gray-500 text-sm">{{ allCourses().length }} khóa học</p>
     </div>
 
-    @if (isLoadingCourses()) {
+    @if (isLoading()) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @for (i of [1, 2, 3, 4]; track i) {
           <div class="bg-gray-100 rounded-2xl h-64 border border-gray-100 animate-pulse"></div>

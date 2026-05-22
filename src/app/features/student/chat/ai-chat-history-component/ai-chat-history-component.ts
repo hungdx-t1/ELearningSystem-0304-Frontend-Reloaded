@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { marked } from 'marked';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -19,6 +19,21 @@ export class AiChatHistoryComponent implements OnInit {
   chatHistory = signal<AiChatLog[]>([]);
   isLoading = signal<boolean>(true);
   errorMessage = signal<string>('');
+
+  sortOrder = signal<'desc' | 'asc'>('desc'); // Mặc định mới nhất lên trên
+
+  sortedHistory = computed(() => {
+    const history = [...this.chatHistory()];
+    if (this.sortOrder() === 'desc') {
+      return history.sort((a, b) => new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime());
+    } else {
+      return history.sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+    }
+  });
+
+  toggleSort() {
+    this.sortOrder.set(this.sortOrder() === 'desc' ? 'asc' : 'desc');
+  }
 
   ngOnInit() {
     this.loadHistory();

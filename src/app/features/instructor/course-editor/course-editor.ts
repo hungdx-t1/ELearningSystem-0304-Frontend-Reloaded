@@ -240,6 +240,15 @@ export class CourseEditor implements OnInit {
     if (!input.files || input.files.length === 0) return;
 
     const file = input.files[0];
+    
+    // Kiểm tra định dạng file
+    const extension = file.name.split('.').pop()?.toLowerCase();
+    if (extension === 'txt' || extension === 'exe' || extension === 'bat') {
+      this.notiService.warning('Hệ thống không hỗ trợ định dạng file này!');
+      input.value = '';
+      return;
+    }
+
     this.isUploading.set(true);
 
     this.courseService.uploadFile(file).subscribe({

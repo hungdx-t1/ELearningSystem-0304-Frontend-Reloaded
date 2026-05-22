@@ -50,7 +50,7 @@ export const routes: Routes = [
       {
         path: 'courses',
         redirectTo: 'dashboard',
-        pathMatch: 'full' 
+        pathMatch: 'full'
       },
       {
         path: 'courses/:id',
@@ -87,6 +87,12 @@ export const routes: Routes = [
         component: SubmissionHistory,
         canActivate: [roleGuard],
         data: { roles: ['Student'] }
+      },
+      {
+        path: 'settings',
+        component: ComingSoonComponent,
+        canActivate: [roleGuard],
+        data: { roles: ['Student'] }
       }
     ],
   },
@@ -107,6 +113,7 @@ export const routes: Routes = [
       { path: 'classes/:id', component: InstructorClassDetail },
       { path: 'courses/:courseId/quizzes/:lessonId', component: QuizBuilder },
       { path: 'assignments', component: AssignmentGrading },
+      { path: 'settings', component: ComingSoonComponent }
     ],
   },
 
@@ -114,15 +121,15 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
-    canActivate: [authGuard, roleGuard], 
-    data: { roles: ['Admin'] }, 
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['Admin'] },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: AdminDashboard },
       { path: 'users', component: UserManagement },
       { path: 'classes', component: AdminClassManagement },
       { path: 'courses', component: AdminCourseManagement },
-      { path: 'settings', component: ComingSoonComponent },
+      { path: 'settings', component: ComingSoonComponent }, // todo
     ],
   },
 

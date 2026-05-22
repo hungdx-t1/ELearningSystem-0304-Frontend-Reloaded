@@ -125,7 +125,7 @@
               @for (lesson of chapter.lessons; track lesson.id) {
                 <div
                   cdkDrag
-                  class="flex items-center justify-between bg-white border border-gray-100 p-3 rounded-lg hover:shadow-sm hover:border-blue-200 transition group"
+                  class="flex flex-col lg:flex-row lg:items-center justify-between bg-white border border-gray-100 p-3 rounded-lg hover:shadow-sm hover:border-blue-200 transition group gap-3"
                 >
                   <div class="flex items-center gap-3">
                     <span
@@ -162,7 +162,7 @@
                   </div>
 
                   <div
-                    class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-2"
+                    class="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity flex flex-wrap items-center gap-2 ml-10 lg:ml-0 w-full lg:w-auto"
                   >
                     @if (lesson.type === 0 || lesson.type === 1 || lesson.type === 3) {
                       <button

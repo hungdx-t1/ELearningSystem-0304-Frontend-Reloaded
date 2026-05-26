@@ -1,0 +1,93 @@
+<div class="max-w-3xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white shadow rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800">Cài đặt tài khoản</h2>
+
+    <!-- Tabs/Sections (Can be extended later for Profile, Email, etc.) -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="-mb-px flex space-x-8">
+        <a href="javascript:void(0)" class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+          Đổi mật khẩu
+        </a>
+        <!-- Add more tabs here in the future -->
+      </nav>
+    </div>
+
+    <!-- Change Password Form -->
+    <div *ngIf="!showOtpStep">
+      <form [formGroup]="passwordForm" (ngSubmit)="onRequestChangePassword()" class="space-y-6">
+        <div>
+          <label for="oldPassword" class="block text-sm font-medium text-gray-700">Mật khẩu hiện tại</label>
+          <input type="password" id="oldPassword" formControlName="oldPassword"
+                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                 placeholder="Nhập mật khẩu cũ">
+          <p *ngIf="passwordForm.get('oldPassword')?.invalid && passwordForm.get('oldPassword')?.touched" class="mt-1 text-sm text-red-600">
+            Mật khẩu hiện tại là bắt buộc.
+          </p>
+        </div>
+
+        <div>
+          <label for="newPassword" class="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
+          <input type="password" id="newPassword" formControlName="newPassword"
+                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                 placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)">
+          <p *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched" class="mt-1 text-sm text-red-600">
+            Mật khẩu mới là bắt buộc.
+          </p>
+          <p *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched" class="mt-1 text-sm text-red-600">
+            Mật khẩu mới phải có ít nhất 6 ký tự.
+          </p>
+        </div>
+
+        <div>
+          <label for="confirmNewPassword" class="block text-sm font-medium text-gray-700">Xác nhận mật khẩu mới</label>
+          <input type="password" id="confirmNewPassword" formControlName="confirmNewPassword"
+                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
+                 placeholder="Nhập lại mật khẩu mới">
+          <p *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmNewPassword')?.touched" class="mt-1 text-sm text-red-600">
+            Mật khẩu xác nhận không khớp.
+          </p>
+        </div>
+
+        <div class="flex justify-end">
+          <button type="submit" [disabled]="isRequestingOtp"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+            <span *ngIf="!isRequestingOtp">Tiếp tục (Gửi mã OTP)</span>
+            <span *ngIf="isRequestingOtp">Đang xử lý...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- OTP Verification Form -->
+    <div *ngIf="showOtpStep" class="bg-indigo-50 border border-indigo-200 rounded-lg p-6">
+      <h3 class="text-lg font-medium text-indigo-800 mb-2">Xác thực OTP</h3>
+      <p class="text-sm text-indigo-700 mb-4">
+        Một mã xác minh gồm 6 chữ số đã được gửi đến email của bạn. Vui lòng nhập mã đó vào bên dưới để hoàn tất việc đổi mật khẩu.
+      </p>
+
+      <form [formGroup]="otpForm" (ngSubmit)="onConfirmChangePassword()" class="space-y-6">
+        <div>
+          <label for="otpCode" class="block text-sm font-medium text-gray-700">Mã OTP</label>
+          <input type="text" id="otpCode" formControlName="otpCode" maxlength="6"
+                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border text-center tracking-widest text-lg font-bold"
+                 placeholder="123456">
+          <p *ngIf="otpForm.get('otpCode')?.invalid && otpForm.get('otpCode')?.touched" class="mt-1 text-sm text-red-600">
+            Mã OTP phải gồm đúng 6 ký tự.
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <button type="button" (click)="resetFlow()" class="text-sm text-indigo-600 hover:text-indigo-500 font-medium">
+            &larr; Quay lại
+          </button>
+          <button type="submit" [disabled]="isConfirmingOtp"
+                  class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 transition-colors">
+            <span *ngIf="!isConfirmingOtp">Xác nhận đổi mật khẩu</span>
+            <span *ngIf="isConfirmingOtp">Đang xác nhận...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

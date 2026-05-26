@@ -27,6 +27,7 @@ import { InstructorLayout } from './layouts/instructor-layout/instructor-layout'
 import { rootRedirectGuard } from './core/guards/root-redirect.guard';
 import { AiChatHistoryComponent } from './features/student/chat/ai-chat-history-component/ai-chat-history-component';
 import { SubmissionHistory } from './features/student/submission-history/submission-history';
+import { SettingsComponent } from './features/settings/settings.component';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
@@ -90,7 +91,7 @@ export const routes: Routes = [
       },
       {
         path: 'settings',
-        component: ComingSoonComponent,
+        component: SettingsComponent,
         canActivate: [roleGuard],
         data: { roles: ['Student'] }
       }
@@ -113,7 +114,7 @@ export const routes: Routes = [
       { path: 'classes/:id', component: InstructorClassDetail },
       { path: 'courses/:courseId/quizzes/:lessonId', component: QuizBuilder },
       { path: 'assignments', component: AssignmentGrading },
-      { path: 'settings', component: ComingSoonComponent }
+      { path: 'settings', component: SettingsComponent }
     ],
   },
 
@@ -129,7 +130,7 @@ export const routes: Routes = [
       { path: 'users', component: UserManagement },
       { path: 'classes', component: AdminClassManagement },
       { path: 'courses', component: AdminCourseManagement },
-      { path: 'settings', component: ComingSoonComponent }, // todo
+      { path: 'settings', component: SettingsComponent }, // todo
     ],
   },
 

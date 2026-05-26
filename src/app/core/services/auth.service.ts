@@ -80,6 +80,14 @@ export class AuthService {
     return this.http.post<any>(`${this.apiUrl}/reset-password`, { resetToken, newPassword });
   }
 
+  requestChangePassword(oldPassword: string) {
+    return this.http.post<any>(`${this.apiUrl}/request-change-password`, { oldPassword });
+  }
+
+  confirmChangePassword(newPassword: string, otpCode: string) {
+    return this.http.post<any>(`${this.apiUrl}/confirm-change-password`, { newPassword, otpCode });
+  }
+
   // Hàm giải mã Token để lấy Role an toàn
   getUserRole(): string {
     if (typeof window === 'undefined') {

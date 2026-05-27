@@ -29,12 +29,15 @@
           <label for="newPassword" class="block text-sm font-medium text-gray-700">Mật khẩu mới</label>
           <input type="password" id="newPassword" formControlName="newPassword"
                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 border"
-                 placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)">
+                 placeholder="Nhập mật khẩu mới (ít nhất 8 ký tự)">
           <p *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched" class="mt-1 text-sm text-red-600">
             Mật khẩu mới là bắt buộc.
           </p>
           <p *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched" class="mt-1 text-sm text-red-600">
-            Mật khẩu mới phải có ít nhất 6 ký tự.
+            Mật khẩu mới phải có ít nhất 8 ký tự.
+          </p>
+          <p *ngIf="passwordForm.get('newPassword')?.errors?.['pattern'] && passwordForm.get('newPassword')?.touched" class="mt-1 text-sm text-red-600">
+            Yêu cầu có ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt.
           </p>
         </div>
 

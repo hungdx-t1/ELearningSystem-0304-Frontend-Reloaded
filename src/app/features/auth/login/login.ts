@@ -19,7 +19,7 @@ export class Login { // LoginComponent
 
   loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required]]
   });
 
   // Signal quản lý trạng thái hiển thị lỗi, thành công và chế độ View
@@ -41,7 +41,11 @@ export class Login { // LoginComponent
   });
 
   resetPassForm = this.fb.nonNullable.group({
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    newPassword: ['', [
+      Validators.required, 
+      Validators.minLength(8), 
+      Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+    ]],
     confirmPassword: ['', [Validators.required]]
   }, { validators: this.passwordMatchValidator });
 
@@ -113,12 +117,18 @@ export class Login { // LoginComponent
         this.viewMode.set('VERIFY_OTP');
         this.successMessage.set('Nếu email hợp lệ, một mã OTP đã được gửi đến hộp thư của bạn.');
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
-        // Security: Fake success anyway
-        this.resetEmail = email;
-        this.viewMode.set('VERIFY_OTP');
-        this.successMessage.set('Nếu email hợp lệ, một mã OTP đã được gửi đến hộp thư của bạn.');
+        if (err.status === 400 && err.error?.errors) {
+          // Lỗi validation từ Backend (ví dụ sai domain email)
+          const errorMsg = Object.values(err.error.errors).flat().join('\n');
+          this.errorMessage.set(errorMsg);
+        } else if (err.status === 400) {
+          this.errorMessage.set(err.error?.message || 'Yêu cầu không hợp lệ.');
+        } else {
+          // Lỗi khác hoặc 500, có thể do email ko tồn tại (nhưng backend trả 200 cho email ko tồn tại rồi)
+          this.errorMessage.set('Có lỗi xảy ra khi gửi email khôi phục.');
+        }
       }
     });
   }
@@ -156,10 +166,15 @@ export class Login { // LoginComponent
         this.switchMode('LOGIN');
         this.successMessage.set('Đổi mật khẩu thành công! Giờ bạn có thể đăng nhập.');
       },
-      error: () => {
+      error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set('Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn.');
-        this.switchMode('LOGIN');
+        if (err.status === 400 && err.error?.errors) {
+           const errorMsg = Object.values(err.error.errors).flat().join('\n');
+           this.errorMessage.set(errorMsg);
+        } else {
+           this.errorMessage.set(err.error?.message || 'Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn.');
+           this.switchMode('LOGIN');
+        }
       }
     });
   }

@@ -9,7 +9,7 @@ import { NotificationService } from '../../../v2/app/core/services/notification.
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.css']
+  styleUrls: ['./settings.component.scss']
 })
 export class SettingsComponent {
   private fb = inject(FormBuilder);
@@ -26,7 +26,11 @@ export class SettingsComponent {
   constructor() {
     this.passwordForm = this.fb.group({
       oldPassword: ['', [Validators.required]],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      newPassword: ['', [
+        Validators.required, 
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+      ]],
       confirmNewPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
 
@@ -57,7 +61,13 @@ export class SettingsComponent {
         this.isRequestingOtp = false;
       },
       error: (err: any) => {
-        this.notiService.error(err?.error?.message || 'Mật khẩu cũ không chính xác hoặc có lỗi xảy ra.');
+        let msg = 'Mật khẩu cũ không chính xác hoặc có lỗi xảy ra.';
+        if (err?.status === 400 && err.error?.errors) {
+           msg = Object.values(err.error.errors).flat().join('\n');
+        } else if (err?.error?.message) {
+           msg = err.error.message;
+        }
+        this.notiService.error(msg);
         this.isRequestingOtp = false;
       }
     });
@@ -79,7 +89,13 @@ export class SettingsComponent {
         this.resetFlow();
       },
       error: (err: any) => {
-        this.notiService.error(err?.error?.message || 'Mã OTP không chính xác hoặc đã hết hạn!');
+        let msg = 'Mã OTP không chính xác hoặc đã hết hạn!';
+        if (err?.status === 400 && err.error?.errors) {
+           msg = Object.values(err.error.errors).flat().join('\n');
+        } else if (err?.error?.message) {
+           msg = err.error.message;
+        }
+        this.notiService.error(msg);
         this.isConfirmingOtp = false;
       }
     });

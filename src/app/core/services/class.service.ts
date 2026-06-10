@@ -28,6 +28,10 @@ export class ClassService {
     return this.http.get<any>(`${this.apiUrl}/${classId}/details`);
   }
 
+  getStudentCount(classId: string): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/${classId}/student-count`);
+  }
+
   // Thêm 1 sinh viên (ghi danh) - Dùng lại API enroll cũ của bạn
   enrollStudent(classId: string, studentId: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/${classId}/enroll`, { studentId: studentId });

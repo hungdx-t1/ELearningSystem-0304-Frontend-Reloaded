@@ -4,8 +4,8 @@ import {
   ViewChild,
   inject,
   signal,
-  AfterViewChecked,
   computed,
+  OnDestroy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { marked } from 'marked';
@@ -22,8 +22,9 @@ import { ClassService } from '../../../../core/services/class.service';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './ai-chat-component.html',
+  styleUrl: './ai-chat-component.scss',
 })
-export class AiChatComponent implements AfterViewChecked {
+export class AiChatComponent implements OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private aiChatLogService = inject(AiChatLogService);
   private authService = inject(AuthService);
@@ -49,6 +50,8 @@ export class AiChatComponent implements AfterViewChecked {
 
   chatInput = signal('');
   isTyping = signal(false); // Trạng thái AI đang suy nghĩ
+  isAnimating = signal(false); // Trạng thái chữ đang chạy
+  private typingInterval: any = null;
 
   messages = signal<ChatMessage[]>([
     {
@@ -57,15 +60,15 @@ export class AiChatComponent implements AfterViewChecked {
     },
   ]);
 
-  // Hàm này tự động chạy mỗi khi giao diện có thay đổi -> Dùng để cuộn xuống đáy
-  ngAfterViewChecked() {
-    this.scrollToBottom();
-  }
-
   scrollToBottom(): void {
-    try {
-      this.chatContainer.nativeElement.scrollTop = this.chatContainer.nativeElement.scrollHeight;
-    } catch (err) {}
+    setTimeout(() => {
+      try {
+        if (this.chatContainer) {
+          this.chatContainer.nativeElement.scrollTop =
+            this.chatContainer.nativeElement.scrollHeight;
+        }
+      } catch (err) {}
+    }, 0);
   }
 
   onFileSelected(event: Event) {
@@ -90,16 +93,19 @@ export class AiChatComponent implements AfterViewChecked {
     // 1. Gắn tin nhắn user lên màn hình
     this.messages.update((msgs) => [...msgs, { role: 'user', content: displayMsg }]);
     this.chatInput.set('');
-    this.selectedFile.set(null); // Reset file sau khi gửi
+    // Giữ file đính kèm để người dùng tiếp tục hỏi các câu tiếp theo về tài liệu này.
+    // Người dùng có thể bấm "Hủy đính kèm" trên UI nếu muốn dừng hỏi về file này.
 
     // 2. Bật hiệu ứng "AI đang gõ..."
     this.isTyping.set(true);
+    this.scrollToBottom();
 
     // 3. Gọi Service truyền cả text và file
     this.aiService.sendMessage(userMsg, this.selectedLessonIds(), file).subscribe({
       next: (res) => {
         this.isTyping.set(false);
-        this.messages.update((msgs) => [...msgs, { role: 'ai', content: res.reply }]);
+        this.isAnimating.set(true);
+        this.typeMessage(res.reply);
 
         // lưu lịch sử chat vào database (có cả câu hỏi và câu trả lời)
         const userId = this.authService.getCurrentUserId();
@@ -125,6 +131,49 @@ export class AiChatComponent implements AfterViewChecked {
         ]);
       },
     });
+  }
+
+  ngOnDestroy() {
+    if (this.typingInterval) {
+      clearInterval(this.typingInterval);
+    }
+  }
+
+  typeMessage(reply: string) {
+    if (this.typingInterval) {
+      clearInterval(this.typingInterval);
+    }
+
+    const tokens = reply.split(/(\s+)/);
+    let currentIndex = 0;
+
+    this.messages.update((msgs) => [...msgs, { role: 'ai', content: '' }]);
+    const messageIndex = this.messages().length - 1;
+
+    this.typingInterval = setInterval(() => {
+      if (currentIndex < tokens.length) {
+        // Lấy 12 token cùng lúc để tăng tốc độ xuất hiện chữ
+        let tokensToAdd = '';
+        for (let i = 0; i < 20 && currentIndex < tokens.length; i++) {
+          tokensToAdd += tokens[currentIndex];
+          currentIndex++;
+        }
+
+        this.messages.update((msgs) => {
+          const updated = [...msgs];
+          updated[messageIndex] = {
+            ...updated[messageIndex],
+            content: updated[messageIndex].content + tokensToAdd,
+          };
+          return updated;
+        });
+        this.scrollToBottom();
+      } else {
+        clearInterval(this.typingInterval);
+        this.typingInterval = null;
+        this.isAnimating.set(false);
+      }
+    }, 12);
   }
 
   formatMessage(content: string) {
